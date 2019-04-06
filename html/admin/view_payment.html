@@ -1,0 +1,96 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+    <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{olang.KJP_VIEW_PAY} ( {_GET.payment} )</li>
+  </ol>
+</nav>
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+<IF NAME="have_payment">
+
+
+<table class="table">
+
+  <tbody>
+    <tr>
+      <th scope="row">{olang.KJP_PAY_ID} :</th>
+      <td>{id}</td>
+    </tr>
+    <tr>
+      <th scope="row">{olang.KJP_PAY_AMNT} :</th>
+      <td>{amount}</td>
+    </tr>
+
+    <tr>
+      <th scope="row">{olang.KJP_PAY_MTHD} :</th>
+      <td>{payment_method}</td>
+    </tr>
+
+    <tr>
+      <th scope="row">{olang.KJP_PAY_TKN} :</th>
+      <td>{token}</td>
+    </tr>
+        <tr>
+      <th scope="row">{olang.KJP_PAYR_IP} :</th>
+      <td>{payer_ip}</td>
+    </tr>
+        <tr>
+      <th scope="row">{olang.KJP_PAY_ITM} : </th>
+      <td>{item}</td>
+    </tr>
+        <tr>
+      <th scope="row">{olang.KJP_MEMBER} :</th>
+      <td>{member}</td>
+    </tr>
+        <tr>
+      <th scope="row">{olang.KJP_DATE_TIME} :</th>
+      <td>{date_time}</td>
+    </tr>
+
+<LOOP NAME="viewMoreTable">
+        <tr>
+      <th scope="row">{{tableName}} :</th>
+      <td>{{tableValue}}</td>
+    </tr>
+</LOOP>
+
+  </tbody>
+</table>
+
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+
+{file_payments}
+
+  </div>
+</div>
+
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+
+{user_payments}
+
+  </div>
+</div>
+
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+
+{method_payments}
+
+  </div>
+</div>
+
+
+
+<ELSE>
+
+<div class="alert alert-info" role="alert">
+  There is no Payment with this ID ..
+</div>
+
+</IF>
+
+  </div>
+</div>

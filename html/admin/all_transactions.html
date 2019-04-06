@@ -1,0 +1,50 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+    <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{all_trnc_page_title}</li>
+  </ol>
+</nav>
+
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">{olang.KJP_MEMBER}</th>
+      <th scope="col">{olang.KJP_ACTION}</th>
+      <th scope="col">{olang.KJP_DATE_TIME}</th>
+      <th scope="col">{olang.KJP_VIEW}</th>
+    </tr>
+  </thead>
+  <tbody>
+  	<IF NAME="have_transaction == true">
+
+<LOOP NAME="transactions">
+    <tr>
+      <th scope="row">{{PayID}}</th>
+      <td>{{PayUser}}</td>
+      <td>{{PayAction}}</td>
+      <td>{{PayDateTime}}</td>
+      <td><a href="{{view_link}}" class="btn btn-primary">{olang.KJP_VIEW}</a></td>
+    </tr>
+
+</LOOP>
+
+
+
+<ELSE>
+
+	<div class="alert alert-info" role="alert">
+  There is no Transactions yet ..
+</div>
+
+</IF>
+  </tbody>
+</table>
+{page_nums}
+</div>
+</div>

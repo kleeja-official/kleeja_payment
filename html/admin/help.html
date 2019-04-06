@@ -1,0 +1,146 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+    <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Help</li>
+  </ol>
+</nav>
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+    <h4 class="card-title">Informations to Start</h4>
+
+
+<div class="accordion" id="accordionExample">
+
+
+	
+  <div class="card">
+    <div class="card-header" id="__KJ_PP_INFO">
+      <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#KJ_PP_INFO" aria-expanded="true" aria-controls="KJ_PP_INFO">
+          <li>What can i do with this plugin ??</li>
+        </button>
+      </h2>
+    </div>
+
+    <div id="KJ_PP_INFO" class="collapse" aria-labelledby="__KJ_PP_INFO" data-parent="#accordionExample">
+      <div class="card-body">
+
+
+        With this plugin you can pricing the files and groups to selling it , and recive the payyments to your paypal account automaticly
+        ( WebMasters Only )
+
+
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="card">
+    <div class="card-header" id="accordionExample">
+      <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#WHAT_I_NEED" aria-expanded="false" aria-controls="WHAT_I_NEED">
+          <li>What i need to use this plugin ??</li>
+        </button>
+      </h2>
+    </div>
+    <div id="WHAT_I_NEED" class="collapse" aria-labelledby="__WHAT_I_NEED" data-parent="#accordionExample">
+      <div class="card-body">
+        You need only : PayPal Business Account , and you can create an <a target="_blank" href="https://developer.paypal.com/developer/applications/">REST API APP </a>  # for developers : you can create an app if your account is personal , but you will use the sandbox API (TEST) until you upgrade your account to buisness
+      </div>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-header" id="_SETTING_INFO">
+      <h2 class="mb-0">
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#SETTING_INFO" aria-expanded="false" aria-controls="SETTING_INFO">
+          <li>Setting Info</li>
+        </button>
+      </h2>
+    </div>
+    <div id="SETTING_INFO" class="collapse" aria-labelledby="_SETTING_INFO" data-parent="#accordionExample">
+      <div class="card-body">
+      After you create your REST API APP you will got ( Client ID ) and ( Client Secret ) .
+      set them in <a href="{config.siteurl}admin/index.php?cp=options&smt=general&smt=kleeja_payment">{olang.CONFIG_KLJ_MENUS_KLEEJA_PAYMENT}</a>
+
+      , and the ( Currency Code ) it have to be 3 Letter Only EX: SYP , USD , EUR , CHF  <a target="_blank" href="https://en.wikipedia.org/wiki/ISO_4217">check the list here</a>
+
+    </div>
+  </div>
+</div>
+
+
+
+    <div class="card">
+    <div class="card-header" id="_PRC_FILE_GROUP">
+      <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#PRC_FILE_GROUP" aria-expanded="true" aria-controls="PRC_FILE_GROUP">
+          <li>Pricing Files and Groups</li>
+        </button>
+      </h2>
+    </div>
+    <div id="PRC_FILE_GROUP" class="collapse" aria-labelledby="_PRC_FILE_GROUP" data-parent="#accordionExample">
+      <div class="card-body">
+        To pricing a file you neet to go to ( <a href="{config.siteurl}admin/index.php?cp=kj_payments_options&smt=pricing_file">Pricing a File </a> ) in the Side menu , with the file id or file link you 
+        can open file details , after clicking file details you will see some details about the file and at the end you will see a form to set the price , and if the file was paid , you can change the price or set the price to 0 (zero) to make the file for free again <hr>
+        and if you want to set a price for a group go to ( users & Groups -> Edit Data ) and you will find ( Join price ) . <hr>
+        Note : the default groups and the default registeration group can not be paid  
+
+
+      </div>
+    </div>
+  </div>
+
+
+
+    <div class="card">
+    <div class="card-header" id="WHO_CAN_DOWN">
+      <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#_WHO_CAN_DOWN" aria-expanded="true" aria-controls="_WHO_CAN_DOWN">
+          <li>Who can download the paid file for free ?</li>
+        </button>
+      </h2>
+    </div>
+    <div id="_WHO_CAN_DOWN" class="collapse" aria-labelledby="WHO_CAN_DOWN" data-parent="#accordionExample">
+      <div class="card-body">
+        File Owner and website founders can download the file for free ( Founder Role is not admins group , the founders can give founder Role to any member in kleeja even if he is not in admins group )
+
+      </div>
+    </div>
+  </div>
+
+
+
+    <div class="card">
+    <div class="card-header" id="CP_INFO">
+      <h2 class="mb-0">
+        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#_CP_INFO" aria-expanded="true" aria-controls="_CP_INFO">
+          <li>KJ_Payments Control Panel & Archives ( CP )</li>
+        </button>
+      </h2>
+    </div>
+    <div id="_CP_INFO" class="collapse" aria-labelledby="CP_INFO" data-parent="#accordionExample">
+      <div class="card-body">
+        After you open kj_payments CP you can find some informations about payments ( Transactions numbers and amounts , and Net Profits )
+        <hr>
+        all transactions : is the number of all approved payments when you started using this plugin ,
+        <hr>
+        monthly transactions : is the number of all payments of this month with the net profits and it will be reseted evry month
+        <hr>
+        daily transactions : is the number of all payments of today only and it will be reseted evryday
+        <hr>
+        you can access to the old payments and amounts for any day or month by archives . (to access to monthly archive , make the day empty and select the month and year ) 
+        <hr>
+        Only the website founders can access to kj_payments control Panel
+
+      </div>
+    </div>
+  </div>
+
+
+  </div>
+</div>

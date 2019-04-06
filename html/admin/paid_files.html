@@ -1,0 +1,47 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+    <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{olang.KJP_PAID_FILE}</li>
+  </ol>
+</nav>
+<div class="card" style="margin: 20px;">
+  <div class="card-body">
+
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">{olang.KJP_FILE_NAME}</th>
+      <th scope="col">{olang.KJP_MEMBER}</th>
+      <th scope="col">{olang.KJP_PRC}</th>
+
+    </tr>
+  </thead>
+  <tbody>
+  	<IF NAME="have_paid_file == true">
+
+<LOOP NAME="all_paid_file">
+    <tr>
+      <th scope="row">{{id}}</th>
+      <td><a href="{{link}}" target="_blank">{{name}}</a></td>
+      <td>{{user}}</td>
+      <td>{{price}}</td>
+      
+    </tr>
+
+</LOOP>
+
+<ELSE>
+
+	<div class="alert alert-info" role="alert">
+  {olang.KJP_NO_PAID_FILES}
+</div>
+
+</IF>
+  </tbody>
+</table>
+{page_nums}
+</div>
+</div>
