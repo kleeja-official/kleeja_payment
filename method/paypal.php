@@ -315,9 +315,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
     // called if checking payment is successful only
     public function linkMailer()
     {
-        return false;
-        //return 'mitanomar@gmail.com';
-        //return $this->downloadLinkMailer;
+        return $this->downloadLinkMailer;
     }
     
 
