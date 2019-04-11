@@ -593,12 +593,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         redirect( $config['siteurl'] . 'go.php?go=KJPaymentMailer' );
                         exit;
                     }
-                    // the user recived the download link in his email , i don't know what is he doing her
-                    else if ($usrcp->kleeja_get_cookie('downloadFile')) 
-                    {
-                        kleeja_info('check your email');
-                        exit;
-                    }
 
                     $PAY->checkPayment();
 
@@ -629,7 +623,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                             {
                                 $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace( array('@mail' , '@time') , array($PAY->linkMailer() , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] );
                                 $GLOBALS['showMailForm'] = false ;
-                                $usrcp->kleeja_set_cookie('downloadFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
+                                $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
                             }
                             else // we have to send mail again , i hope we never never arrive to this part :(
                             {
@@ -646,6 +640,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         }
 
                     }
+                    unset($_SESSION['kj_payment']);
                     //else 
                     //{
                         // Every method will do somthing , include it in $PAY->checkPayment() 
@@ -742,7 +737,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                 { 
 
                     // set cookie for download file
-                    $usrcp->kleeja_set_cookie('downloadFile' , $payCookieInfo , ( $config['down_link_expire'] * 86400) + time() );
+                    $usrcp->kleeja_set_cookie('downloadFile_' . $payCookieInfoExplode[0] , $payCookieInfo , ( $config['down_link_expire'] * 86400) + time() );
 
 
                     // delete cookie
@@ -802,7 +797,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                             {
                                 if ( $config['down_link_expire'] > 0) // if 0 -> download link will never expire
                                 {
-                                    $downCookie = $usrcp->kleeja_get_cookie('downloadFile');
+                                    $downCookie = $usrcp->kleeja_get_cookie('downloadFile_'.g('down'));
                                     if ($downCookie) 
                                     {
                                         $downCookie = explode('_' , $downCookie);
