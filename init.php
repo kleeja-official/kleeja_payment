@@ -386,6 +386,21 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
 
         }
+        if ( ! file_exists( dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php' ) ) 
+        {
+            // extract paypal sdk
+            if (file_exists( dirname(__FILE__) . '/stripe-sdk.zip' )) 
+            {
+                $paypalZip = new ZipArchive;
+                if ( $paypalZip->open( dirname(__FILE__) . '/stripe-sdk.zip') ) 
+                {
+                    $paypalZip->extractTo( dirname(__FILE__) );
+                    $paypalZip->close();
+                }
+            }
+
+
+        }
 
 };
 
