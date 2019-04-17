@@ -149,32 +149,45 @@ function is_style_supported(){
 
 /*
  * MySql sum function was making some problems with float strings
- * return array(
-     'all' => array('number' => 14 , 'amount' => 7777 , 'fees' => 77)
-     'today' => array('number' => 7 , 'amount' => 777 , 'fees' => 7)
-     'month' => array('number' => 7 , 'amount' => 777 , 'fees' => 7)
- );
-
+ * so this is another way to collect the final result for kj_payment control panel
+ * this function is used only in kj_payment_options.php
  */
 
-function paypal_sum_trnc()
+function KJPayFinalData()
 {
     global $SQL , $dbprefix ;
 
 
         
         $all_trnc_num                  = 0; // the number of all transactions .
-        $all_trnc_amount               = 0; // the number of all transactions amounts
-        $all_trnc_fees                 = 0; // the number of all transactions fees
-        $paypal_all_trnc_count         = 0; // the number of all transactions that made by paypal
         $today_trnc_num                = 0; // the number of daily transactions
-        $today_trnc_amount             = 0; // daily transactions amounts
-        $today_trnc_fees               = 0; // daily transactions fees 
-        $paypal_today_trnc_count       = 0; // the number of daily transactions that made by paypal
         $ThisMonth_trnc_num            = 0; // the number of transactions in this month
-        $ThisMonth_trnc_amount         = 0; // transactions amounts of this month
-        $ThisMonth_trnc_fees           = 0; // transactions fees of this month 
-        $paypal_ThisMonth_trnc_count   = 0; // the number of monthly transactions that made by paypal
+
+        $paypalTransactions = array(
+            'all' => array(
+                'num' => 0 , 'amount' => 0
+            ) ,
+             'monthly' => array(
+                 'num' => 0 , 'amount' => 0
+             ) ,
+              'daily' => array(
+                  'num' => 0 , 'amount' => 0
+              )
+        );
+
+        $cardsTransactions  = array(
+            'all' => array(
+                'num' => 0 , 'amount' => 0
+            ) ,
+             'monthly' => array(
+                 'num' => 0 , 'amount' => 0
+             ) ,
+              'daily' => array(
+                  'num' => 0 , 'amount' => 0
+              )
+        );
+
+
     
     
     
@@ -186,39 +199,74 @@ function paypal_sum_trnc()
             // this is for all
             $all_trnc_num++; 
 
-            // this is for paypal only -> other method have different ways :)
-            if ( $row['payment_method'] === 'paypal' ) 
+            // paypal method informations 
+            if ( $row['payment_method'] == 'paypal' ) 
             {
-                $all_trnc_amount = $all_trnc_amount + $row['payment_amount'];
-                $all_trnc_fees = $all_trnc_fees + $row['paypal_payment_fees'];
-                $paypal_all_trnc_count++;
+                $paypalTransactions['all']['num']++;
+                $paypalTransactions['all']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+            }
+            // cards method informations
+            elseif ( $row['payment_method'] == 'cards' ) 
+            {
+                $cardsTransactions['all']['num']++;
+                $cardsTransactions['all']['amount'] += $row['payment_amount'];
+            }
+
+
+            // count of daily transactions
                 if (
                     $row['payment_year'] == date('Y') &&
                     $row['payment_month'] == date('m') &&
                     $row['payment_day'] == date('d')
                 ) {
                     $today_trnc_num++;
-                    $today_trnc_amount = $today_trnc_amount + $row['payment_amount'];
-                    $today_trnc_fees = $today_trnc_fees + $row['paypal_payment_fees'];
-                    $paypal_today_trnc_count++;
+                    // paypal method informations 
+                    if ( $row['payment_method'] == 'paypal' ) 
+                    {
+                        $paypalTransactions['daily']['num']++;
+                        $paypalTransactions['daily']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+                    }
+                    // cards method informations
+                    elseif ( $row['payment_method'] == 'cards' ) 
+                    {
+                        $cardsTransactions['daily']['num']++;
+                        $cardsTransactions['daily']['amount'] += $row['payment_amount'];
+                    }
                 }
+
+                // count of monthly transactions
+
                 if (
                     $row['payment_year'] == date('Y') &&
                     $row['payment_month'] == date('m')
                 ) {
                     $ThisMonth_trnc_num++;
-                    $ThisMonth_trnc_amount = $ThisMonth_trnc_amount + $row['payment_amount'];
-                    $ThisMonth_trnc_fees = $ThisMonth_trnc_fees + $row['paypal_payment_fees'];
-                    $paypal_ThisMonth_trnc_count++;
+                    // paypal method informations 
+                    if ( $row['payment_method'] == 'paypal' ) 
+                    {
+                        $paypalTransactions['monthly']['num']++;
+                        $paypalTransactions['monthly']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+                    }
+                    // cards method informations
+                    elseif ( $row['payment_method'] == 'cards' ) 
+                    {
+                        $cardsTransactions['monthly']['num']++;
+                        $cardsTransactions['monthly']['amount'] += $row['payment_amount'];
+                    }
+
                 }
-            }
+
             
         }
 
         return array(
-            'all'   => array('number' => $all_trnc_num , 'amount' => $all_trnc_amount , 'fees' => $all_trnc_fees , 'paypal' => $paypal_all_trnc_count) ,
-            'today' => array('number' => $today_trnc_num , 'amount' => $today_trnc_amount , 'fees' => $today_trnc_fees , 'paypal' => $paypal_today_trnc_count) ,
-            'month' => array('number' => $ThisMonth_trnc_num , 'amount' => $ThisMonth_trnc_amount , 'fees' => $ThisMonth_trnc_fees , 'paypal' => $paypal_ThisMonth_trnc_count)
+            'kj_payments' => array('all' => $all_trnc_num , 'monthly' => $ThisMonth_trnc_num , 'daily' => $today_trnc_num) ,
+
+            // payment informations that made by paypal
+            'paypal'      => $paypalTransactions ,
+            
+            // payment informations that made by cards
+            'cards'      => $cardsTransactions
         );
 
 }
@@ -285,15 +333,34 @@ function get_archive ($date = '30-2-yyyy')
     $archive_result = $SQL->build($query);
 
     $all_trnc_num                 = 0; // the number of all transactions .
-    $paypal_all_trnc_num          = 0; // the number of all transactions . made by paypal
-    $all_trnc_amount              = 0; // the number of all transactions amounts
-    $all_trnc_fees                = 0; // the number of all transactions fees
-    $trnc_of_files                = 0; // Files Transactions
-    $paypal_trnc_of_files         = 0; // Files Transactions made by paypal
-    $paypal_trnc_of_files_profit  = 0; // Files Transactions made by paypal
-    $trnc_of_groups               = 0; // Transactions of Joining Groups
-    $paypal_trnc_of_groups        = 0; // Transactions of Joining Groups made by paypal
-    $paypal_trnc_of_groups_profit = 0; // Transactions of Joining Groups made by paypal
+    $file_trnc_num                = 0; // the number of all transaction of buying files
+    $group_trnc_num               = 0; // the number of all transaction og joining groups
+
+    $paypalArchive = array(
+        'all' => array(
+            'num' => 0 , 'amount' => 0
+        ) ,
+         'file' => array(
+             'num' => 0 , 'amount' => 0
+         ) ,
+          'group' => array(
+              'num' => 0 , 'amount' => 0
+          )
+    );
+
+    $cardsArchive = array(
+        'all' => array(
+            'num' => 0 , 'amount' => 0
+        ),
+        'file' => array(
+            'num' => 0 , 'amount' => 0
+        ),
+        'group' => array(
+            'num' => 0 , 'amount' => 0
+        ),
+    );
+
+    
 
 
     while ($row = $SQL->fetch($archive_result)) 
@@ -304,19 +371,36 @@ function get_archive ($date = '30-2-yyyy')
 
         if ($row['payment_method'] == 'paypal') 
         {
-            // Exclusive for paypal method
-            $paypal_all_trnc_num++;
-            $all_trnc_amount = $all_trnc_amount + $row['payment_amount'];
-            $all_trnc_fees = $all_trnc_fees + $row['paypal_payment_fees'];  
-            $row['payment_action'] == 'buy_file' ? $paypal_trnc_of_files++ : $paypal_trnc_of_groups++ ; 
-
-            $row['payment_action'] == 'buy_file' ?
-             $paypal_trnc_of_files_profit   += ( $row['payment_amount'] - $row['paypal_payment_fees'] ) :
-              $paypal_trnc_of_groups_profit += ( $row['payment_amount'] - $row['paypal_payment_fees'] );  
-
+            $paypalArchive['all']['num']++;
+            $paypalArchive['all']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+            if ( $row['payment_action'] == 'buy_file' ) 
+            {
+                $paypalArchive['file']['num']++;
+                $paypalArchive['file']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+            }
+            else 
+            {
+                $paypalArchive['group']['num']++;
+                $paypalArchive['group']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+            }
+        }
+        elseif ($row['payment_method'] == 'cards') 
+        {
+            $cardsArchive['all']['num']++;
+            $cardsArchive['all']['amount'] += $row['payment_amount'] ;
+            if ( $row['payment_action'] == 'buy_file' ) 
+            {
+                $cardsArchive['file']['num']++;
+                $cardsArchive['file']['amount'] += $row['payment_amount'];
+            }
+            else 
+            {
+                $cardsArchive['group']['num']++;
+                $cardsArchive['group']['amount'] += $row['payment_amount'];
+            }
         }
 
-        $row['payment_action'] == 'buy_file' ? $trnc_of_files++ : $trnc_of_groups++ ;
+        $row['payment_action'] == 'buy_file' ? $file_trnc_num++ : $group_trnc_num++ ;
 
     }
 
@@ -324,16 +408,11 @@ function get_archive ($date = '30-2-yyyy')
 
     return array(
         'query'               => $query , // we dont want to write it again , we will add some change and evrybody is happy .
-        'number'              => $all_trnc_num ,
-        'paypal_number'       => $paypal_all_trnc_num ,
-        'amount'              => $all_trnc_amount ,
-        'fees'                => $all_trnc_fees ,
-        'file_trnc'           => $trnc_of_files ,
-        'group_trnc'          => $trnc_of_groups,
-        'paypal_file_trnc'    => $paypal_trnc_of_files ,
-        'paypal_file_profit'  => $paypal_trnc_of_files_profit ,
-        'paypal_group_trnc'   => $paypal_trnc_of_groups,
-        'paypal_group_profit' => $paypal_trnc_of_groups_profit,
+        'all_trnc_num'        => $all_trnc_num ,
+        'file_trnc_num'       => $file_trnc_num ,
+        'group_trnc_num'      => $group_trnc_num ,
+        'paypalArchive'       => $paypalArchive ,
+        'cardsArchive'        => $cardsArchive
     );
 
 
