@@ -56,40 +56,36 @@ if ( empty($current_smt))
 	$daily_trnc_panel   = array( /* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */ ); 
 
 
-
 	// all Transactions
 	# this function getting informations about transactions that paid by paypal ,except the number of all transactions
 	// other method have to calculate they transactions and adding it the CP
-	$trncactionsInformation = paypal_sum_trnc();
+	$trncactionsInformation = KJPayFinalData();
 
-	$trnc_count = $trncactionsInformation['all']['number'];
-	$all_net_profit = $trncactionsInformation['all']['amount'] - $trncactionsInformation['all']['fees'];
-	$all_paypal_trnc_count = $trncactionsInformation['all']['paypal'];
+	$trnc_count = $trncactionsInformation['kj_payments']['all'];
 
-	// add informations to all transactions panel
-	$all_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $all_paypal_trnc_count );
-	$all_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $all_net_profit );
+	$all_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $trncactionsInformation['paypal']['all']['num']  ); 
+	$all_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
+	$all_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['all']['num']  ); 
+	$all_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
 
 
 	//daily Transactions
-	$daily_trnc_count = $trncactionsInformation['today']['number'];
-	$daily_net_profit = $trncactionsInformation['today']['amount'] - $trncactionsInformation['today']['fees'];
-	$paypal_daily_trnc_count = $trncactionsInformation['today']['paypal'];
+	$daily_trnc_count = $trncactionsInformation['kj_payments']['daily'];
 
-	/** add inforation to daily transactions panel */
-	$daily_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $paypal_daily_trnc_count );
-	$daily_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $daily_net_profit );
-
-
+	$daily_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $trncactionsInformation['paypal']['daily']['num']  ); 
+	$daily_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['daily']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
+	$daily_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['daily']['num']  ); 
+	$daily_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['daily']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
 
 	// monthly Transactions
-	$monthly_trnc_count = $trncactionsInformation['month']['number'];
-	$monthly_net_profit = $trncactionsInformation['month']['amount'] - $trncactionsInformation['month']['fees'];
-	$paypal_monthly_trnc_count = $trncactionsInformation['month']['paypal'];
+	$monthly_trnc_count = $trncactionsInformation['kj_payments']['monthly'];
 
-	# add information to monthly transactions panel
-	$monthly_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $paypal_monthly_trnc_count );
-	$monthly_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $monthly_net_profit );
+	$monthly_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $trncactionsInformation['paypal']['monthly']['num']  ); 
+	$monthly_trnc_panel[]   = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['monthly']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
+	$monthly_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['monthly']['num']  ); 
+	$monthly_trnc_panel[]   = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['monthly']['amount'] . ' ' . strtoupper($config['iso_currency_code'])); 
+
+
 
 
 	// add what u want to the panels by this hook using the examples befor 
@@ -434,31 +430,33 @@ elseif ( $current_smt == 'archive' && ig('date') )
   $archive_panel_2_2 = array( /* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */ ); 
 
 	$Archive_data = get_archive( g('date') );
-	
-	$archive_trnc_count = $Archive_data['number'];
-	$paypal_archive_net_profit = $Archive_data['amount'] - $Archive_data['fees'];
-
-	$paypal_trnc_count = $Archive_data['paypal_number'];
-
-	$archive_panel_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' =>  $paypal_trnc_count );
-	$archive_panel_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $paypal_archive_net_profit );
 
 
-	$archive_file_trnc  = $Archive_data['file_trnc'];
-	$archive_group_trnc = $Archive_data['group_trnc'];
-
-	$paypal_file_trnc  = $Archive_data['paypal_file_trnc'];
-	$paypal_group_trnc = $Archive_data['paypal_group_trnc'];
-
-	$archive_panel_2_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $paypal_file_trnc );
-	$archive_panel_2_2[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $paypal_group_trnc );
+	// the panel of all transactions
+	$archive_trnc_count = $Archive_data['all_trnc_num'];
+	$archive_panel_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' =>  $Archive_data['paypalArchive']['all']['num'] );
+	$archive_panel_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['all']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
+	$archive_panel_1[] = array( 'methodName' => 'Stripe' , 'htmlContent' =>  $Archive_data['cardsArchive']['all']['num'] );
+	$archive_panel_1[] = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['all']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
 
 
-	$paypal_file_profit  = $Archive_data['paypal_file_profit'];
-	$paypal_group_profit = $Archive_data['paypal_group_profit'];
+	// the panel of files transactions
+	$archive_file_trnc  = $Archive_data['file_trnc_num'];
+	$archive_panel_2_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $Archive_data['paypalArchive']['file']['num'] );
+	$archive_panel_2_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['file']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
+	$archive_panel_2_1[] = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['num'] );
+	$archive_panel_2_1[] = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
 
-	$archive_panel_2_1[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $paypal_file_profit );
-	$archive_panel_2_2[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $paypal_group_profit );
+
+ // the panel of joining groups transactions
+	$archive_group_trnc = $Archive_data['group_trnc_num'];
+	$archive_panel_2_2[] = array( 'methodName' => 'PayPal' , 'htmlContent' => ' ' . $Archive_data['paypalArchive']['group']['num'] );
+	$archive_panel_2_2[] = array( 'methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['group']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
+	$archive_panel_2_2[] = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['num'] );
+	$archive_panel_2_2[] = array( 'methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['amount'] . ' '. strtoupper($config['iso_currency_code']) );
+
+
+
 
 	$query = $Archive_data['query'];
 
