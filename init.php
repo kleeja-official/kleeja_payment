@@ -119,7 +119,21 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
                 'html'   => configField('down_link_expire'),
                 'plg_id' => $plg_id,
                 'type'   => 'kleeja_payment',
-            )
+            ),
+            'stripe_publishable_key' =>
+            array(
+                'value'  => '0',
+                'html'   => configField('stripe_publishable_key'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
+            'stripe_secret_key' =>
+            array(
+                'value'  => '0',
+                'html'   => configField('stripe_secret_key'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
 
     );
 
@@ -130,6 +144,13 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
     $options['active_paypal'] = array(
             'value'  => '1',
             'html'   => configField('active_paypal' , 'yesno'),
+            'plg_id' => $plg_id,
+            'type'   => 'kj_pay_active_mthd',
+
+    );
+    $options['active_cards'] = array(
+            'value'  => '1',
+            'html'   => configField('active_cards' , 'yesno'),
             'plg_id' => $plg_id,
             'type'   => 'kj_pay_active_mthd',
 
@@ -224,6 +245,22 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'KJP_MAIL_INFO_1'                     => 'تلقي رابط التحميل عبر البريد الإلكتروني',
         'KJP_MAIL_INFO_2'                     => 'سنرسل رابط التنزيل لهذا البريد الإلكتروني',
         'KJP_CANT_JOIN_GRP'                   => 'غير مسموح لك بالانضمام إلى هذه المجموعة',
+
+        // stripe method langs
+        'ACTIVE_CARDS' => 'تفعيل سترايب (Stripe)',
+        'STRIPE_PUBLISHABLE_KEY' => 'المفتاح العام ل (Stripe)' ,
+        'STRIPE_SECRET_KEY' => 'المفتاح السري ل (Stripe)' ,
+        
+        // STRIPE MORE INFORMATIONS
+        
+        'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'رقم المعاملة (Stripe)',
+        'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'بريد المشتري (Stripe)',
+        'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'نوع بطاقة الدفع',
+        'KJP_VIW_TPL_STRIPE_CARD_FUNDING'       => 'تمويل البطاقة',
+        'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'       => 'بلد البطاقة',
+        'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'       => 'اخر 4 ارقام ',
+        'KJP_VIW_TPL_STRIPE_CARD_FINGERPRINT'       => 'بصم البطاقة',
+        'KJP_VIW_TPL_STRIPE_CARD_EXPIRE_DATE'       => 'تاريخ انتهاء البطاقة',
     ),
         'ar',
         $plg_id);
@@ -313,6 +350,22 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'KJP_VIW_TPL_PAYPAL_PAYER_MAIL'       => 'PayPal Payer Mail',
         'KJP_VIW_TPL_PAYPAL_PAYMENT_FEES'     => 'PayPal Payment Fees',
         'KJP_VIW_TPL_PAYPAL_PAYER_ID'         => 'PayPal Payer ID',
+
+        // stripe method langs
+        'ACTIVE_CARDS' => 'Active Stripe',
+        'STRIPE_PUBLISHABLE_KEY' => 'Stripe Publishable Key' ,
+        'STRIPE_SECRET_KEY' => 'Stripe Secret Key' ,
+
+        // STRIPE MORE INFORMATIONS
+
+        'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'Stripe Payment ID',
+        'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'Stripe Buyer Mail',
+        'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'Stripe card Type',
+        'KJP_VIW_TPL_STRIPE_CARD_FUNDING'       => 'Stripe Card Funding',
+        'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'       => 'Stripe Card Country',
+        'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'       => 'Stripe Card last 4 Numbers',
+        'KJP_VIW_TPL_STRIPE_CARD_FINGERPRINT'       => 'Stripe Card Fingerprint',
+        'KJP_VIW_TPL_STRIPE_CARD_EXPIRE_DATE'       => 'Stripe Card Expire Date',
     ),
         'en',
         $plg_id);
@@ -368,7 +421,10 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
         'iso_currency_code',
         'payment_method',
         'active_paypal',
+        'active_cards',
         'down_link_expire',
+        'stripe_publishable_key',
+        'stripe_secret_key'
     ));
 
 
@@ -475,7 +531,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         if ( ig('go') && g('go') === 'kj_payment' && ig('method') && ig('action') ) 
         {
             require_once dirname(__FILE__) .'/php/kjPayment.php'; // require the payment interface
-            $PaymentMethodClass = dirname(__FILE__) . '/method/paypal.php'; // default payment method
+            $PaymentMethodClass = dirname(__FILE__) . '/method/'.g('method').'.php'; // default payment method
 
             is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:set_payment_method', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
@@ -613,30 +669,32 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                             $GLOBALS[$varName] = $varValue;
                         }
 
-
-                        if ($PAY->linkMailer()) // if the method support email 
+                        if ($_SESSION['kj_payment']['payment_action'] == 'buy_file') // we send e-mail only when the user buying files , no e-mail for joining group
                         {
-                            $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
-
-                            $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
-                            if ($mailer) // mail is sent , don't need mail form & dispaly success msg
+                            if ($PAY->linkMailer()) // if the method support email 
                             {
-                                $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace( array('@mail' , '@time') , array($PAY->linkMailer() , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] );
-                                $GLOBALS['showMailForm'] = false ;
-                                $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
-                            }
-                            else // we have to send mail again , i hope we never never arrive to this part :(
+                                $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
+    
+                                $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
+                                if ($mailer) // mail is sent , don't need mail form & dispaly success msg
+                                {
+                                    $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace( array('@mail' , '@time') , array($PAY->linkMailer() , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] );
+                                    $GLOBALS['showMailForm'] = false ;
+                                    $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
+                                }
+                                else // we have to send mail again , i hope we never never arrive to this part :(
+                                {
+                                    $GLOBALS['showMailForm'] = true ;
+                                    $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
+                                    $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
+                                }
+    
+                            }else // method don't support email -> display email form & hide msg & set coockie to use mailform page
                             {
                                 $GLOBALS['showMailForm'] = true ;
                                 $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
                                 $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
                             }
-
-                        }else // method don't support email -> display email form & hide msg & set coockie to use mailform page
-                        {
-                            $GLOBALS['showMailForm'] = true ;
-                            $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
-                            $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
                         }
 
                     }
