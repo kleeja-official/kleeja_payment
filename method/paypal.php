@@ -18,7 +18,6 @@ class kjPayMethod_paypal implements KJPaymentMethod
     private $varsForCreate  = array(); // some methods will work in kleeja without leaving the website
     private $toGlobal = array(); // the list of vars that we want to export it to kleeja
     private $downloadLinkMailer = false; // the mail that we want to send download link to it 
-    private $checkCookie = false;
 
 
     public function paymentStart()
