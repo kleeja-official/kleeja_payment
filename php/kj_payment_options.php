@@ -257,7 +257,7 @@ elseif ( $current_smt == 'view' && (int) g('payment') )
 {
 
 	$stylee = 'view_payment';
-	$PayInfo = getPaymentInfo( g('payment') );
+	$PayInfo = getPaymentInfo( g('payment') , "payment_state = 'approved'" );
 
 	if (! $PayInfo ) {
 		$have_payment = false ;
