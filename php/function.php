@@ -445,7 +445,7 @@ function createToken( $length = 16)
     $ALPHA = 'abcdefghijklmnopqrstvwxyz';
     $NUMERIC = '0123456789';
 
-    $chars .= $NUMERIC . $ALPHA . strtoupper( $ALPHA );
+    $chars = $NUMERIC . $ALPHA . strtoupper( $ALPHA );
 
     $token = '';
     for ( $i = 0; $i < $length; $i++ )
