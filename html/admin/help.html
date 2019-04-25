@@ -27,7 +27,7 @@
       <div class="card-body">
 
 
-        With this plugin you can pricing the files and groups to selling it , and recive the payyments to your paypal account automaticly
+        With this plugin you can pricing the files and groups to selling it , and recive the payments to your paypal or Stripe account automaticly
         ( WebMasters Only )
 
 
@@ -48,7 +48,12 @@
     </div>
     <div id="WHAT_I_NEED" class="collapse" aria-labelledby="__WHAT_I_NEED" data-parent="#accordionExample">
       <div class="card-body">
-        You need only : PayPal Business Account , and you can create an <a target="_blank" href="https://developer.paypal.com/developer/applications/">REST API APP </a>  # for developers : you can create an app if your account is personal , but you will use the sandbox API (TEST) until you upgrade your account to buisness
+        You need only : PayPal Business Account or Stripe account, and you can create an 
+        <a target="_blank" href="https://developer.paypal.com/developer/applications/">REST API APP for paypal</a>  or 
+        <a target="_blank" href="https://dashboard.stripe.com/account/apikeys">get Stripe API keys </a>  
+         # for developers : you can create a paypal app if your account is personal 
+        , but you will use the sandbox API (TEST) until you upgrade your account to buisness
+        and for Stripe you will use the test api keys until you active your account
       </div>
     </div>
   </div>
@@ -67,7 +72,7 @@
       After you create your REST API APP you will got ( Client ID ) and ( Client Secret ) .
       set them in <a href="{config.siteurl}admin/index.php?cp=options&smt=general&smt=kleeja_payment">{olang.CONFIG_KLJ_MENUS_KLEEJA_PAYMENT}</a>
 
-      , and the ( Currency Code ) it have to be 3 Letter Only EX: SYP , USD , EUR , CHF  <a target="_blank" href="https://en.wikipedia.org/wiki/ISO_4217">check the list here</a>
+      , and the ( Currency Code ) it have to be 3 Letter Only EX: USD , EUR , CHF  <a target="_blank" href="https://developer.paypal.com/docs/api/reference/currency-codes/">check the accepted currencies code here</a>
 
     </div>
   </div>
@@ -136,6 +141,8 @@
         you can access to the old payments and amounts for any day or month by archives . (to access to monthly archive , make the day empty and select the month and year ) 
         <hr>
         Only the website founders can access to kj_payments control Panel
+        <hr>
+        Note : if you see that a method display the number of amount without writting ( Net Profit ) that mean the amount is writed with fees
 
       </div>
     </div>
