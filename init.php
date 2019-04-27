@@ -956,7 +956,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             $dbID      = $downToken[1];
             $payToken  = $downToken[2];
 
-            $paymentInfo = getPaymentInfo( $dbID , "item_id = '{$fileID}' AND payment_token = '{$payToken}' AND payment_state = 'approved'");
+            $paymentInfo = getPaymentInfo( $dbID , "item_id = '{$fileID}' AND payment_token = '{$payToken}' AND payment_state = 'approved' AND payment_action = 'buy_file'");
 
             if ( $paymentInfo ) 
             {
