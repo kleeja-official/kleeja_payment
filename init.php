@@ -54,7 +54,7 @@ for more info visit help page <br>
 # plugin installation function
 $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
-    global $SQL , $dbprefix;
+    global $SQL , $dbprefix , $d_groups;
 
     $add_table = "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments` (
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -79,6 +79,20 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
     $SQL->query( $add_table );
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';");
+
+    // create group permission to access bought files
+
+    foreach ($d_groups as $group_id => $group_info) 
+    {
+        $insert_acl = array(
+            'INSERT'	=> 'acl_name, acl_can, group_id',
+            'INTO'		=> "{$dbprefix}groups_acl",
+            'VALUES'	=>  "'access_bought_files', 0 , " . $group_id
+        );
+        $SQL->build($insert_acl);
+    }
+
+
 
 
     $options = array(
@@ -245,6 +259,9 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'KJP_MAIL_INFO_1'                     => 'تلقي رابط التحميل عبر البريد الإلكتروني',
         'KJP_MAIL_INFO_2'                     => 'سنرسل رابط التنزيل لهذا البريد الإلكتروني',
         'KJP_CANT_JOIN_GRP'                   => 'غير مسموح لك بالانضمام إلى هذه المجموعة',
+        'ACLS_ACCESS_BOUGHT_FILES'            => 'الوصول إلى صفحة "الملفات المشتراة"',
+        'KJP_BOUGHT_FILES'                    => 'الملفات المشتراة',
+        'KJP_NO_BOUGHT_FILES'                 => 'لا توجد لديك ملفات مشتراة بعد',
 
         // stripe method langs
         'ACTIVE_CARDS' => 'تفعيل سترايب (Stripe)',
@@ -344,6 +361,9 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'KJP_MAIL_INFO_1'                     => 'Recive Download Link By E-Mail',
         'KJP_MAIL_INFO_2'                     => 'we will send download link to this e-mail',
         'KJP_CANT_JOIN_GRP'                   => 'its not allowed for you to join this group',
+        'ACLS_ACCESS_BOUGHT_FILES'            => 'Access "Bought Files" Page',
+        'KJP_BOUGHT_FILES'                    => 'Bought Files',
+        'KJP_NO_BOUGHT_FILES'                 => 'You Don\'t Have Bought Files',
         // vars for //view payment// page -> PayPal method details
         'KJP_VIW_TPL_PAYPAL_PAYMENT_ID'       => 'PayPal Payment ID',
         'KJP_VIW_TPL_PAYPAL_PAYER_NAME'       => 'PayPal Payer Name' ,
@@ -441,6 +461,11 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
         'stripe_publishable_key',
         'stripe_secret_key'
     ));
+
+    // DELETE ACCESS BOUGHT FILES PERMISSIONS
+
+    $SQL->query("DELETE FROM `{$dbprefix}groups_acl` WHERE acl_name = 'access_bought_files'");
+
 
 
 };
@@ -686,29 +711,37 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                         if ($_SESSION['kj_payment']['payment_action'] == 'buy_file') // we send e-mail only when the user buying files , no e-mail for joining group
                         {
-                            if ($PAY->linkMailer()) // if the method support email 
+                            if ( ! $usrcp->name()) // the user can find the file on bought files , don't need to send the download link 
                             {
-                                $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
-    
-                                $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
-                                if ($mailer) // mail is sent , don't need mail form & dispaly success msg
+                                if ($PAY->linkMailer()) // if the method support email 
                                 {
-                                    $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace( array('@mail' , '@time') , array($PAY->linkMailer() , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] );
-                                    $GLOBALS['showMailForm'] = false ;
-                                    $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
-                                }
-                                else // we have to send mail again , i hope we never never arrive to this part :(
+                                    $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
+        
+                                    $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
+                                    if ($mailer) // mail is sent , don't need mail form & dispaly success msg
+                                    {
+                                        $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace( array('@mail' , '@time') , array($PAY->linkMailer() , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] );
+                                        $GLOBALS['showMailForm'] = false ;
+                                        $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
+                                    }
+                                    else // we have to send mail again , i hope we never never arrive to this part :(
+                                    {
+                                        $GLOBALS['showMailForm'] = true ;
+                                        $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
+                                        $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
+                                    }
+        
+                                }else // method don't support email -> display email form & hide msg & set coockie to use mailform page
                                 {
                                     $GLOBALS['showMailForm'] = true ;
                                     $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
                                     $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
                                 }
-    
-                            }else // method don't support email -> display email form & hide msg & set coockie to use mailform page
+                            }else 
                             {
-                                $GLOBALS['showMailForm'] = true ;
-                                $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
-                                $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
+                                $GLOBALS['olang']['KJP_DOWN_INFO_2'] = 'you can see the file and all bought files on <a href="./ucp.php?go=bought_files">Bought Files </a> Page';
+                                $GLOBALS['showMailForm'] = false ;
+                                $usrcp->kleeja_set_cookie('downloadFile_'.$_SESSION['kj_payment']['item_id'] ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , ( $config['down_link_expire'] * 86400) + time() );
                             }
                         }
 
@@ -833,6 +866,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/kjpaymentmailer.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
             return compact('stylee' , 'styleePath' , 'no_request' , 'is_style_supported');
         }
+
+
         
         
 
@@ -937,10 +972,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     'Saaheader_links_func' => function ($args) {
         
         $top_menu = $args['top_menu'];
+        $side_menu = $args['side_menu'];
+        $user_is = $args['user_is'];
 
+        $side_menu[] = array('name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false ));
         $top_menu[] = array('name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => true);
 
-        return compact('top_menu');
+        return compact('top_menu' , 'side_menu');
     } ,
 
 
@@ -974,6 +1012,113 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
         }
     },
+    'default_usrcp_page' => function ($args)
+    {
+        // all user bought file
+        if ( g('go') == 'bought_files') 
+        {
+            global $SQL , $dbprefix , $usrcp , $config ,$olang;
+
+            if( ! $usrcp->name() || ! user_can('access_bought_files') ): return ; endif; // the page is for members only
+
+            $user_is = $usrcp->id();
+
+            $titlee       = $olang['KJP_BOUGHT_FILES'];
+            $no_request   = flase;
+            $stylee       = 'bought_files';
+            $is_style_supported = is_style_supported();
+            $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/bought_files.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+            $havePayments = false;
+
+            $query = array(
+                'SELECT' => 'id , payment_token , item_name, item_id , payment_currency , payment_amount, payment_year , payment_month , payment_day , payment_time' ,
+                'FROM' => $dbprefix . 'payments' ,
+                'WHERE' => "payment_state = 'approved' AND user = '{$user_is}' AND payment_action = 'buy_file'" ,
+                'ORDER BY' => 'id DESC'
+            );
+
+            $all_payments = $SQL->build($query);
+
+            if ($SQL->num_rows($all_payments)) 
+            {
+                $myPayments = array();
+                $havePayments = true;
+
+                while ($pay = $SQL->fetch($all_payments)) 
+                {
+                    $myPayments[] = array(
+                        'ID' => $pay['id'] ,
+                        'FILE' => $pay['item_name'] ,
+                        'AMOUNT' => $pay['payment_amount'] . ' ' . $pay['payment_currency'],
+                        'DATE_TIME' => $pay['payment_day'] . '-' . $pay['payment_month'] . '-' . $pay['payment_year'] . ' / ' . $pay['payment_time'] ,
+                        'DOWN_LINK' => $config['siteurl'] . 'do.php?downPaidFile='.$pay['item_id'].'_'.$pay['id'].'_'.$pay['payment_token']
+                    );
+                }
+            }
+
+
+
+            return compact( 'is_style_supported' ,'titlee' , 'no_request' , 'stylee' , 'styleePath' , 'myPayments' , 'havePayments');
+        }
+    } ,
+
+    'login_data_no_error' => function ($args)
+    {
+        // after login , if the admin change the permission , the user have to login again to take the cookies
+        if ( user_can('access_bought_files') ) :
+
+        # success login , get all payment that user made it , and set the cookie to have access to download page
+        global $usrcp , $SQL , $dbprefix;
+
+        // $user_id = $usrcp->id(); doesn't work :( , i don't know why
+
+        $username = $usrcp->name(); 
+        $user_id = $SQL->fetch( $SQL->query("SELECT id FROM {$dbprefix}users WHERE `name` LIKE '{$username}'") );
+        $user_id = $user_id['id'];
+
+        $query = array(
+            'SELECT' => 'id , payment_token , item_id',
+            'FROM' => $dbprefix . 'payments' ,
+            'WHERE' => "payment_state = 'approved' AND user = {$user_id} AND payment_action = 'buy_file'" ,
+        );
+
+        $boughtFiles = $SQL->build($query);
+
+        if ($SQL->num_rows( $boughtFiles ) ) // if we have payments
+        {
+            while ($payInfo = $SQL->fetch( $boughtFiles ) ) 
+            {
+                $usrcp->kleeja_set_cookie('downloadFile_'.$payInfo['item_id'] ,$payInfo['item_id']. '_'. $payInfo['id'] . '_' . $payInfo['payment_token'] , time() + (86400 * 31) );
+            }
+        }
+
+        endif;
+    } ,
+
+    'begin_logout' => function ($args)
+    {
+        // delete the cookies of bought files
+        // exacly like we made in login steps , only change the expire data from after 1 month to befor 1 month :)
+        global $usrcp , $SQL , $dbprefix;
+
+        $user_id = $usrcp->id();
+
+        $query = array(
+            'SELECT' => 'id , payment_token , item_id',
+            'FROM' => $dbprefix . 'payments' ,
+            'WHERE' => "payment_state = 'approved' AND user = {$user_id} AND payment_action = 'buy_file'" ,
+        );
+
+        $boughtFiles = $SQL->build($query);
+
+        if ($SQL->num_rows( $boughtFiles ) ) // if we have payment
+        {
+            while ($payInfo = $SQL->fetch( $boughtFiles ) ) 
+            {
+                $usrcp->kleeja_set_cookie('downloadFile_'.$payInfo['item_id'] ,$payInfo['item_id']. '_'. $payInfo['id'] . '_' . $payInfo['payment_token'] , time() - (86400 * 31) );
+            }
+        }
+    }
 
     /*
     //Example 
