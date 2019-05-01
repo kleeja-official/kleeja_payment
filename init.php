@@ -711,7 +711,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                         if ($_SESSION['kj_payment']['payment_action'] == 'buy_file') // we send e-mail only when the user buying files , no e-mail for joining group
                         {
-                            if ( ! $usrcp->name()) // the user can find the file on bought files , don't need to send the download link 
+                            if ( ! $usrcp->name() || ! user_can('access_bought_files') ) // the user can find the file on bought files , don't need to send the download link 
                             {
                                 if ($PAY->linkMailer()) // if the method support email 
                                 {
