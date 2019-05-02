@@ -84,6 +84,13 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
     foreach ($d_groups as $group_id => $group_info) 
     {
+        // guest & bought files => problems
+        // search for "expected_err" on this document Ctrl + F
+        // and u will know what i mean
+        if ($group_id == 2) 
+        {
+            continue;
+        }
         $insert_acl = array(
             'INSERT'	=> 'acl_name, acl_can, group_id',
             'INTO'		=> "{$dbprefix}groups_acl",
@@ -711,6 +718,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                         if ($_SESSION['kj_payment']['payment_action'] == 'buy_file') // we send e-mail only when the user buying files , no e-mail for joining group
                         {
+                            // "expected_err"
                             if ( ! $usrcp->name() || ! user_can('access_bought_files') ) // the user can find the file on bought files , don't need to send the download link 
                             {
                                 if ($PAY->linkMailer()) // if the method support email 
