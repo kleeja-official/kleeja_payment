@@ -978,13 +978,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     } ,
 
     'Saaheader_links_func' => function ($args) {
-        
+        global $d_groups;
         $top_menu = $args['top_menu'];
         $side_menu = $args['side_menu'];
         $user_is = $args['user_is'];
 
         $side_menu[] = array('name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false ));
-        $top_menu[] = array('name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => true);
+        $top_menu[] = array('name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => getGroupInfo($d_groups));
 
         return compact('top_menu' , 'side_menu');
     } ,
