@@ -75,19 +75,19 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         `payment_time` text COLLATE utf8_bin NOT NULL,
         PRIMARY KEY (`id`)
         )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;";
-    
+
     $SQL->query( $add_table );
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';");
 
     // create group permission to access bought files
 
-    foreach ($d_groups as $group_id => $group_info) 
+    foreach ($d_groups as $group_id => $group_info)
     {
         // guest & bought files => problems
         // search for "expected_err" on this document Ctrl + F
         // and u will know what i mean
-        if ($group_id == 2) 
+        if ($group_id == 2)
         {
             continue;
         }
@@ -181,7 +181,7 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
     add_config_r($options);
 
 
-    // Language .. 
+    // Language ..
     add_olang(array(
         'R_KJ_PAYMENT_OPTIONS'                => 'مدفوعات كليجا' ,
         'JOIN_PRICE'                          => 'سعر الإنضمام' ,
@@ -274,9 +274,9 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'ACTIVE_CARDS' => 'تفعيل سترايب (Stripe)',
         'STRIPE_PUBLISHABLE_KEY' => 'المفتاح العام ل (Stripe)' ,
         'STRIPE_SECRET_KEY' => 'المفتاح السري ل (Stripe)' ,
-        
+
         // STRIPE MORE INFORMATIONS
-        
+
         'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'رقم المعاملة (Stripe)',
         'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'بريد المشتري (Stripe)',
         'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'نوع بطاقة الدفع',
@@ -398,13 +398,13 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         $plg_id);
 
 
-        if ( ! file_exists( dirname(__FILE__) . '/vendor/autoload.php' ) ) 
+        if ( ! file_exists( dirname(__FILE__) . '/vendor/autoload.php' ) )
         {
             // extract paypal sdk
-            if (file_exists( dirname(__FILE__) . '/paypal_sdk.zip' )) 
+            if (file_exists( dirname(__FILE__) . '/paypal_sdk.zip' ))
             {
                 $paypalZip = new ZipArchive;
-                if ( $paypalZip->open( dirname(__FILE__) . '/paypal_sdk.zip') ) 
+                if ( $paypalZip->open( dirname(__FILE__) . '/paypal_sdk.zip') )
                 {
                     $paypalZip->extractTo( dirname(__FILE__) );
                     $paypalZip->close();
@@ -413,13 +413,13 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
 
         }
-        if ( ! file_exists( dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php' ) ) 
+        if ( ! file_exists( dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php' ) )
         {
             // extract paypal sdk
-            if (file_exists( dirname(__FILE__) . '/stripe-sdk.zip' )) 
+            if (file_exists( dirname(__FILE__) . '/stripe-sdk.zip' ))
             {
                 $paypalZip = new ZipArchive;
-                if ( $paypalZip->open( dirname(__FILE__) . '/stripe-sdk.zip') ) 
+                if ( $paypalZip->open( dirname(__FILE__) . '/stripe-sdk.zip') )
                 {
                     $paypalZip->extractTo( dirname(__FILE__) );
                     $paypalZip->close();
@@ -479,11 +479,11 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
 
 # plugin functions
 $kleeja_plugin['kleeja_payment']['functions'] = array(
-    
+
     'qr_download_id_filename' => function ($args) {
 
         global $SQL , $config , $usrcp;
-    
+
         $query = $args['query'];
         $query['SELECT'] .= ', f.price';
 
@@ -493,11 +493,11 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         {
 
             $row = $SQL->fetch_array($result);
-                if ($row['price'] > 0) 
-                { 
+                if ($row['price'] > 0)
+                {
                     # wibsite founders and file Owner can download without pay
 
-                    if (  $usrcp->get_data('founder')['founder'] == 0 && !( $row['user'] === $usrcp->id() )  ) 
+                    if (  $usrcp->get_data('founder')['founder'] == 0 && !( $row['user'] === $usrcp->id() )  )
                     {
                         redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
                         $SQL->close();
@@ -505,7 +505,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                     }
 
-                } 
+                }
         }
 
     } ,
@@ -519,7 +519,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             // avilable Payment methods
 
             $payment_methods = array();
-            foreach ( getPaymentMethods() as $value) 
+            foreach ( getPaymentMethods() as $value)
             {
                 $value = trim($value);
                 $payment_methods[$value] = array('name' => strtoupper($value) , 'method' => $value);
@@ -575,27 +575,31 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         // blablabla = it's optional for you to using sessions or anythink you want , anyway it will be global varibles
 
 
-        if ( ig('go') && g('go') === 'kj_payment' && ig('method') && ig('action') ) 
+        if ( ig('go') && g('go') === 'kj_payment' && ig('method') && ig('action') )
         {
             require_once dirname(__FILE__) .'/php/kjPayment.php'; // require the payment interface
             $PaymentMethodClass = dirname(__FILE__) . '/method/'.g('method').'.php'; // default payment method
 
-            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:set_payment_method', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+            if ( ! file_exists( $PaymentMethodClass ) )
+            {
+                $is_err = true;
+                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:set_payment_method', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
-            if ( ! file_exists( $PaymentMethodClass ) ) 
-            {
-                kleeja_err('The class file of '.g('method').' payment in not found');
-                exit;  
+                if ($is_err) 
+                {
+                    kleeja_err('The class file of '.g('method').' payment in not found');
+                    exit;
+                }
+
             }
-            else 
-            {
-                require_once $PaymentMethodClass;
-            }
+            
+            require_once $PaymentMethodClass;
+            
 
             $PaymentMethod = 'kjPayMethod_' . basename($PaymentMethodClass, '.php');
 
-            // to be sure 
-            if ($PaymentMethod !== 'kjPayMethod_' . g('method') ) 
+            // to be sure
+            if ($PaymentMethod !== 'kjPayMethod_' . g('method') )
             {
                 kleeja_err('Its not your method');
                 exit;
@@ -605,7 +609,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
             $PagePermission = 'createPayment';
 
-            if ( ! $PaymentMethod::permission($PagePermission) ) 
+            if ( ! $PaymentMethod::permission($PagePermission) )
             {
                 kleeja_err('This Method Dont Accept Creating Payments');
                 exit;
@@ -629,7 +633,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                     $fileInfo = getFileInfo( g('id') ); // get file information
 
-                    if ($fileInfo['price'] <= 0 ) 
+                    if ($fileInfo['price'] <= 0 )
                     {
                         kleeja_err(' The File Is For Free ');
                         exit;
@@ -638,7 +642,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                     $PAY->CreatePayment( 'buy_file' , $fileInfo);
 
                     // get some vars for kleeja # compact(':)')
-                    foreach ($PAY->varsForCreatePayment() as $varName => $varValue) 
+                    foreach ($PAY->varsForCreatePayment() as $varName => $varValue)
                     {
                         $GLOBALS[$varName] = $varValue;
                     }
@@ -659,26 +663,26 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         /** $usrcp->id() == false && !$usrcp->id() this options does not work here */
                         kleeja_err( $lang['USER_PLACE'] );
                         exit;
-        
-                    }elseif ( $userIs['group_id'] == g('id') ) // if the user is in this group .. note : $usrcp->group_id() also was making problems here , the user need to lougout 
+
+                    }elseif ( $userIs['group_id'] == g('id') ) // if the user is in this group .. note : $usrcp->group_id() also was making problems here , the user need to lougout
                     {
                         kleeja_err( $olang['KJP_CNT_JOIN'] );
                         exit;
-        
-                    }else 
+
+                    }else
                     {
                         $groupInfo = getGroupInfo($args['d_groups'] , g('id'));
 
-                        if ($groupInfo) 
+                        if ($groupInfo)
                         {
                             $PAY->CreatePayment( 'join_group' , $groupInfo);
 
-                            foreach ($PAY->varsForCreatePayment() as $varName => $varValue) 
+                            foreach ($PAY->varsForCreatePayment() as $varName => $varValue)
                             {
                                 $GLOBALS[$varName] = $varValue;
                             }
 
-                            
+
                         }else {
                             kleeja_err("It's not allowed to you to join this group");
                             exit;
@@ -690,7 +694,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                     # Checking Payments steps
 
                     // i don't want the user reset the cookie expire date
-                    if ($usrcp->kleeja_get_cookie('mailForDownFile')) 
+                    if ($usrcp->kleeja_get_cookie('mailForDownFile'))
                     {
                         // the user didn't download the file , becuse he did n't set his e-mail
                         redirect( $config['siteurl'] . 'go.php?go=KJPaymentMailer' );
@@ -699,7 +703,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                     $PAY->checkPayment();
 
-                    if ( $PAY->isSuccess() ) 
+                    if ( $PAY->isSuccess() )
                     {
                         $GLOBALS['title'] = 'successful Payment ' . $_SESSION['kj_payment']['db_id'] ;
                         $GLOBALS['no_request'] = FALSE ;
@@ -709,9 +713,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         $GLOBALS['styleePath'] = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paypal.pay_success.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
 
 
-                        $global_vars = $PAY->getGlobalVars(); // compact(':)') 
+                        $global_vars = $PAY->getGlobalVars(); // compact(':)')
 
-                        foreach ($global_vars as $varName => $varValue) 
+                        foreach ($global_vars as $varName => $varValue)
                         {
                             $GLOBALS[$varName] = $varValue;
                         }
@@ -719,12 +723,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         if ($_SESSION['kj_payment']['payment_action'] == 'buy_file') // we send e-mail only when the user buying files , no e-mail for joining group
                         {
                             // "expected_err"
-                            if ( ! $usrcp->name() || ! user_can('access_bought_files') ) // the user can find the file on bought files , don't need to send the download link 
+                            if ( ! $usrcp->name() || ! user_can('access_bought_files') ) // the user can find the file on bought files , don't need to send the download link
                             {
-                                if ($PAY->linkMailer()) // if the method support email 
+                                if ($PAY->linkMailer()) // if the method support email
                                 {
                                     $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
-        
+
                                     $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
                                     if ($mailer) // mail is sent , don't need mail form & dispaly success msg
                                     {
@@ -738,14 +742,14 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                                         $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
                                         $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
                                     }
-        
+
                                 }else // method don't support email -> display email form & hide msg & set coockie to use mailform page
                                 {
                                     $GLOBALS['showMailForm'] = true ;
                                     $GLOBALS['olang']['KJP_DOWN_INFO_2'] = ''; // dont show this msg , we didn't send it yet
                                     $usrcp->kleeja_set_cookie('mailForDownFile' ,$_SESSION['kj_payment']['item_id']. '_'. $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'] , time() + 86400 );
                                 }
-                            }else 
+                            }else
                             {
                                 $GLOBALS['olang']['KJP_DOWN_INFO_2'] = 'you can see the file and all bought files on <a href="./ucp.php?go=bought_files">Bought Files </a> Page';
                                 $GLOBALS['showMailForm'] = false ;
@@ -755,19 +759,19 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
                     }
                     unset($_SESSION['kj_payment']);
-                    //else 
+                    //else
                     //{
-                        // Every method will do somthing , include it in $PAY->checkPayment() 
+                        // Every method will do somthing , include it in $PAY->checkPayment()
                     //}
                     break;
-                
+
                 default:
-                    
-                
+
+
                 $request = false; // maybe we will need it later;
 
                 is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:default_action', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
-                
+
                 if( ! $request)
                 {
                     kleeja_err('Why i am here ??');
@@ -778,46 +782,46 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
         }elseif ( g('go') == 'paid_group') {
 
-            if (ip('join_grp')) 
+            if (ip('join_grp'))
             {
                 // to be sure that no when playing with html file
-                if (in_array( p('method') , getPaymentMethods() )) 
+                if (in_array( p('method') , getPaymentMethods() ))
                 {
                     redirect($config['siteurl'] . 'go.php?go=kj_payment&method='.p('method').'&action=join_group&id=' . p('group_id'));
                     exit();
                 }
             }
 
-            
+
             $MethodOption = '';
-            foreach ( getPaymentMethods() as $value) 
+            foreach ( getPaymentMethods() as $value)
             {
 
                 $value = trim($value);
 
-                $MethodOption .= "<option value='".$value."'>".strtoupper($value)."</option>\n"; 
+                $MethodOption .= "<option value='".$value."'>".strtoupper($value)."</option>\n";
                 // loop inside loop doesn't work in kleeja styles
             }
 
-        
+
             $no_request = false ;
             $stylee = 'paid_group';
             $titlee = 'Paid Group';
             $is_style_supported = is_style_supported();
             // to allow the developers to including 'paid_group.html' with their styles .
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paid_group.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
-            
+
             $PaidGroups = getGroupInfo($args['d_groups']);
 
             return compact('no_request' , 'titlee', 'stylee' , 'styleePath' , 'PaidGroups' , 'MethodOption' , 'is_style_supported');
         }
-        
+
         // Send Download Link
-        elseif ( g('go') == 'KJPaymentMailer' ) 
+        elseif ( g('go') == 'KJPaymentMailer' )
         {
             $payCookieInfo  = $usrcp->kleeja_get_cookie('mailForDownFile');
 
-            if (! $payCookieInfo) 
+            if (! $payCookieInfo)
             {
                 // ! from check payment page or the mail is sent
                 kleeja_err($lang['ERROR_NAVIGATATION']);
@@ -825,15 +829,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             }
 
 
-            if (ip('sendMail')) 
+            if (ip('sendMail'))
             {
                 $mailAdress = p('buyerMail');
-                if ( ! filter_var($mailAdress, FILTER_VALIDATE_EMAIL)) 
+                if ( ! filter_var($mailAdress, FILTER_VALIDATE_EMAIL))
                 {
                     kleeja_err('put right e-mail' , '' , true , $config['siteurl'] . 'go.php?go=KJPaymentMailer' , 2);
                     exit; // again :)
                 }
-                
+
                 $payCookieInfoExplode = explode('_' , $payCookieInfo);
 
                 $fileName = getFileInfo($payCookieInfoExplode[0] , 'real_filename')['real_fileName'];
@@ -843,12 +847,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                 $mailTemplate = str_replace( array('@fileName' , '@downLink' , '@linkExpire') , array($fileName , $downloadLink , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_MAIL_TPL']);
 
                 $mailer = send_mail($mailAdress, $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
-                if ( ! $mailer ) 
+                if ( ! $mailer )
                 {
                     kleeja_err('Error in sending e-mail , try again' , '' , true , $config['siteurl'] . 'go.php?go=KJPaymentMailer' , 3);
                     exit;
-                }else 
-                { 
+                }else
+                {
 
                     // set cookie for download file
                     $usrcp->kleeja_set_cookie('downloadFile_' . $payCookieInfoExplode[0] , $payCookieInfo , ( $config['down_link_expire'] * 86400) + time() );
@@ -858,10 +862,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                     $usrcp->kleeja_set_cookie( 'mailForDownFile' , 'Finaly done , :)' , time() - 86400); // *_*
 
                     // dispaly success msg || I HOPE WE DONE
-                    kleeja_info( 
-                        str_replace( array('@mail' , '@time') , array($mailAdress , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] ) 
+                    kleeja_info(
+                        str_replace( array('@mail' , '@time') , array($mailAdress , date('Y-m-d / H:i:s' , ( $config['down_link_expire'] * 86400) + time() ) ) , $GLOBALS['olang']['KJP_DOWN_INFO_2'] )
                     );
-                    
+
                 }
 
             }
@@ -876,11 +880,11 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         }
 
 
-        
-        
 
 
-    } , 
+
+
+    } ,
 
     'qr_down_go_page_filename' => function ($args)
     {
@@ -894,30 +898,30 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         {
 
             $row = $SQL->fetch_array($result);
-                if ($row['price'] > 0) 
+                if ($row['price'] > 0)
                 {
                     // i hate this part
                     $redirect = true ;
 
                     # wibsite founders and file Owner can download without pay
-                    if (  $usrcp->get_data('founder')['founder'] == 0 && !( $row['user'] === $usrcp->id() )  ) 
+                    if (  $usrcp->get_data('founder')['founder'] == 0 && !( $row['user'] === $usrcp->id() )  )
                     {
 
-                        if ( ig('downToken') && ig('db') ) 
+                        if ( ig('downToken') && ig('db') )
                         {
-                            
+
                             $paymentInfo = getPaymentInfo(g('db') , 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "'.g('downToken').'"');
-                            
+
 
                             if(  $paymentInfo )
                             {
                                 if ( $config['down_link_expire'] > 0) // if 0 -> download link will never expire
                                 {
                                     $downCookie = $usrcp->kleeja_get_cookie('downloadFile_'.g('down'));
-                                    if ($downCookie) 
+                                    if ($downCookie)
                                     {
                                         $downCookie = explode('_' , $downCookie);
-                                        if ( g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2] ) 
+                                        if ( g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2] )
                                         {
                                             $month = $paymentInfo['payment_month'];
                                             $day = $paymentInfo['payment_day'];
@@ -927,12 +931,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                                             $minute = $payment_time[1];
                                             $seconde = $payment_time[2];
                                             $paymentTime = mktime($hour , $minute , $seconde  , $month , $day , $year);
-            
-                                            if ( ( ( $config['down_link_expire'] * 86400 ) + $paymentTime ) >= time() ) 
+
+                                            if ( ( ( $config['down_link_expire'] * 86400 ) + $paymentTime ) >= time() )
                                             {
                                                 $redirect = false;
                                             }
-                                        }                         
+                                        }
                                     }
 
                                 }
@@ -958,7 +962,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         exit;
 
                     }
-                } 
+                }
         }
     } ,
 
@@ -993,7 +997,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     'begin_download_page'  => function ($args)
     {
         global $config , $usrcp;
-        if ( ig('downPaidFile') ) // the mailed link to Buyer mail 
+        if ( ig('downPaidFile') ) // the mailed link to Buyer mail
         {
 
             // EX: domain.io/kleeja/go.php?downPaidFile=fileID_dbID_payToken
@@ -1004,14 +1008,14 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
             $paymentInfo = getPaymentInfo( $dbID , "item_id = '{$fileID}' AND payment_token = '{$payToken}' AND payment_state = 'approved' AND payment_action = 'buy_file'");
 
-            if ( $paymentInfo ) 
+            if ( $paymentInfo )
             {
                 // for this session i made this page
                 $_SESSION['HTTP_REFERER'] =  $fileID;
 
                 redirect( $config['siteurl'] . 'do.php?down=' . $fileID . '&amp;db='.$dbID . '&amp;downToken=' . $payToken );
                 exit;
-            }else 
+            }else
             {
                 redirect( $config['siteurl'] ); //OR kleeja_err();
             }
@@ -1023,7 +1027,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     'default_usrcp_page' => function ($args)
     {
         // all user bought file
-        if ( g('go') == 'bought_files') 
+        if ( g('go') == 'bought_files')
         {
             global $SQL , $dbprefix , $usrcp , $config ,$olang;
 
@@ -1047,12 +1051,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
             $all_payments = $SQL->build($query);
 
-            if ($SQL->num_rows($all_payments)) 
+            if ($SQL->num_rows($all_payments))
             {
                 $myPayments = array();
                 $havePayments = true;
 
-                while ($pay = $SQL->fetch($all_payments)) 
+                while ($pay = $SQL->fetch($all_payments))
                 {
                     $myPayments[] = array(
                         'ID' => $pay['id'] ,
@@ -1080,7 +1084,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
         // $user_id = $usrcp->id(); doesn't work :( , i don't know why
 
-        $username = $usrcp->name(); 
+        $username = $usrcp->name();
         $user_id = $SQL->fetch( $SQL->query("SELECT id FROM {$dbprefix}users WHERE `name` LIKE '{$username}'") );
         $user_id = $user_id['id'];
 
@@ -1094,7 +1098,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
         if ($SQL->num_rows( $boughtFiles ) ) // if we have payments
         {
-            while ($payInfo = $SQL->fetch( $boughtFiles ) ) 
+            while ($payInfo = $SQL->fetch( $boughtFiles ) )
             {
                 $usrcp->kleeja_set_cookie('downloadFile_'.$payInfo['item_id'] ,$payInfo['item_id']. '_'. $payInfo['id'] . '_' . $payInfo['payment_token'] , time() + (86400 * 31) );
             }
@@ -1121,7 +1125,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
         if ($SQL->num_rows( $boughtFiles ) ) // if we have payment
         {
-            while ($payInfo = $SQL->fetch( $boughtFiles ) ) 
+            while ($payInfo = $SQL->fetch( $boughtFiles ) )
             {
                 $usrcp->kleeja_set_cookie('downloadFile_'.$payInfo['item_id'] ,$payInfo['item_id']. '_'. $payInfo['id'] . '_' . $payInfo['payment_token'] , time() - (86400 * 31) );
             }
@@ -1129,7 +1133,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     }
 
     /*
-    //Example 
+    //Example
     'kjPay:add_to_panels' => function ($args)
     {
         $all_trnc_panel = $args['all_trnc_panel'];
@@ -1137,7 +1141,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         return compact('all_trnc_panel');
     }
     */
-    
+
 
 );
 
