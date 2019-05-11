@@ -334,7 +334,7 @@ elseif ( $current_smt == 'pricing_file')
 
 			$FileID = $file_info['id'];
 			$FileName = $file_info['real_filename'];
-			$FileSize = $file_info['size'];
+			$FileSize = readable_size($file_info['size']);
 			$FileUser = $file_info['user'] > 0 ? $UserById[$file_info['user']] : $olang['KJP_GUEST'];
 			$FilePrice = $file_info['price'];
 
