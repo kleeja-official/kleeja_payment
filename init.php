@@ -837,6 +837,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                 exit;
             }
 
+            $payCookieInfoExplode = explode('_' , $payCookieInfo);
+            //print_r(getFileInfo($payCookieInfoExplode[0]));exit;
+            $fileName = getFileInfo($payCookieInfoExplode[0])['real_filename'];
+
 
             if (ip('sendMail'))
             {
@@ -846,10 +850,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                     kleeja_err('put right e-mail' , '' , true , $config['siteurl'] . 'go.php?go=KJPaymentMailer' , 2);
                     exit; // again :)
                 }
-
-                $payCookieInfoExplode = explode('_' , $payCookieInfo);
-
-                $fileName = getFileInfo($payCookieInfoExplode[0] , 'real_filename')['real_fileName'];
 
                 $downloadLink = $config['siteurl'] . 'do.php?downPaidFile=' . $payCookieInfoExplode[0] . '_'.$payCookieInfoExplode[1] . '_' . $payCookieInfoExplode[2];
 
@@ -885,7 +885,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             $is_style_supported = is_style_supported();
             $stylee = 'kjpayment_mailer';
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/kjpaymentmailer.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
-            return compact('stylee' , 'styleePath' , 'no_request' , 'is_style_supported');
+            return compact('stylee' , 'styleePath' , 'fileName', 'no_request' , 'is_style_supported');
         }
 
 
