@@ -631,6 +631,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                         exit;
                     }
 
+                    // user can't buy another file before receive the link of first file
+                    // if the user do it , he will lost access to first bought file
+                    if ($usrcp->kleeja_get_cookie('mailForDownFile'))
+                    {
+                    // the user didn't download the file , becuse he did n't set his e-mail
+                    redirect( $config['siteurl'] . 'go.php?go=KJPaymentMailer' );
+                    exit;
+                    }
+
                     $fileInfo = getFileInfo( g('id') ); // get file information
 
                     if ($fileInfo['price'] <= 0 )
