@@ -256,7 +256,6 @@ class kjPayMethod_paypal implements KJPaymentMethod
                         }else // payment_action = join_group
                         {
                             $this->toGlobal['groupName'] = $db_Payment_Info['item_name'];
-                            unset($_SESSION['kj_payment']);
                         }
                           
                 
