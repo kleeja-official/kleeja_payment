@@ -112,7 +112,7 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
                 'order'  => '1',
             ),
 
-            'pp_client_id' => // paypal method
+            'pp_client_id' => 
             array(
                 'value'  => '0',
                 'html'   => configField('pp_client_id'),
@@ -120,24 +120,10 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
                 'type'   => 'kleeja_payment',
             ),
 
-            'paypal_client_secret' => #paypal method
+            'paypal_client_secret' => 
             array(
                 'value'  => '0',
                 'html'   => configField('paypal_client_secret'),
-                'plg_id' => $plg_id,
-                'type'   => 'kleeja_payment',
-            ),
-            'iso_currency_code' => // paid membership plugin
-            array(
-                'value'  => 'USD',
-                'html'   => configField('iso_currency_code'),
-                'plg_id' => $plg_id,
-                'type'   => 'kleeja_payment',
-            ),
-            'down_link_expire' =>
-            array(
-                'value'  => '1',
-                'html'   => configField('down_link_expire'),
                 'plg_id' => $plg_id,
                 'type'   => 'kleeja_payment',
             ),
@@ -155,6 +141,21 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
                 'plg_id' => $plg_id,
                 'type'   => 'kleeja_payment',
             ),
+            'iso_currency_code' => 
+            array(
+                'value'  => 'USD',
+                'html'   => configField('iso_currency_code'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
+            'down_link_expire' =>
+            array(
+                'value'  => '1',
+                'html'   => configField('down_link_expire'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
+
 
     );
 
@@ -415,14 +416,14 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         }
         if ( ! file_exists( dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php' ) )
         {
-            // extract paypal sdk
+            // extract stripe sdk
             if (file_exists( dirname(__FILE__) . '/stripe-sdk.zip' ))
             {
-                $paypalZip = new ZipArchive;
-                if ( $paypalZip->open( dirname(__FILE__) . '/stripe-sdk.zip') )
+                $stripeZip = new ZipArchive;
+                if ( $stripeZip->open( dirname(__FILE__) . '/stripe-sdk.zip') )
                 {
-                    $paypalZip->extractTo( dirname(__FILE__) );
-                    $paypalZip->close();
+                    $stripeZip->extractTo( dirname(__FILE__) );
+                    $stripeZip->close();
                 }
             }
 
@@ -838,7 +839,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             }
 
             $payCookieInfoExplode = explode('_' , $payCookieInfo);
-            //print_r(getFileInfo($payCookieInfoExplode[0]));exit;
+
             $fileName = getFileInfo($payCookieInfoExplode[0])['real_filename'];
 
 
