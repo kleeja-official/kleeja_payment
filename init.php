@@ -27,7 +27,7 @@ $kleeja_plugin['kleeja_payment']['information'] = array(
     ),
 
     # min version of kleeja that's required to run this plugin
-    'plugin_kleeja_version_min' => '3.0',
+    'plugin_kleeja_version_min' => '3.1',
     # max version of kleeja that support this plugin, use 0 for unlimited
     'plugin_kleeja_version_max' => '3.9',
     # should this plugin run before others?, 0 is normal, and higher number has high priority
@@ -43,7 +43,7 @@ $kleeja_plugin['kleeja_payment']['first_run']['ar'] = "
 ";
 
 $kleeja_plugin['kleeja_payment']['first_run']['en'] = "
-With this plugin you can pricing the files and groups to selling it , and recive the payyments to your paypal account automaticly
+With this plugin you can pricing the files and groups to selling it , and recive the payments to your paypal account automaticly
 ( WebMasters Only ) <br>
 
 for more info visit help page <br>
