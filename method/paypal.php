@@ -315,12 +315,11 @@ class kjPayMethod_paypal implements KJPaymentMethod
     {
         return $this->downloadLinkMailer;
     }
-    
 
 
     /**
-     * Mayyyyyyyyyybe Later
-     *
+     * what is this method support
+     */
     public static function permission($permission)
     {
         switch ($permission) 
@@ -333,17 +332,13 @@ class kjPayMethod_paypal implements KJPaymentMethod
               return true;
               break;
 
-          case 'sendingInvoice': // sending invoice to users
-              return true;
-              break;
-            
             default:
                 return false;
                 break;
         }
     }
 
-    */
+
 
 
 }

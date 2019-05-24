@@ -31,7 +31,9 @@ $kleeja_plugin['kleeja_payment']['information'] = array(
     # max version of kleeja that support this plugin, use 0 for unlimited
     'plugin_kleeja_version_max' => '3.9',
     # should this plugin run before others?, 0 is normal, and higher number has high priority
-    'plugin_priority' => 0
+    'plugin_priority' => 0 ,
+    # setting page to display in plugins page
+    'settings_page' => 'cp=options&smt=kleeja_payment'
 );
 
 //after installation message, you can remove it, it's not requiered
@@ -56,7 +58,8 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
     global $SQL , $dbprefix , $d_groups;
 
-    $add_table = "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments` (
+    $SQL->query(
+        "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments` (
         `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
         `payment_state` text COLLATE utf8_bin NOT NULL,
         `payment_method` VARCHAR(100) NULL DEFAULT NULL,
@@ -74,9 +77,8 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         `payment_day` int(11) NOT NULL,
         `payment_time` text COLLATE utf8_bin NOT NULL,
         PRIMARY KEY (`id`)
-        )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;";
-
-    $SQL->query( $add_table );
+        )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
+        );
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';");
 
@@ -98,9 +100,6 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         );
         $SQL->build($insert_acl);
     }
-
-
-
 
     $options = array(
         'join_price' =>
@@ -175,7 +174,6 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
             'html'   => configField('active_cards' , 'yesno'),
             'plg_id' => $plg_id,
             'type'   => 'kj_pay_active_mthd',
-
     );
 
 
@@ -449,11 +447,10 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
 
 # plugin uninstalling, function to be called at uninstalling
 $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
-    //delete options
+
     global $SQL , $dbprefix;
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` DROP `price`;");
-
 
     delete_olang(null, null , $plg_id);
 
@@ -605,18 +602,14 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                 kleeja_err('Its not your method');
                 exit;
             }
-            /**
-             ** Now we don't need it ,  we only support Create Payments
 
             $PagePermission = 'createPayment';
 
             if ( ! $PaymentMethod::permission($PagePermission) )
             {
-                kleeja_err('This Method Dont Accept Creating Payments');
+                kleeja_err('This Method Dont support Creating Payments');
                 exit;
             }
-
-            **/
 
             $PAY = new $PaymentMethod;
 
@@ -890,10 +883,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         }
 
 
-
-
-
-
     } ,
 
     'qr_down_go_page_filename' => function ($args)
@@ -1139,6 +1128,17 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
             {
                 $usrcp->kleeja_set_cookie('downloadFile_'.$payInfo['item_id'] ,$payInfo['item_id']. '_'. $payInfo['id'] . '_' . $payInfo['payment_token'] , time() - (86400 * 31) );
             }
+        }
+    } ,
+
+    'boot_common' => function ($args)
+    {
+        define('support_kjPay' , true);
+
+        // to check if the plugin is installed and enabled
+        if (defined('support_kjPay'))
+        {
+            # a payment without salt please
         }
     }
 
