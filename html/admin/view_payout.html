@@ -1,0 +1,73 @@
+<nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+          <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+          <li class="breadcrumb-item active" aria-current="page">View Payout ( {_GET.id} )</li>
+        </ol>
+      </nav>
+      <div class="card" style="margin: 20px;">
+        <div class="card-body">
+      <IF NAME="have_payout">
+      
+      
+      <table class="table">
+      
+        <tbody>
+          <tr>
+            <th scope="row">Payout ID </th>
+            <td>{payout_id}</td>
+          </tr>
+
+          <tr>
+            <th scope="row">Member </th>
+            <td>{payout_user}</td>
+          </tr>
+
+          <tr>
+            <th scope="row">Payout Method </th>
+            <td>{payout_method}</td>
+          </tr>
+
+          <tr>
+            <th scope="row">Payout Amount </th>
+            <td>{payout_amount}</td>
+          </tr>
+
+          <tr>
+            <th scope="row">Payout State </th>
+            <td>{payout_state}</td>
+          </tr>
+
+          <tr>
+            <th scope="row">DATE/TIME </th>
+            <td>{payout_date_time}</td>
+          </tr>
+      
+      <LOOP NAME="viewMoreTable">
+              <tr>
+            <th scope="row">{{tableName}} </th>
+            <td>{{tableValue}}</td>
+          </tr>
+      </LOOP>
+      
+        </tbody>
+      </table>   
+
+      <IF NAME="payout_state == sent">
+
+        <form action="{FormAction}" method="POST">
+          <input type="hidden" name="payoutID" value="{payout_id}">
+        <button type="submit" name="checkPayout" class="btn btn-success">Check Payout</button>
+      </form>
+      
+      </IF>
+      <ELSE>
+      
+      <div class="alert alert-info" role="alert">
+        There is no Payment with this ID ..
+      </div>
+      
+      </IF>
+      
+        </div>
+      </div>

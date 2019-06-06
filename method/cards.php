@@ -242,4 +242,37 @@ class kjPayMethod_cards implements KJPaymentMethod
 
         return $price;
     }
+
+
+    public function createPayout($itemInfo)
+    {
+        return false;
+    }
+
+    public function checkPayout($payoutInfo)
+    {
+        return false;
+    }
+
+    public static function permission($permission)
+    {
+        switch ($permission) 
+        {
+            case 'createPayment':
+                return true;
+                break;
+            
+          case 'createPayout': // sending money to users
+              return false;
+              break;
+
+          case 'checkPayouts':
+              return false;
+              break;
+
+            default:
+                return false;
+                break;
+        }
+    }
 }

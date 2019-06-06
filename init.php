@@ -80,7 +80,24 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
         );
 
+        $SQL->query(
+            "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments_out` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `user` int(11) NOT NULL,
+                `method` text COLLATE utf8_bin NOT NULL,
+                `amount` float NOT NULL,
+                `payment_more_info` text COLLATE utf8_bin NOT NULL,
+                `payout_year` int(11) NOT NULL,
+                `payout_month` int(11) NOT NULL,
+                `payout_day` int(11) NOT NULL,
+                `payout_time` text COLLATE utf8_bin NOT NULL,
+                `state` text COLLATE utf8_bin NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
+        );
+
     $SQL->query("ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';");
+    $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `balance` FLOAT NOT NULL DEFAULT '0.00';");
 
     // create group permission to access bought files
 
@@ -93,10 +110,19 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         {
             continue;
         }
+        // access_bought_files
         $insert_acl = array(
             'INSERT'	=> 'acl_name, acl_can, group_id',
             'INTO'		=> "{$dbprefix}groups_acl",
             'VALUES'	=>  "'access_bought_files', 0 , " . $group_id
+        );
+        $SQL->build($insert_acl);
+
+        // recaive_profits
+        $insert_acl = array(
+            'INSERT'	=> 'acl_name, acl_can, group_id',
+            'INTO'		=> "{$dbprefix}groups_acl",
+            'VALUES'	=>  "'recaive_profits', 0 , " . $group_id
         );
         $SQL->build($insert_acl);
     }
@@ -154,6 +180,27 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
                 'plg_id' => $plg_id,
                 'type'   => 'kleeja_payment',
             ),
+            'file_owner_profits' =>
+            array(
+                'value'  => '0',
+                'html'   => configField('file_owner_profits'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
+            'min_price_limit' =>
+            array(
+                'value'  => '1',
+                'html'   => configField('min_price_limit'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
+            'max_price_limit' =>
+            array(
+                'value'  => '5',
+                'html'   => configField('max_price_limit'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+            ),
 
 
     );
@@ -178,223 +225,6 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
 
     add_config_r($options);
-
-
-    // Language ..
-    add_olang(array(
-        'R_KJ_PAYMENT_OPTIONS'                => 'مدفوعات كليجا' ,
-        'JOIN_PRICE'                          => 'سعر الإنضمام' ,
-        'PP_CLIENT_ID'                        => 'معرف العميل ( PayPal Client ID )' ,
-        'PAYPAL_CLIENT_SECRET'                => 'كلمة السر لمعرف العميل ( PayPal Secret )' ,
-        'ISO_CURRENCY_CODE'                   => 'رمز العملة ISO' ,
-        'DOWN_LINK_EXPIRE'                    => 'تنتهي صلاحية رابط التنزيل بعد س يوم ( 0 ) صالح دائما' ,
-        'CONFIG_KLJ_MENUS_KLEEJA_PAYMENT'     => 'إعدادات Kleeja Payment' ,
-        'KJP_ALL_TRNC'                        => 'جميع المعاملات',
-        'KJP_TRNC'                            => 'المعاملات',
-        'KJP_NT_PRFIT'                        => 'صافي الربح',
-        'KJP_TRNC_CP_INFO'                    => 'هذه هي أرقام جميع المدفوعات (شراء الملفات والانضمام إلى المجموعات).',
-        'KJP_D_TRNC'                          => 'المعاملات اليومية',
-        'KJP_M_TRNC'                          => 'المعاملات الشهرية',
-        'KJP_OPN_ARCHIVE'                     => 'افتح الأرشيف',
-        'KJP_ARCHIVE_NOTE'                    => 'اترك اليوم فارغًا إذا كنت تريد أرشيفًا شهريًا',
-        'KJP_VIEW_ALL'                        => 'عرض الجميع',
-        'KJP_VIEW'                            => 'عرض',
-        'KJP_ARCH_OPN'                        => 'افتح الأرشيف',
-        'KJP_PAY_OPN'                         => 'افتح دفعة',
-        'KJP_PAY_NUM'                         => 'عدد المدفوعات',
-        'KJP_NO_PEND_PAY'                     => 'لا يوجد المدفوعات المعلقة ..',
-        'KJP_PEND_PAY'                        => 'دفعات قيد التحقق',
-        'KJP_MEMBER'                          => 'عضو',
-        'KJP_ACTION'                          => 'عملية',
-        'KJP_DATE_TIME'                       => 'وقت التاريخ',
-        'KJP_PAY_ID'                          => 'رقم عملية الدفع',
-        'KJP_VIW_TPL_PAYPAL_PAYMENT_ID'       => '(Paypal)رقم عملية الدفع',
-        'KJP_PAY_AMNT'                        => 'مبلغ',
-        'KJP_VIW_TPL_PAYPAL_PAYMENT_FEES'     => '(Paypal)الرسوم',
-        'KJP_PAY_TKN'                         => 'رمز الدفع',
-        'KJP_VIW_TPL_PAYPAL_PAYER_MAIL'       => 'بريد المشتري',
-        'KJP_PAY_ITM'                         => 'العنصر',
-        'KJP_FILE_PAYMNT'                     => 'كل عمليات الدفع للملف',
-        'KJP_GRP_PAYMNT'                      => 'كل دفعات الانضمام للمجموعة',
-        'KJP_USR_PAYMNT'                      => 'جميع عمليات الدفع للمستخدم',
-        'KJP_IP_PAYMNT'                       => 'جميع عمليات الدفع للزائر',
-        'KJP_PRC_FILE'                        => 'تسعير ملف',
-        'KJP_PAID_FILE'                       => 'الملفات المدفوعة',
-        'KJP_HLP'                             => 'مساعدة',
-        'KJP_ENT_ID_URL'                      => 'أدخل معرف الملف أو عنوان URL للملف',
-        'KJP_OPN_FILE'                        => 'افتح الملف',
-        'KJP_FILE_INFO'                       => 'ملف المعلومات',
-        'KJP_FILE_NAME'                       => 'اسم الملف',
-        'KJP_FILE_OWNR'                       => 'مالك الملف',
-        'KJP_FILE_SZE'                        => 'حجم الملف',
-        'KJP_SET_PRC'                         => 'ضع سعر',
-        'KJP_PRC'                             => 'السعر',
-        'KJP_BUY_FILE'                        => 'شراء الملف',
-        'KJP_BUY'                             => 'شراء',
-        'KJP_SCES_PAY'                        => 'تمت عملية الدفع بنجاح',
-        'KJP_DOWN_INFO_1'                     => 'يمكنك الآن تنزيل الملف بالنقر فوق',
-        'KJP_DOWN_INFO_2'                     => 'تم إرسال نسخة من رابط التنزيل إلى البريد الإلكتروني @mail ، وسوف تنتهي صلاحيته في @time',
-        'KJP_GRP_NAME'                        => 'أسم المجموعة',
-        'KJPP_GRP_JOIN_LNK'                   => 'رابط الإنضمام',
-        'KJP_GRP_INFO'                        => 'للتحقق من الامتدادات المسموح بها للمجموعات ، تفضل بزيارة',
-        'KJP_NO_FILE_WITH_ID'                 => 'لم يتم العثور على ملف بالمعرف',
-        'KJP_NO_FILE_NEW_PRICE'               => 'سعر الملف هو الآن' ,
-        'KJP_PAY_ID_FALSE'                    => 'لا يوجد عمليات دفع بهذا المعرّف ..' ,
-        'KJP_NO_PAID_FILES'                   => 'لا يوجد ملفات مدفوعة حتى الآن ..' ,
-        'KJP_NO_PAY_ARCH'                     => 'لا يوجد مدفوعات من تاريخ محدد ..' ,
-        'KJP_FILE_TRNCS'                      => 'معاملات الملفات' ,
-        'KJP_GRP_TRNCS'                       => 'معاملات الانضمام إلى الجماعات' ,
-        'KJP_ARC_PAYS'                        => 'ارشيف المدفوعات' ,
-        'KJP_VIEW_PAY'                        => 'عرض عملية الدفع' ,
-        'KJP_PAYR_IP'                         => 'IP الخاص بالمشتري' ,
-        'KJP_VIW_TPL_PAYPAL_PAYER_NAME'       => 'اسم المشتري' ,
-        'KJP_BYNG_FILE'                       => 'شراء الملف' ,
-        'KJP_JUNG_GRP'                        => 'الانضمام إلى المجموعة' ,
-        'KJP_JUIN'                            => 'انضم' ,
-        'KJP_JUIN_SUCCESS'                    => 'أنت الآن عضو في المجموعة' ,
-        'KJP_CNT_JOIN'                        => 'أنت في هذه المجموعة ، لا يمكنك الانضمام مرة أخرى' ,
-        'KJP_GUEST'                           => 'زائر' ,
-        'KJP_PID_GRP'                         => 'المجموعات المدفوعة' ,
-        'KJP_VIW_TPL_PAYPAL_PAYER_ID'         => 'معرف الدافع (PAYPAL )',
-        'KJP_PAY_BY_MTHD'                     => 'جميع عمليات الدفع عن طريق' ,
-        'KJP_PAY_MTHD'                        => 'طريقة الدفع' ,
-        'CONFIG_KLJ_MENUS_KJ_PAY_ACTIVE_MTHD' => 'طرق الدفع النشطة',
-        'ACTIVE_PAYPAL'                       => 'تنشط باي بال' ,
-        'KJP_MAIL_TPL' => "تم شراء ملف @fileName   بنجاح \r\n يمكنك تنزيل الملف من: @downLink  \r\n ستنتهي صلاحية هذا الرابط على: @linkExpire" ,
-        'KJP_MAIL'                            => 'عنوان بريد الكتروني',
-        'KJP_MAIL_INFO_1'                     => 'تلقي رابط التحميل عبر البريد الإلكتروني',
-        'KJP_MAIL_INFO_2'                     => 'سنرسل رابط التنزيل لهذا البريد الإلكتروني',
-        'KJP_CANT_JOIN_GRP'                   => 'غير مسموح لك بالانضمام إلى هذه المجموعة',
-        'ACLS_ACCESS_BOUGHT_FILES'            => 'الوصول إلى صفحة "الملفات المشتراة"',
-        'KJP_BOUGHT_FILES'                    => 'الملفات المشتراة',
-        'KJP_NO_BOUGHT_FILES'                 => 'لا توجد لديك ملفات مشتراة بعد',
-
-        // stripe method langs
-        'ACTIVE_CARDS' => 'تفعيل سترايب (Stripe)',
-        'STRIPE_PUBLISHABLE_KEY' => 'المفتاح العام ل (Stripe)' ,
-        'STRIPE_SECRET_KEY' => 'المفتاح السري ل (Stripe)' ,
-
-        // STRIPE MORE INFORMATIONS
-
-        'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'رقم المعاملة (Stripe)',
-        'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'بريد المشتري (Stripe)',
-        'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'نوع بطاقة الدفع',
-        'KJP_VIW_TPL_STRIPE_CARD_FUNDING'       => 'تمويل البطاقة',
-        'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'       => 'بلد البطاقة',
-        'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'       => 'اخر 4 ارقام ',
-        'KJP_VIW_TPL_STRIPE_CARD_FINGERPRINT'       => 'بصم البطاقة',
-        'KJP_VIW_TPL_STRIPE_CARD_EXPIRE_DATE'       => 'تاريخ انتهاء البطاقة',
-    ),
-        'ar',
-        $plg_id);
-
-    add_olang(array(
-        'R_KJ_PAYMENT_OPTIONS'                => 'Kleeja Payment',
-        'JOIN_PRICE'                          => 'Join Price',
-        'PP_CLIENT_ID'                        => 'PayPal Client ID',
-        'PAYPAL_CLIENT_SECRET'                => 'PayPal Client Secret',
-        'ISO_CURRENCY_CODE'                   => 'ISO Currency Code',
-        'DOWN_LINK_EXPIRE'                    => 'Dowload Link Expire After x Days ( 0 ) avilabe forever' ,
-        'CONFIG_KLJ_MENUS_KLEEJA_PAYMENT'     => 'Kleeja Payment Setting',
-        'KJP_ALL_TRNC'                        => 'All Transactions',
-        'KJP_TRNC'                            => 'Transactions',
-        'KJP_NT_PRFIT'                        => 'Net Profit',
-        'KJP_TRNC_CP_INFO'                    => 'This is the numbers of all payments ( Buying files and joining the groups ) .',
-        'KJP_D_TRNC'                          => 'Daily Transactions',
-        'KJP_M_TRNC'                          => 'Monthly Transactions',
-        'KJP_OPN_ARCHIVE'                     => 'Open an Archive',
-        'KJP_ARCHIVE_NOTE'                    => 'leave the day empty if you want monthly archive',
-        'KJP_VIEW_ALL'                        => 'view all',
-        'KJP_VIEW'                            => 'VIEW',
-        'KJP_ARCH_OPN'                        => 'OpenArchive',
-        'KJP_PAY_OPN'                         => 'Open a Payment',
-        'KJP_PAY_NUM'                         => 'Payment Number',
-        'KJP_NO_PEND_PAY'                     => 'There is no Pending Payments ..',
-        'KJP_PEND_PAY'                        => 'Pending Payments',
-        'KJP_MEMBER'                          => 'MEMBER',
-        'KJP_ACTION'                          => 'ACTION',
-        'KJP_DATE_TIME'                       => 'DATE/TIME',
-        'KJP_PAY_ID'                          => 'Payment ID',
-        'KJP_PAY_AMNT'                        => 'Payment Amount',
-        'KJP_PAY_TKN'                         => 'Payment Token',
-        'KJP_PAY_ITM'                         => 'Item',
-        'KJP_FILE_PAYMNT'                     => 'All payment of file ',
-        'KJP_GRP_PAYMNT'                      => 'All payment of joining group ',
-        'KJP_USR_PAYMNT'                      => 'All payment of user  ',
-        'KJP_IP_PAYMNT'                       => 'All payment of ip  ',
-        'KJP_PRC_FILE'                        => 'Pricing a File',
-        'KJP_PAID_FILE'                       => 'Paid Files',
-        'KJP_HLP'                             => 'Help',
-        'KJP_ENT_ID_URL'                      => 'Enter the File ID or File URL',
-        'KJP_OPN_FILE'                        => 'Open File',
-        'KJP_FILE_INFO'                       => 'File Informations',
-        'KJP_FILE_NAME'                       => 'File Name',
-        'KJP_FILE_OWNR'                       => 'File Owner',
-        'KJP_FILE_SZE'                        => 'File Size',
-        'KJP_SET_PRC'                         => 'Set Price',
-        'KJP_PRC'                             => 'Price',
-        'KJP_BUY_FILE'                        => 'Buy File',
-        'KJP_BUY'                             => 'Buy',
-        'KJP_SCES_PAY'                        => 'SUCCESS PAYMENT',
-        'KJP_DOWN_INFO_1'                     => 'Now you can download the file by clicking ',
-        'KJP_DOWN_INFO_2'                     => 'a copy of download link sent to mail @mail and its and it will be expire at @time ',
-        'KJP_GRP_NAME'                        => 'Group Name',
-        'KJP_GRP_JOIN_LNK'                    => 'Join Link',
-        'KJP_GRP_INFO'                        => 'To check the allowed extentions of the groups visit',
-        'KJP_NO_FILE_WITH_ID'                 => 'No file found with ID' ,
-        'KJP_NO_FILE_NEW_PRICE'               => 'the price of file is now' ,
-        'KJP_PAY_ID_FALSE'                    => 'There is no Payment with this ID ..' ,
-        'KJP_NO_PAID_FILES'                   => 'There is no Paid Files yet ..' ,
-        'KJP_NO_PAY_ARCH'                     => 'There is no Payments of Selected Date ..' ,
-        'KJP_FILE_TRNCS'                      => 'Transactions of files' ,
-        'KJP_GRP_TRNCS'                       => 'Transactions of Joining groups' ,
-        'KJP_ARC_PAYS'                        => 'Archive Payments' ,
-        'KJP_VIEW_PAY'                        => 'View Payment' ,
-        'KJP_PAYR_IP'                         => 'Payer IP' ,
-        'KJP_BYNG_FILE'                       => 'Buying File' ,
-        'KJP_JUNG_GRP'                        => 'Joining Group' ,
-        'KJP_JUIN'                            => 'Join' ,
-        'KJP_JUIN_SUCCESS'                    => 'Now you are a member in group' ,
-        'KJP_CNT_JOIN'                        => 'you are in this group , you can not join again' ,
-        'KJP_GUEST'                           => 'Guest' ,
-        'KJP_PID_GRP'                         => 'Paid Groups' ,
-        'KJP_PAY_BY_MTHD'                     => 'All Payment of method',
-        'KJP_PAY_MTHD'                        => 'Payment Method' ,
-        'CONFIG_KLJ_MENUS_KJ_PAY_ACTIVE_MTHD' => 'KJPayments Active Methods',
-        'ACTIVE_PAYPAL'                       => 'Active PayPal' ,
-        'KJP_MAIL_TPL'                        => "File @fileName bought successfuly \r\n You can download the file from : @downLink \r\n this link will expire at  : @linkExpire",
-        'KJP_MAIL'                            => 'Email address',
-        'KJP_MAIL_INFO_1'                     => 'Recive Download Link By E-Mail',
-        'KJP_MAIL_INFO_2'                     => 'we will send download link to this e-mail',
-        'KJP_CANT_JOIN_GRP'                   => 'its not allowed for you to join this group',
-        'ACLS_ACCESS_BOUGHT_FILES'            => 'Access "Bought Files" Page',
-        'KJP_BOUGHT_FILES'                    => 'Bought Files',
-        'KJP_NO_BOUGHT_FILES'                 => 'You Don\'t Have Bought Files',
-        // vars for //view payment// page -> PayPal method details
-        'KJP_VIW_TPL_PAYPAL_PAYMENT_ID'       => 'PayPal Payment ID',
-        'KJP_VIW_TPL_PAYPAL_PAYER_NAME'       => 'PayPal Payer Name' ,
-        'KJP_VIW_TPL_PAYPAL_PAYER_MAIL'       => 'PayPal Payer Mail',
-        'KJP_VIW_TPL_PAYPAL_PAYMENT_FEES'     => 'PayPal Payment Fees',
-        'KJP_VIW_TPL_PAYPAL_PAYER_ID'         => 'PayPal Payer ID',
-
-        // stripe method langs
-        'ACTIVE_CARDS' => 'Active Stripe',
-        'STRIPE_PUBLISHABLE_KEY' => 'Stripe Publishable Key' ,
-        'STRIPE_SECRET_KEY' => 'Stripe Secret Key' ,
-
-        // STRIPE MORE INFORMATIONS
-
-        'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'Stripe Payment ID',
-        'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'Stripe Buyer Mail',
-        'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'Stripe card Type',
-        'KJP_VIW_TPL_STRIPE_CARD_FUNDING'       => 'Stripe Card Funding',
-        'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'       => 'Stripe Card Country',
-        'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'       => 'Stripe Card last 4 Numbers',
-        'KJP_VIW_TPL_STRIPE_CARD_FINGERPRINT'       => 'Stripe Card Fingerprint',
-        'KJP_VIW_TPL_STRIPE_CARD_EXPIRE_DATE'       => 'Stripe Card Expire Date',
-    ),
-        'en',
-        $plg_id);
 
 
         if ( ! file_exists( dirname(__FILE__) . '/vendor/autoload.php' ) )
@@ -451,8 +281,10 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
     global $SQL , $dbprefix;
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` DROP `price`;");
+    $SQL->query("ALTER TABLE `{$dbprefix}users` DROP `balance`;");
 
-    delete_olang(null, null , $plg_id);
+    // removed from db
+    //delete_olang(null, null , $plg_id);
 
     delete_config(array(
         'join_price',
@@ -464,12 +296,14 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
         'active_cards',
         'down_link_expire',
         'stripe_publishable_key',
-        'stripe_secret_key'
+        'stripe_secret_key',
+        'min_price_limit',
+        'max_price_limit'
     ));
 
-    // DELETE ACCESS BOUGHT FILES PERMISSIONS
+    // DELETE ACCESS BOUGHT FILES PERMISSIONS AND recaive profits
 
-    $SQL->query("DELETE FROM `{$dbprefix}groups_acl` WHERE acl_name = 'access_bought_files'");
+    $SQL->query("DELETE FROM `{$dbprefix}groups_acl` WHERE acl_name = 'access_bought_files' OR acl_name = 'recaive_profits'");
 
 
 
@@ -495,7 +329,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                 {
                     # wibsite founders and file Owner can download without pay
 
-                    if (  $usrcp->get_data('founder')['founder'] == 0 && !( $row['user'] === $usrcp->id() )  )
+                    if ( $usrcp->get_data('founder')['founder'] == 0 && 
+                     ($row['fuserid'] !== $usrcp->id() || $row['fusername'] !== $usrcp->name() ) )
                     {
                         redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
                         $SQL->close();
@@ -562,7 +397,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
     'default_go_page' => function($args)
     {
-        global $lang , $olang , $usrcp , $config;
+        global $lang , $olang , $usrcp , $config , $THIS_STYLE_PATH_ABS;
 
 
         // request Example : domain.io/kleeja/go.php?go=kj_payment&method=paypal&action=buy_file&id=1
@@ -890,7 +725,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         global $SQL , $usrcp , $config;
 
         $query = $args['query'];
-        $query['SELECT'] .= ', f.price';
+        $query['SELECT'] .= ', f.price , f.user';
         $result = $SQL->build($query);
 
         if ($SQL->num_rows($result) > 0)
@@ -945,8 +780,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
                                 }
                             }
 
-
-
                         }
 
                     }else // the user is founder or file owner
@@ -980,13 +813,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         return compact('include_alternative');
     } ,
 
-    'Saaheader_links_func' => function ($args) {
-        global $d_groups;
+    'Saaheader_links_func' => function ($args)
+    {
+        global $d_groups , $config;
         $top_menu = $args['top_menu'];
         $side_menu = $args['side_menu'];
         $user_is = $args['user_is'];
 
         $side_menu[] = array('name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false ));
+        $side_menu[] = array('name' => 'my_kj_payment', 'title' => 'Payments Control', 'url' => $config['siteurl'] . 'ucp.php?go=my_kj_payment', 'show' => ($user_is && user_can('recaive_profits') ? true : false ));
         $top_menu[] = array('name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => getGroupInfo($d_groups));
 
         return compact('top_menu' , 'side_menu');
@@ -1025,10 +860,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
     },
     'default_usrcp_page' => function ($args)
     {
+        global $SQL , $dbprefix , $usrcp , $config ,$olang , $userinfo;
         // all user bought file
         if ( g('go') == 'bought_files')
         {
-            global $SQL , $dbprefix , $usrcp , $config ,$olang;
 
             if( ! $usrcp->name() || ! user_can('access_bought_files') ): return ; endif; // the page is for members only
 
@@ -1070,6 +905,264 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
 
             return compact( 'is_style_supported' ,'titlee' , 'no_request' , 'stylee' , 'styleePath' , 'myPayments' , 'havePayments');
+
+        }
+        // Payment UCP 
+        elseif (g('go') == 'my_kj_payment')
+        {
+            if (!user_can('recaive_profits')) // this is not Guests page
+            {
+                return;
+            }
+            $action = $config['siteurl'] . 'ucp.php?go=my_kj_payment'; // for withdraw form
+            $case = ig('case') ? g('case') : 'cp';
+            $user_balance = $usrcp->get_data('balance')['balance'] . ' ' . strtoupper($config['iso_currency_code']); // to have it fresh
+            $username = $usrcp->name();
+            $user_id  = $usrcp->id();
+            $titlee       = 'KJ Payment CP';
+            $no_request   = flase;
+            $stylee       = 'my_kj_payment';
+            $is_style_supported = is_style_supported();
+            $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/my_kj_payment.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+
+            // request your money
+            if (ip('requestAmount'))
+            {
+                require_once dirname(__FILE__) .'/php/kjPayment.php'; // require the payment interface
+                $PaymentMethodClass = dirname(__FILE__) . '/method/'.p('PayoutMethod').'.php'; // default payment method
+    
+                if ( ! file_exists( $PaymentMethodClass ) )
+                {
+                    $is_err = true;
+                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:createPayout', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+    
+                    if ($is_err) 
+                    {
+                        kleeja_admin_err('The class file of '.p('PayoutMethod').' payment is not found');
+                        exit;
+                    }
+    
+                }
+                require_once $PaymentMethodClass;
+    
+                $methodClassName = 'kjPayMethod_' . basename($PaymentMethodClass, '.php');
+
+                if (! $methodClassName::permission('createPayout'))
+                {
+                    kleeja_err('The method dont support Creating Payouts');
+                    exit;exit();exit;
+                }
+                // if erro password stop
+                if (empty(p('userPass')) || ! $usrcp->kleeja_hash_password(p('userPass') . $userinfo['password_salt'], $userinfo['password']))
+                {
+                    kleeja_err('your password is not correct');
+                    exit;
+                }
+                else
+                {
+                    // the password was correct , lets check the amount number
+                    $requestAmount = (float) p('AmountNumber');
+                    // is he really have this amount in hes balance
+                    if ($requestAmount < 0 || $requestAmount > $user_balance)
+                    {
+                        // no -> he don't have it
+                        kleeja_err('you can not request this amount from your balance or the number is not vailed Amount');
+                        exit;
+                    }
+                    else
+                    {
+                        ! (float) $requestAmount ? kleeja_err('you can not request this amount from your balance or the number is not vailed Amount') : null;
+                        $method   = 'paypal';
+                        $amount   = $requestAmount;
+                        $state    = 'verify';
+                        $payout_year      = date("Y");
+                        $payout_month     = date("m");
+                        $payout_day       = date("d");
+                        $payout_time      = date("H:i:s");
+                        $payment_more_info = payment_more_info('to_db' , [
+                            'SENDTO' => $usrcp->mail(),
+                        ]);
+    
+                        $query = [
+                            'INSERT'	=> 'user , payment_more_info , method , amount , state , payout_year , payout_month , payout_day , payout_time ',
+                            'INTO'		=> "{$dbprefix}payments_out",
+                            'VALUES'	=> "'{$user_id}' , '{$payment_more_info}' , '{$method}' , '{$amount}' , '{$state}' , '{$payout_year}' , '{$payout_month}' , '{$payout_day}' , '{$payout_time}'"
+                        ];
+                        
+                        $SQL->build($query);
+    
+                        if ($SQL->affected())
+                        {
+                            $new_balance = $user_balance - $requestAmount;
+                            $SQL->query("UPDATE {$dbprefix}users SET `balance` = '{$new_balance}' WHERE `name` = '{$username}'");
+                            kleeja_info("the amount {$requestAmount} is requested , it will be in your account in 24 hour
+                            <br> your new balance is {$new_balance}");
+                        }
+                    }
+                }
+
+            }
+
+            if ($case == 'Requested_Amounts')
+            {
+                // only if the case is (Requested_Amounts) we will call this query
+                $query = [
+                    'SELECT' => '*' ,
+                    'FROM'   => "{$dbprefix}payments_out",
+                    'WHERE'  => "`user` = '{$user_id}'",
+                    'ORDER BY' => 'id DESC'
+                ];
+
+                $result = $SQL->build($query);
+                $havePayout = false;
+                if ($num_rows = $SQL->num_rows($result))
+                {
+                    $perpage	  	= 21;
+                    $currentPage	= ig('page') ? g('page', 'int') : 1;
+                    $Pager			= new Pagination($perpage, $num_rows, $currentPage);
+                    $start			= $Pager->getStartRow();
+                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=Requested_Amounts';
+                    $page_nums		= $Pager->print_nums( $linkgoto );
+                    $query['LIMIT'] = "$start, $perpage";
+                    $result = $SQL->build($query);
+
+
+                    $payouts = [];
+                    $havePayout = true;
+                    while ($row = $SQL->fetch_array($result))
+                    {
+                        $payouts[] = [
+                            'ID' => $row['id'],
+                            'METHOD' => $row['method'],
+                            'AMOUNT' => $row['amount'] . ' ' . $config['iso_currency_code'],
+                            'DATE_TIME' => "{$row['payout_year']}-{$row['payout_month']}-{$row['payout_day']} / {$row['payout_time']}",
+                            'STATE' => $row['state']
+                        ];
+                    }
+                }
+            }
+            else if ($case == 'files_payments')
+            {
+                $fileQuery = [
+                    'SELECT' => 'p.id , p.payment_method , p.item_name , p.item_id , p.user , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
+                    'FROM'   => "{$dbprefix}payments p",
+                    'JOINS'   => 
+                    [
+                        [
+                            'INNER JOIN' => "{$dbprefix}files f",
+                            'ON'         => "p.item_id = f.id"
+                        ]
+                    ],
+                    'WHERE'  => "f.user = ".$usrcp->id()." AND p.payment_action = 'buy_file'",
+                    'ORDER BY'  => 'p.id DESC',
+                ];
+
+                $filePay = $SQL->build($fileQuery);
+
+                $havePayments = false;
+                if ($num_rows = $SQL->num_rows($filePay))
+                {
+                    $perpage	  	= 21;
+                    $currentPage	= ig('page') ? g('page', 'int') : 1;
+                    $Pager			= new Pagination($perpage, $num_rows, $currentPage);
+                    $start			= $Pager->getStartRow();
+                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=files_payments';
+                    $page_nums		= $Pager->print_nums( $linkgoto );
+                    $fileQuery['LIMIT'] = "$start, $perpage";
+                    $filePay = $SQL->build($fileQuery);
+
+                    $UserById = UserById();
+
+
+                    $payments = [];
+                    $havePayments = true;
+                    while ($row = $SQL->fetch_array($filePay))
+                    {
+                        $payments[] = [
+                            'ID' => $row['id'],
+                            'METHOD' => $row['payment_method'],
+                            'FILE_NAME' => $row['item_name'],
+                            'BUYER' => ! empty($UserById[$row['user']]) ? $UserById[$row['user']] : 'Guest',
+                            'DATE_TIME' => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
+                        ];
+                    }
+                }
+
+
+            }
+            else if ($case == 'pricing_file')
+            {
+                if ( ip('open_file') ) {
+
+		
+                    $select_file_id =  ip('select_file_id') ? p('select_file_id') : null  ; 
+            
+                    $ExampleID = $config['siteurl'] . 'do.php?id=';
+                    $ExampleIMG = $config['siteurl'] . 'do.php?img=';
+            
+                    ! (int) $select_file_id ? $select_file_id = str_replace(array($ExampleID , $ExampleIMG) , '' , $select_file_id) : $select_file_id ;
+            
+                    if ( $select_file_id !== null && $select_file_id > 0 && $file_info = getFileInfo($select_file_id))
+                    {
+                        if ($file_info['user'] == $usrcp->id()) // no be sure that every user will change hes files only
+                        {
+                            $show_price_panel = true;
+                            $FileID = $file_info['id'];
+                            $FileName = $file_info['real_filename'];
+                            $FileSize = readable_size($file_info['size']);
+                            $FileUser = $usrcp->name();
+                            $FilePrice = $file_info['price'];
+                        }
+                        else
+                        {
+                            $OpenAlert = true;
+                            $AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] .' '. $select_file_id;
+                            $AlertRole = 'danger';
+                        }
+
+            
+                    }
+            
+            
+                }elseif ( ip('set_price') ) {
+            
+                    $FileID = (int) p('price_file_id');
+                    $FileName = p('file_name') ;
+                    $FilePrice = p('price_file');
+
+                    if ($FilePrice < $config['min_price_limit'] || $FilePrice > $config['max_price_limit'])
+                    {
+                        kleeja_err(sprintf($olang['KJP_PRC_LMT'] , $config['min_price_limit'] , $config['max_price_limit'] , $config['iso_currency_code']));
+                        exit;
+                    }
+            
+                    if ( $file_info = getFileInfo( $FileID ) ) 
+                    {
+                        $update_query = array(
+                            'UPDATE' => $dbprefix . 'files' ,
+                            'SET'    => "price = '{$FilePrice}'" ,
+                            'WHERE'  => "id = '{$FileID}' AND real_filename = '{$FileName}' AND user = ".$usrcp->id()
+                        );
+            
+                        $SQL->build( $update_query );
+            
+                        if ($SQL->affected()) {
+                            
+                            $OpenAlert = true;
+                            $AlertMsg = sprintf($olang['KJP_NO_FILE_NEW_PRICE'] ,$FileName, $FilePrice ,strtoupper($config['iso_currency_code'])) ;
+                            $AlertRole = 'success';
+                        }else {
+                            $OpenAlert = true;
+                            $AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] .' '. $FileID;
+                            $AlertRole = 'danger';
+                        }
+                    }
+                }
+            }
+            return compact('AlertRole','AlertMsg','OpenAlert',
+                'show_price_panel','FileID', 'FileName','FileUser','FilePrice','FileSize',
+                'havePayments','payments','page_nums','havePayout','payouts',
+            'case','action','titlee' , 'no_request' , 'stylee' , 'styleePath' , 'user_balance');
         }
     } ,
 
@@ -1133,6 +1226,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
 
     'boot_common' => function ($args)
     {
+        global $olang , $config;
         define('support_kjPay' , true);
 
         // to check if the plugin is installed and enabled
@@ -1140,6 +1234,16 @@ $kleeja_plugin['kleeja_payment']['functions'] = array(
         {
             # a payment without salt please
         }
+        $langFiles = dirname(__FILE__) . "/language/{$config['language']}.php";
+        if (file_exists($langFiles))
+        {
+            $langFiles = require_once $langFiles;
+            foreach ($langFiles as $key => $value)
+            {
+                $olang[$key] = $value;
+            }
+        }
+        return compact('olang');
     }
 
     /*

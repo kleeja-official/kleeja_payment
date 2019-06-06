@@ -16,6 +16,24 @@ if (intval($userinfo['founder']) !== 1) {
 	exit;
 }
 
+echo "<div style='font-size:12px;display:block !important;background:#afc113 !important;margin:5px; padding:2px 3px; position:fixed;bottom:0;".($lang['DIR'] == 'ltr' ? 'right' : 'left').":5%;z-index:99999;text-align:center;'>
+<!-- Default dropup button -->
+<div class='btn-group dropup'>
+  <button type='button' class='btn btn-dark bg-dark dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+	<i class=\"fa fa-fw fa-bars\"></i>
+  </button>
+  <div class='dropdown-menu'>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options'>".$olang['R_KJ_PAYMENT_OPTIONS']."</a>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options&smt=all_transactions'>".$olang['KJP_ALL_TRNC']."</a>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options&smt=payouts'>Payouts</a>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options&smt=pricing_file'>".$olang['KJP_PRC_FILE']."</a>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options&smt=paid_files'>".$olang['KJP_PAID_FILE']."</a>
+  <a class='dropdown-item' href='".basename(ADMIN_PATH)."?cp=kj_payment_options&smt=help'>".$olang['KJP_HLP']."</a>
+</div>
+  </div>
+</div>
+	</div>";
+
 is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:begin_options', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 $styleePath = dirname(__FILE__) . '/../html/admin/' ;
@@ -364,11 +382,11 @@ elseif ( $current_smt == 'pricing_file')
 			if ($SQL->affected()) {
 				
 				$OpenAlert = true;
-				$AlertMsg = $olang['KJP_NO_FILE_NEW_PRICE'] .$FileName. " => ". $FilePrice . strtoupper($config['iso_currency_code']) ;
+				$AlertMsg = sprintf($olang['KJP_NO_FILE_NEW_PRICE'] ,$FileName, $FilePrice ,strtoupper($config['iso_currency_code'])) ;
 				$AlertRole = 'success';
 			}else {
 				$OpenAlert = true;
-				$AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] . $FileID;
+				$AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] .' '. $FileID;
 				$AlertRole = 'danger';
 			}
 		}
@@ -413,7 +431,7 @@ elseif ( $current_smt == 'paid_files')
 				'id' => $paid_file['id'] ,
 				'name' => $paid_file['real_filename'] ,
 				'user' => $paid_file['user'] > 0 ? $UserById[$paid_file['user']] : $olang['KJPP_GUEST'] ,
-				'price' => $paid_file['price'] ,
+				'price' => $paid_file['price'] . ' ' . $config['iso_currency_code'],
 				'link' => $config['siteurl'] . 'do.php?id=' . $paid_file['id']
 			);
 		}
@@ -467,7 +485,8 @@ elseif ( $current_smt == 'archive' && ig('date') )
 	$archive_payments = $SQL->build($query);
     $ArchivePayNum = false;
 
-	if ( $num_rows = $SQL->num_rows($archive_payments)) {
+	if ( $num_rows = $SQL->num_rows($archive_payments)) 
+	{
 
 				// Pagination //
 
@@ -505,16 +524,319 @@ elseif ( $current_smt == 'archive' && ig('date') )
 
 	}
 
+
+	// Archive Payout Table
+
+	$query = [
+		'SELECT' => '*' ,
+		'FROM'   => "{$dbprefix}payments_out",
+		'WHERE'  => "`payout_year` = '{$Archive_data['date']['year']}' AND `payout_month` = '{$Archive_data['date']['month']}'"
+		 . (!empty($Archive_data['date']['day']) ? " AND `payout_day` = '{$Archive_data['date']['day']}'":''),
+		'ORDER BY' => 'id DESC'
+	];
+
+	$result = $SQL->build($query);
+	$havePayout = false;
+	if ($num_rows = $SQL->num_rows($result))
+	{
+		$perpage	  	= 21;
+		$currentPage	= ig('page') ? g('page', 'int') : 1;
+		$Pager			= new Pagination($perpage, $num_rows, $currentPage);
+		$start			= $Pager->getStartRow();
+		$linkgoto       = basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=archive&date='.g('date');
+		$page_numsPO		= $Pager->print_nums( $linkgoto );
+		$query['LIMIT'] = "$start, $perpage";
+		$result = $SQL->build($query);
+
+
+		$payouts = [];
+		$havePayout = true;
+		while ($row = $SQL->fetch_array($result))
+		{
+			$payouts[] = [
+				'ID' => $row['id'],
+				'METHOD' => $row['method'],
+				'AMOUNT' => $row['amount'] . ' ' . $config['iso_currency_code'],
+				'DATE_TIME' => "{$row['payout_year']}-{$row['payout_month']}-{$row['payout_day']} / {$row['payout_time']}",
+				'STATE' => $row['state'],
+				'PayoutUser' => $UserById[$row['user']]
+			];
+		}
+	}
+
+}elseif ($current_smt == 'payouts')
+{
+	$stylee = 'payouts_list';
+	$action = $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=payouts';
+	$case   = g('case','str', 'list');
+
+	if ($case == 'payouts')
+	{
+		// dont do any thing now
+	}
+	elseif ($case == 'list')
+	{
+		// lets check if there is post order 
+		// for sending payout or canceling it
+		if ( (ip('sendPayout') || ip('cancelPayout')) && ip('payoutID'))
+		{
+			$checkQuery = [
+				'SELECT' => '*', // leave it all , we need every thing here
+				'FROM'   => "{$dbprefix}payments_out",
+				'WHERE'  => "id = '". p('payoutID') ."' AND state = 'verify'",
+			];
+			$checkResult = $SQL->build($checkQuery);
+			// if we had this payout in db
+			if ($SQL->num_rows($checkResult))
+			{
+				$pOutInfo = $SQL->fetch($checkResult);
+				// mix all info to make usfule array
+				$pOutInfo = payment_more_info('from_db' , $pOutInfo);
+				// check if admin want to send or cancel it
+				// more secure to do it like this 
+				// here is for canceling payout
+				if (ip('cancelPayout') && ! ip('sendPayout'))
+				{
+					//let's update the payout state and back the amount to user balance
+				  $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$pOutInfo['amount']} WHERE id ='{$pOutInfo['user']}'"); 
+					$SQL->query("UPDATE {$dbprefix}payments_out SET `state` = 'cancel' WHERE id = '".p('payoutID')."'");
+					kleeja_admin_info('payout canceled successfuly and the amount '.$pOutInfo['amount'].' is back to user balance' , $action.'&amp;case=list');
+				  exit;
+				}
+				// the admin accept sending this amount to user 
+				else if (ip('sendPayout') && ! ip('cancelPayout'))
+				{
+					require_once dirname(__FILE__) .'/kjPayment.php'; // require the payment interface
+					$PaymentMethodClass = dirname(__FILE__) . '/../method/'.$pOutInfo['method'].'.php'; // default payment method
+
+					if ( ! file_exists( $PaymentMethodClass ) )
+					{
+						$is_err = true;
+						is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:set_payout_method', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+		
+						if ($is_err) 
+						{
+							kleeja_admin_err('The class file of '.g('method').' payment is not found');
+							exit;
+						}
+		
+					}
+					require_once $PaymentMethodClass;
+
+					$methodClassName = 'kjPayMethod_' . basename($PaymentMethodClass, '.php');
+
+					$PAY = new $methodClassName;
+					$PAY->paymentStart();
+					$PAY->setCurrency( strtoupper($config['iso_currency_code']) );
+					// now let's make a payout
+					$PAY->createPayout($pOutInfo); // send all payout data to the class
+
+					if ($PAY->isSuccess())
+					{
+						kleeja_admin_info('payout made successfuly and the amount '.$pOutInfo['amount'].' is send to user balance' , $action.'&amp;case=list');
+						exit;
+					}
+					else
+					{
+						kleeja_admin_err('Error when making payout' , $action.'&amp;case=list');
+					}
+				}
+			}
+		}
+
+
+		$query = [
+			'SELECT' => '*',
+			'FROM'   => "{$dbprefix}payments_out",
+			'WHERE'  => "state = 'verify'",
+			'ORDER BY' => 'id DESC'
+		];
+
+		$result = $SQL->build($query);
+		$havePayout = false;
+
+		if ($num_rows = $SQL->num_rows($result))
+		{
+			$perpage	  	= 21;
+			$currentPage	= ig('page') ? g('page', 'int') : 1;
+			$Pager			  = new Pagination($perpage, $num_rows, $currentPage);
+			$start			  = $Pager->getStartRow();
+			$linkgoto     = basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=payouts&case=accepted';
+			$page_nums		= $Pager->print_nums( $linkgoto );
+			$query['LIMIT'] = "$start, $perpage";
+			$result = $SQL->build($query);
+			
+			$havePayout = true;
+			$payouts = [];
+			while ($payout = $SQL->fetch_array($result))
+			{
+				$payouts[] = [
+					'ID' => $payout['id'],
+					'USER' => $UserById[$payout['user']],
+					'METHOD' => $payout['method'],
+					'AMOUNT' => $payout['amount'] . ' ' . $config['iso_currency_code'],
+					'DATE_TIME' => "{$payout['payout_year']}-{$payout['payout_month']}-{$payout['payout_day']} / {$payout['payout_time']}",
+					'STATE' => $payout['state']
+				];
+			}
+		}
+	}
+	elseif ($case == 'accepted')
+	{
+		$query = [
+			'SELECT' => '*',
+			'FROM'   => "{$dbprefix}payments_out",
+			'WHERE'  => "state = 'sent' OR state = 'recived'",
+			'ORDER BY' => 'id DESC'
+		];
+
+		$result = $SQL->build($query);
+		$havePayout = false;
+
+		if ($num_rows = $SQL->num_rows($result))
+		{
+			$perpage	  	= 21;
+			$currentPage	= ig('page') ? g('page', 'int') : 1;
+			$Pager			  = new Pagination($perpage, $num_rows, $currentPage);
+			$start			  = $Pager->getStartRow();
+			$linkgoto     = basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=payouts&case=accepted';
+			$page_nums		= $Pager->print_nums( $linkgoto );
+			$query['LIMIT'] = "$start, $perpage";
+			$result = $SQL->build($query);
+
+			$payouts = [];
+			$havePayout = true;
+			while ($payout = $SQL->fetch_array($result))
+			{
+				$payouts[] = [
+					'ID' => $payout['id'],
+					'USER' => $UserById[$payout['user']],
+					'METHOD' => $payout['method'],
+					'AMOUNT' => $payout['amount'] . ' ' . $config['iso_currency_code'],
+					'DATE_TIME' => "{$payout['payout_year']}-{$payout['payout_month']}-{$payout['payout_day']} / {$payout['payout_time']}",
+					'VIEW_LINK' => $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=viewPayout&amp;id='.$payout['id']
+				];
+			}
+		}
+	}
+	else if ($case == 'canceled')
+	{
+		$query = [
+			'SELECT' => '*',
+			'FROM'   => "{$dbprefix}payments_out",
+			'WHERE'  => "state = 'cancel'",
+			'ORDER BY' => 'id DESC'
+		];
+
+		$result = $SQL->build($query);
+		$havePayout = false;
+
+		if ($num_rows = $SQL->num_rows($result))
+		{
+			$perpage	  	= 21;
+			$currentPage	= ig('page') ? g('page', 'int') : 1;
+			$Pager			  = new Pagination($perpage, $num_rows, $currentPage);
+			$start			  = $Pager->getStartRow();
+			$linkgoto     = basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=payouts&case=canceled';
+			$page_nums		= $Pager->print_nums( $linkgoto );
+			$query['LIMIT'] = "$start, $perpage";
+			$result = $SQL->build($query);
+
+			$payouts = [];
+			$havePayout = true;
+			while ($payout = $SQL->fetch_array($result))
+			{
+				$payouts[] = [
+					'ID' => $payout['id'],
+					'USER' => $UserById[$payout['user']],
+					'METHOD' => $payout['method'],
+					'AMOUNT' => $payout['amount'] . ' ' . $config['iso_currency_code'],
+					'DATE_TIME' => "{$payout['payout_year']}-{$payout['payout_month']}-{$payout['payout_day']} / {$payout['payout_time']}",
+					'VIEW_LINK' => $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=viewPayout&amp;id='.$payout['id']
+				];
+			}
+		}
+	}
+
+	
 }
 elseif ( $current_smt == 'help') 
 {
 	$stylee = 'help';
 
 }
+elseif ( $current_smt == 'viewPayout' && ig('id')) 
+{
+	$stylee = 'view_payout';
+
+	$payoutInfo = getpayoutInfo(g('id') , "state != 'verify'" , false);
+	$have_payout = false;
+
+	if ($payoutInfo)
+	{
+		if (ip('checkPayout') && ip('payoutID') && p('payoutID') == $payoutInfo['id'])
+		{
+			require_once dirname(__FILE__) .'/kjPayment.php'; // require the payment interface
+			$PaymentMethodClass = dirname(__FILE__) . '/../method/'.$payoutInfo['method'].'.php'; // default payment method
+
+			if ( ! file_exists( $PaymentMethodClass ) )
+			{
+				$is_err = true;
+				is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:check_payout', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+
+				if ($is_err) 
+				{
+					kleeja_admin_err('The class file of '.$payoutInfo['method'].' payment is not found');
+					exit;
+				}
+
+			}
+			require_once $PaymentMethodClass;
+
+			$methodClassName = 'kjPayMethod_' . basename($PaymentMethodClass, '.php');
+
+			$PAY = new $methodClassName;
+			$PAY->paymentStart();
+			$PAY->setCurrency( strtoupper($config['iso_currency_code']) );
+			$PAY->checkPayout(payment_more_info('from_db',$payoutInfo));
+			if ($PAY->isSuccess())
+			{
+				kleeja_admin_info('payout is recaived successfuly');
+			}
+			else
+			{
+				kleeja_admin_err('payout is not recaived successfuly');
+			}
+		}
+		$FormAction = $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=viewPayout&id='.$payoutInfo['id'];
+		$have_payout = true;
+
+		$payout_id = $payoutInfo['id'];
+		$payout_user = $UserById[$payoutInfo['user']];
+		$payout_method = $payoutInfo['method'];
+		$payout_amount = $payoutInfo['amount'] . ' ' . $config['iso_currency_code'];
+		$payout_date_time = $payoutInfo['payout_year'].'-'.$payoutInfo['payout_month'].'-'.$payoutInfo['payout_day']
+							.' / '.$payoutInfo['payout_time'];
+	    $payout_state = $payoutInfo['state'];
+		$payment_more_info = payment_more_info('from_db' , ['payment_more_info' => $payoutInfo['payment_more_info']]);
+
+		$viewMoreTable = [];
+		foreach ($payment_more_info as $key => $value)
+		{
+			$viewMoreTable[] = [
+				'tableName'  => $olang['KJP_VIW_TPL_'.strtoupper($key)],
+				'tableValue' => $value
+			];
+		}
+	}
+
+
+}
 
 $go_menu = array(
-				'pricing_file' => array('name'=> $olang['KJP_PRC_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=pricing_file', 'goto'=>'pricing_file', 'current'=> $current_smt == 'pricing_file'),
-				'paid_files' => array('name'=> $olang['KJP_PAID_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=paid_files', 'goto'=>'paid_files', 'current'=> $current_smt == 'paid_files'),
-				'all_transactions' => array('name'=> $olang['KJP_ALL_TRNC'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=all_transactions', 'goto'=>'all_transactions', 'current'=> $current_smt == 'all_transactions'),
-				'help' => array('name'=> $olang['KJP_HLP'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=help', 'goto'=>'help', 'current'=> $current_smt == 'help'),
+	        'all_transactions' => array('name'=> $olang['KJP_ALL_TRNC'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=all_transactions', 'goto'=>'all_transactions', 'current'=> $current_smt == 'all_transactions'),
+	        'payouts' => array('name'=> 'Payouts', 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=payouts', 'goto'=>'payouts', 'current'=> $current_smt == 'payouts'),
+			'pricing_file' => array('name'=> $olang['KJP_PRC_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=pricing_file', 'goto'=>'pricing_file', 'current'=> $current_smt == 'pricing_file'),
+			'paid_files' => array('name'=> $olang['KJP_PAID_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=paid_files', 'goto'=>'paid_files', 'current'=> $current_smt == 'paid_files'),
+            'help' => array('name'=> $olang['KJP_HLP'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=help', 'goto'=>'help', 'current'=> $current_smt == 'help'),
 	);

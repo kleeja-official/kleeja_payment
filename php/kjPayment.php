@@ -50,4 +50,25 @@ interface KJPaymentMethod
     # called after successful payments
     public function linkMailer();
 
+
+    // the plugin will fetch the data from db and insert the content to this function as array
+    // it will do the the steps of creating payments , like running paymentStart function and set the currency
+    //NOTE: update the state of payout to "sent" , if you need to check is the payout recaived or not 
+    // but if you are sure that it will be recaived , update it to recived
+    public function createPayout($itemInfo);
+
+
+    // after view the payout , if the state is "sent" , it will call this function 
+    // and the data will get from db table
+    public function checkPayout($payoutInfo);
+
+
+    // befor calling any of function (CreatePayment , createPayout , checkPayout)
+    // we will need to check if the method support calling this function or not
+    //an example is included in the default methods
+    public static function permission($permission);
 }
+
+
+// Made with Love For Kleeja
+// Mitan :)

@@ -16,6 +16,7 @@
       <th scope="col">{olang.KJP_FILE_NAME}</th>
       <th scope="col">{olang.KJP_MEMBER}</th>
       <th scope="col">{olang.KJP_PRC}</th>
+      <th scope="col">{olang.KJP_ACTION}</th>
 
     </tr>
   </thead>
@@ -25,9 +26,17 @@
 <LOOP NAME="all_paid_file">
     <tr>
       <th scope="row">{{id}}</th>
-      <td><a href="{{link}}" target="_blank">{{name}}</a></td>
+      <td>
+        <a href="{{link}}" target="_blank">{{name}}</a>
+      </td>
       <td>{{user}}</td>
       <td>{{price}}</td>
+      <td>
+          <form method="POST" action="./?cp=kj_payment_options&smt=pricing_file">
+            <input type="hidden" name="select_file_id" value="{{id}}">
+            <button name="open_file" class="btn btn-primary btn-sm" type="submit">Edite Price</button>
+           </form>
+      </td>
       
     </tr>
 

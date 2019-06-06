@@ -99,3 +99,47 @@
 </div>
 </div>
 
+
+
+<div class="card" style="margin: 15px;">
+	      <div class="card-body">
+        <h4 class="card-title">Archive Payouts</h4>
+
+        <IF NAME="havePayout">
+            <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">Payout ID</th>
+                    <th scope="col">Payout User</th>
+                    <th scope="col">Payout Method</th>
+                    <th scope="col">Payout Amount</th>
+                    <th scope="col">{olang.KJP_DATE_TIME}</th>
+                    <th scope="col">Payout State</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <LOOP NAME="payouts">
+                  <tr
+                  </tr>
+                    <th scope="row">{{ID}}</th>
+                    <th scope="row">{{PayoutUser}}</th>
+                    <td>{{METHOD}}</td>
+                    <td>{{AMOUNT}}</td>
+                    <td>{{DATE_TIME}}</td>
+                    <td>{{STATE}}</td>
+                  </tr>
+                  </LOOP>
+                </tbody>
+              </table>
+              {page_numsPO}
+              <ELSE>
+                  <div class="alert alert-primary" role="alert">
+                      you did not make any payout yet
+                    </div>
+            
+            </IF>
+
+{page_nums}
+</div>
+</div>
+

@@ -28,9 +28,6 @@ function getFileInfo( $fileID = 0 , $getInfo = '*')
     {
         return false;
     }
-
-
-
 }
 
 
@@ -67,8 +64,41 @@ function getPaymentInfo( $db_id = 0 , $where = '' ,$mixall = false )
     {
         return false;
     }
+}
 
 
+function getPayoutInfo( $db_id = 0 , $where = '' ,$mixall = false )
+{
+    global $SQL , $dbprefix;
+
+    $query	= array(
+        'SELECT'=> '*',
+        'FROM'	=> "{$dbprefix}payments_out",
+        'WHERE'	=> "id = " . $db_id ,
+        'LIMIT'	=> '1',
+    );
+
+    if ( $where !== '' ) 
+    {
+        $query['WHERE'] .= ' AND ' . $where ;
+    }
+
+    $result	= $SQL->build($query);
+
+    if ( $SQL->num_rows($result) )
+    {
+        $result = $SQL->fetch_array( $result );
+        if ($mixall) 
+        {
+            $result = payment_more_info('from_db' , $result);
+        }
+
+        return $result;
+    }
+    else 
+    {
+        return false;
+    }
 }
 /*
  * $groupDtData = $args['d_groups'];
@@ -280,7 +310,7 @@ function KJPayFinalData()
 function UserById()
 {
     global $SQL , $dbprefix;
-    $return = array();
+    $return = [];
     $all_user = $SQL->query("SELECT id , name FROM {$dbprefix}users");
 
     while ( $user = $SQL->fetch($all_user) ) 
@@ -412,7 +442,8 @@ function get_archive ($date = '30-2-yyyy')
         'file_trnc_num'       => $file_trnc_num ,
         'group_trnc_num'      => $group_trnc_num ,
         'paypalArchive'       => $paypalArchive ,
-        'cardsArchive'        => $cardsArchive
+        'cardsArchive'        => $cardsArchive ,
+        'date'                => $date
     );
 
 
@@ -490,7 +521,6 @@ function createToken( $length = 16)
  
              foreach ($data['payment_more_info'] as $value) 
              {
-                 
                  $value = explode('->' , $value);
                  $data[$value[0]] = $value[1];
              }

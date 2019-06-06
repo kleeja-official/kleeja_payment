@@ -75,7 +75,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
             $transaction = new \PayPal\Api\Transaction();
             $transaction->setAmount($amount)
-            ->setDescription('Payment made by Kleeja ( kj_paypal ) plugin')
+            ->setDescription('Payment made by Kleeja ( kleeja_payments ) plugin')
             ->setItemList($itemList);
 
             $redirectUrls = new \PayPal\Api\RedirectUrls();
@@ -113,7 +113,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
         $payment_more_info = payment_more_info('to_db' , array(
             'paypal_payment_id'    => $payment_info['id'] ,
             'paypal_payment_token' => explode('token=' , $payment->getApprovalLink())[1] ,
-        )); 
+        ));
         
         $insert_query	= array(
             'INSERT'	=> 'payment_state , payment_method , payment_more_info , payment_amount , payment_currency , payment_token , payment_payer_ip , payment_action , item_id , item_name , user , payment_year , payment_month , payment_day , payment_time',
@@ -238,6 +238,17 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
                             $SQL->build($update_user);
                         }
+                        elseif ($PaymentInfo['payment_action'] == 'buy_file')
+                        {
+                            $user_id      = getFileInfo($PaymentInfo['item_id'],'user')['user']; // File Owner ID
+                            $user_group   = $usrcp->get_data('group_id' , $user_id)['group_id']; // get the group id
+                            if (user_can('recaive_profits' , $user_group))
+                            {
+                                // becuse the payment is successfuly , let's give some profits to the file owner
+                                $user_profits = $db_Payment_Info['payment_amount'] * $config['file_owner_profits'] / 100;
+                                $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = '{$user_id}'");
+                            }
+                        }
                         
 
 
@@ -249,11 +260,12 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
                         if ( $PaymentInfo['payment_action'] == 'buy_file' ) 
                         {
-                            $this->downloadLinkMailer = $PPI['payer']['payer_info']['email'];
+                            $this->downloadLinkMailer    = $PPI['payer']['payer_info']['email'];
                             $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_'.$db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
                             $this->toGlobal['file_name'] = $db_Payment_Info['item_name'];
 
-                        }else // payment_action = join_group
+                        }
+                        else // payment_action = join_group
                         {
                             $this->toGlobal['groupName'] = $db_Payment_Info['item_name'];
                         }
@@ -317,6 +329,105 @@ class kjPayMethod_paypal implements KJPaymentMethod
     }
 
 
+    /*
+    */
+
+    public function createPayout($itemInfo = [])
+    {
+        global $olang , $SQL , $dbprefix;
+        $payouts = new \PayPal\Api\Payout();
+        $senderBatchHeader = new \PayPal\Api\PayoutSenderBatchHeader();
+        $senderBatchHeader->setSenderBatchId(uniqid())
+        ->setEmailSubject("a payment from kleeja , made by kleeja_payments plugin");
+        $patchHeader = $payouts->setSenderBatchHeader($senderBatchHeader);
+
+        $patchHeader->addItem(
+            new \PayPal\Api\PayoutItem(
+                array(
+                    "recipient_type" => "EMAIL",
+                    "receiver" => $itemInfo['SENDTO'],
+                    "note" => "Thank you.",
+                    "sender_item_id" => uniqid(),
+                    "amount" => array(
+                        "value" => $itemInfo['amount'],
+                        "currency" => $this->currency
+                    )
+                )
+            )
+        );
+
+        try
+        {
+            $payoutInfo = $payouts->create(null, $this->apiContext); // create a payout
+
+            $payoutBatchId = $payoutInfo->getBatchHeader()->getPayoutBatchId(); // get batch header :: support by paypal only
+
+            // after creating it , let's get payout information
+            $payoutInfo = \PayPal\Api\Payout::get($payoutBatchId, $this->apiContext);
+            // becuse every batch have a single payout
+            $allPayoutInfo = $payoutInfo->getItems()[0]->toArray();
+
+            $state = $allPayoutInfo['transaction_status'] == 'SUCCESS' ? 'recived' : 'sent'; // else PENDING
+            // if u are sure that the payout don't need to check it it recived , set the state direcly to recaived
+            // and let check payout step empty
+
+            $payment_more_info = payment_more_info('to_db' , [
+                'payout_item_id' => $allPayoutInfo['payout_item_id'],
+                'payout_batch_id' => $allPayoutInfo['payout_batch_id'],
+                'transaction_fees' => $allPayoutInfo['payout_item_fee']['value'],
+                'receiver' => $allPayoutInfo['payout_item']['receiver'],
+            ]);
+
+            $update_query = [
+                'UPDATE' => "{$dbprefix}payments_out",
+                'SET' => "state = '{$state}' , payment_more_info = '{$payment_more_info}'",
+                'WHERE' => "id = '{$itemInfo['id']}'"
+            ];
+
+            $SQL->build($update_query);
+            
+            if ($SQL->affected())
+            {
+                $this->successPayment = true;
+            }
+        }
+        catch (Exception $ex)
+        {
+            exit($ex);
+        }
+
+    }
+
+
+    public function checkPayout($payoutInfo = [])
+    {
+        global $SQL , $dbprefix;
+        //$payouts = new \PayPal\Api\Payout();
+        $payoutBatchId = $payoutInfo['payout_batch_id'];
+
+        try {
+            $output = \PayPal\Api\Payout::get($payoutBatchId, $this->apiContext);
+            $transactionInfo = $output->getItems()[0]->toArray();
+
+            if ($transactionInfo['transaction_status'] == 'SUCCESS')
+            {
+                $update_query = [
+                    'UPDATE' => "{$dbprefix}payments_out",
+                    'SET' => "state = 'recived'",
+                    'WHERE' => "id = '{$payoutInfo['id']}'"
+                ];
+                $SQL->build($update_query);
+                $this->successPayment = true;
+            }
+        } catch (\Throwable $th)
+        {
+            exit($th);
+            //throw $th;
+        }
+    }
+    
+
+
     /**
      * what is this method support
      */
@@ -329,6 +440,10 @@ class kjPayMethod_paypal implements KJPaymentMethod
                 break;
             
           case 'createPayout': // sending money to users
+              return true;
+              break;
+
+          case 'checkPayouts':
               return true;
               break;
 
