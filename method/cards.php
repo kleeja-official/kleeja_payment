@@ -164,6 +164,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                 // if the payment is for joining a group and the payer is in login and member in kleeja
                 if ($_SESSION['kj_payment']['payment_action'] == 'join_group' && $usrcp->name())
                 {
+                    $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
                     $update_user    = [
                         'UPDATE'       => "{$dbprefix}users",
                         'SET'          => "group_id = '" . $_SESSION['kj_payment']['item_id'] . "'" ,
@@ -172,26 +173,28 @@ class kjPayMethod_cards implements KJPaymentMethod
 
                     $SQL->build($update_user);
                 }
+                elseif ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
+                {
+                    $this->downloadLinkMailer    = $stripe_buyer_mail;
+                    $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
+                    $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
+                    $user_id      = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
+                    $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
+                    if (user_can('recaive_profits', $user_group))
+                    {
+                        // becuse the payment is successfuly , let's give some profits to the file owner
+                        $user_profits = $payment_amount * $config['file_owner_profits'] / 100;
+                        $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = {$user_id}");
+                    }
+                }
 
 
 
                 // now we can say that the payment made successfuly
                 $this->successPayment = true;
 
-                // send download link to the buyer
-                // send varible to global -> go.php
 
-                if ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
-                {
-                    $this->downloadLinkMailer    = $stripe_buyer_mail;
-                    $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
-                    $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
-                }
-                else
-                { // payment_action = join_group
-                    $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
-                    unset($_SESSION['kj_payment']);
-                }
+
             }
         }
         catch (\Throwable $th)

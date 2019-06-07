@@ -1,0 +1,10 @@
+<div class="card">
+        <div class="card-body">
+          <h4>Pay For : {payAction} ( {itemName} ) </h4>
+          <h4>Price   : {itemPrice} </h4>
+        </div>
+        <form method="POST" action="{FormAction}">
+            {kjFormKeyPost}
+            <button type="submit" class="btn btn-success" name="buy_item">{payAction}</button>
+        </form>
+      </div>

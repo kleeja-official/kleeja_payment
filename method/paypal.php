@@ -231,13 +231,13 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             elseif ($PaymentInfo['payment_action'] == 'buy_file')
                             {
                                 $user_id      = getFileInfo($PaymentInfo['item_id'], 'user')['user']; // File Owner ID
-                            $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
-                            if (user_can('recaive_profits', $user_group))
-                            {
-                                // becuse the payment is successfuly , let's give some profits to the file owner
-                                $user_profits = $db_Payment_Info['payment_amount'] * $config['file_owner_profits'] / 100;
-                                $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = '{$user_id}'");
-                            }
+                                $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
+                                if (user_can('recaive_profits', $user_group))
+                                {
+                                    // becuse the payment is successfuly , let's give some profits to the file owner
+                                    $user_profits = $db_Payment_Info['payment_amount'] * $config['file_owner_profits'] / 100;
+                                    $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = '{$user_id}'");
+                                }
                             }
 
 

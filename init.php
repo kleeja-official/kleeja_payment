@@ -218,6 +218,12 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         'plg_id' => $plg_id,
         'type'   => 'kj_pay_active_mthd',
     ];
+    $options['active_balance'] = [
+        'value'  => '1',
+        'html'   => configField('active_balance', 'yesno'),
+        'plg_id' => $plg_id,
+        'type'   => 'kj_pay_active_mthd',
+    ];
 
 
     add_config_r($options);
