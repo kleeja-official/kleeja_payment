@@ -74,6 +74,25 @@
 
       , and the ( Currency Code ) it have to be 3 Letter Only EX: USD , EUR , CHF  <a target="_blank" href="https://developer.paypal.com/docs/api/reference/currency-codes/">check the accepted currencies code here</a>
 
+      <br><hr>
+      Dowload Link Expire After x Days ( 0 ) avilabe forever : <br>
+      after the user make a apyment , he will recaive an e-mail with download link , and he can not download the bought file if he did not 
+      have an cookie in his browser , so this will help you to set the limit of days that he can access to the file.
+      <br>
+      note : if you give the access to user to access bought files page, the cookies time is not important , becuse the user will have unlimit accecc time .
+      <br><hr>
+      Percentage of owner's earnings (10 -> 90) % : 
+      <br>
+      this is the Percentage of the File owner , if a user upload a file and he want to sell it ,
+      and another person want to buy this file , he will recaive a selected Percentage from the file price ,
+      <br> note : he will recaive the Percentage only if the group of the user have the acces to "Recaive Profits" ,
+      it's not important if the group don't have the permissions
+      <br><hr>
+      Min/Max Price Limit : <br>
+      when the group of the user have the acces to "Recaive Profits" permissions , he can set the price of his files ,
+      <br> with this two option you can set the limit of the file price that the user can set it .
+      <br> note : this options will be applied with user area only , not in the admin page
+
     </div>
   </div>
 </div>
@@ -149,6 +168,54 @@
       </div>
     </div>
   </div>
+
+  <div class="card">
+      <div class="card-header" id="_INFO_1_">
+        <h2 class="mb-0">
+          <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#_INFO_1" aria-expanded="true" aria-controls="_INFO_1">
+            <li>Payouts</li>
+          </button>
+        </h2>
+      </div>
+      <div id="_INFO_1" class="collapse" aria-labelledby="_INFO_1_" data-parent="#accordionExample">
+        <div class="card-body">
+          when you give "share_profit" permission to any group , they will have access to "Payments Control" Page ,
+          and also , they will have permission to pricing their files in selected limits .
+          <br>
+          and it will be able for them to receive the selected Percentage of the file price .
+          <br>
+          and they can ask to withdraw their balance to their paypal account . <br>
+          <hr>
+          if a user requist to withdraw an amount from hes account ; <br>
+          you will see it in payouts request list , and you will see also 'check' button , <br>
+          if you canceled the payout , the amount will back to the user balance , and done <br>
+          and if you accepted it , the balance will be sent to paypal user email , ( the email that the user registered it in kleeja ) <br>
+          after that the payout state will be 'SENT' , that mean we said to paypal to sent the amount to the user , but the payout is not confirmed yet <br>
+          any payout with state 'SENT' , when you view it , you see in the footer to check the payout , is it received or not yet , <br>
+          note : most of the time the payout take 1 min to confirm it , if taked more then 1 min , check user email , is it regestered in paypal or not <br>
+          if the email is not registered , the money will back to your account after 30 days . <br>
+
+        </div>
+      </div>
+    </div>
+
+  <div class="card">
+      <div class="card-header" id="_INFO_2_">
+        <h2 class="mb-0">
+          <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#_INFO_2" aria-expanded="true" aria-controls="_INFO_2">
+            <li>More Help ??</li>
+          </button>
+        </h2>
+      </div>
+      <div id="_INFO_2" class="collapse" aria-labelledby="_INFO_2_" data-parent="#accordionExample">
+        <div class="card-body">
+          check our discord channel , we will be happy to help you . <a target="_blank" href="https://discord.gg/A2wpXfG">https://discord.gg/A2wpXfG</a>
+        </div>
+      </div>
+    </div>
+
+
+
 
 
   </div>
