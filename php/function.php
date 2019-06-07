@@ -209,6 +209,17 @@ function KJPayFinalData()
             'num' => 0 , 'amount' => 0
         ]
     ];
+    $balanceTransactions  = [
+        'all' => [
+            'num' => 0 , 'amount' => 0
+        ] ,
+        'monthly' => [
+            'num' => 0 , 'amount' => 0
+        ] ,
+        'daily' => [
+            'num' => 0 , 'amount' => 0
+        ]
+    ];
 
 
 
@@ -234,6 +245,12 @@ function KJPayFinalData()
             $cardsTransactions['all']['num']++;
             $cardsTransactions['all']['amount'] += $row['payment_amount'];
         }
+        // balance method informations
+        elseif ($row['payment_method'] == 'balance')
+        {
+            $balanceTransactions['all']['num']++;
+            $balanceTransactions['all']['amount'] += $row['payment_amount'];
+        }
 
 
         // count of daily transactions
@@ -254,6 +271,12 @@ function KJPayFinalData()
             {
                 $cardsTransactions['daily']['num']++;
                 $cardsTransactions['daily']['amount'] += $row['payment_amount'];
+            }
+            // cards method informations
+            elseif ($row['payment_method'] == 'balance')
+            {
+                $balanceTransactions['daily']['num']++;
+                $balanceTransactions['daily']['amount'] += $row['payment_amount'];
             }
         }
 
@@ -276,6 +299,12 @@ function KJPayFinalData()
                 $cardsTransactions['monthly']['num']++;
                 $cardsTransactions['monthly']['amount'] += $row['payment_amount'];
             }
+            // balance method informations
+            elseif ($row['payment_method'] == 'balance')
+            {
+                $balanceTransactions['monthly']['num']++;
+                $balanceTransactions['monthly']['amount'] += $row['payment_amount'];
+            }
         }
     }
 
@@ -284,7 +313,8 @@ function KJPayFinalData()
 
         // payment informations that made by paypal
         'paypal'      => $paypalTransactions ,
-
+        // payment informations that made by cards
+        'balance'     => $balanceTransactions ,
         // payment informations that made by cards
         'cards'      => $cardsTransactions
     ];
@@ -378,6 +408,18 @@ function get_archive ($date = '30-2-yyyy')
         ],
     ];
 
+    $balanceArchive = [
+        'all' => [
+            'num' => 0 , 'amount' => 0
+        ],
+        'file' => [
+            'num' => 0 , 'amount' => 0
+        ],
+        'group' => [
+            'num' => 0 , 'amount' => 0
+        ],
+    ];
+
 
 
 
@@ -419,6 +461,22 @@ function get_archive ($date = '30-2-yyyy')
                 $cardsArchive['group']['amount'] += $row['payment_amount'];
             }
         }
+        elseif ($row['payment_method'] == 'balance')
+        {
+            $balanceArchive['all']['num']++;
+            $balanceArchive['all']['amount'] += $row['payment_amount'];
+
+            if ($row['payment_action'] == 'buy_file')
+            {
+                $balanceArchive['file']['num']++;
+                $balanceArchive['file']['amount'] += $row['payment_amount'];
+            }
+            else
+            {
+                $balanceArchive['group']['num']++;
+                $balanceArchive['group']['amount'] += $row['payment_amount'];
+            }
+        }
 
         $row['payment_action'] == 'buy_file' ? $file_trnc_num++ : $group_trnc_num++;
     }
@@ -432,6 +490,7 @@ function get_archive ($date = '30-2-yyyy')
         'group_trnc_num'      => $group_trnc_num ,
         'paypalArchive'       => $paypalArchive ,
         'cardsArchive'        => $cardsArchive ,
+        'balanceArchive'      => $balanceArchive ,
         'date'                => $date
     ];
 }
