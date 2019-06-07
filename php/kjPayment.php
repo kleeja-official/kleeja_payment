@@ -8,7 +8,7 @@ interface KJPaymentMethod
     public function paymentStart();
 
 
-    // i will give to you the currency that we work with it , 
+    // i will give to you the currency that we work with it ,
     // und du kannst Tomaten verkaufen in der Strasse
     public function setCurrency($currency);
 
@@ -20,13 +20,13 @@ interface KJPaymentMethod
     public function CreatePayment( $do ,$info);
 
 
-    // we call this function after create Payment 
+    // we call this function after create Payment
     // it return an array about all varibles that the method need to give it to kleeja
     // becuse maybe the method will work here
     public function varsForCreatePayment();
 
 
-    // after we made the payment and the user paid the money 
+    // after we made the payment and the user paid the money
     // we have to check if the payment was success or not
     // and also updating the user group if the payment was for oining groups
     public function checkPayment();
@@ -53,12 +53,12 @@ interface KJPaymentMethod
 
     // the plugin will fetch the data from db and insert the content to this function as array
     // it will do the the steps of creating payments , like running paymentStart function and set the currency
-    //NOTE: update the state of payout to "sent" , if you need to check is the payout recaived or not 
+    //NOTE: update the state of payout to "sent" , if you need to check is the payout recaived or not
     // but if you are sure that it will be recaived , update it to recived
     public function createPayout($itemInfo);
 
 
-    // after view the payout , if the state is "sent" , it will call this function 
+    // after view the payout , if the state is "sent" , it will call this function
     // and the data will get from db table
     public function checkPayout($payoutInfo);
 
