@@ -68,6 +68,8 @@ if (empty($current_smt))
     $all_trnc_panel[]   = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $all_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['all']['num']];
     $all_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $all_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['all']['num']];
+    $all_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
 
     //daily Transactions
@@ -77,6 +79,8 @@ if (empty($current_smt))
     $daily_trnc_panel[]   = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['daily']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $daily_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['daily']['num']];
     $daily_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['daily']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $daily_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['daily']['num']];
+    $daily_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['daily']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
     // monthly Transactions
     $monthly_trnc_count = $trncactionsInformation['kj_payments']['monthly'];
@@ -85,6 +89,8 @@ if (empty($current_smt))
     $monthly_trnc_panel[]   = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $trncactionsInformation['paypal']['monthly']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $monthly_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['monthly']['num']];
     $monthly_trnc_panel[]   = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $trncactionsInformation['cards']['monthly']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $monthly_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['monthly']['num']];
+    $monthly_trnc_panel[]   = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $trncactionsInformation['balance']['monthly']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
 
 
@@ -447,6 +453,8 @@ elseif ($current_smt == 'archive' && ig('date'))
     $archive_panel_1[]  = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $archive_panel_1[]  = ['methodName' => 'Stripe' , 'htmlContent' =>  $Archive_data['cardsArchive']['all']['num']];
     $archive_panel_1[]  = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $archive_panel_1[]  = ['methodName' => 'Balance' , 'htmlContent' =>  $Archive_data['balanceArchive']['all']['num']];
+    $archive_panel_1[]  = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
 
     // the panel of files transactions
@@ -455,6 +463,8 @@ elseif ($current_smt == 'archive' && ig('date'))
     $archive_panel_2_1[] = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $archive_panel_2_1[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['num']];
     $archive_panel_2_1[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $archive_panel_2_1[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['file']['num']];
+    $archive_panel_2_1[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
 
     // the panel of joining groups transactions
@@ -463,6 +473,8 @@ elseif ($current_smt == 'archive' && ig('date'))
     $archive_panel_2_2[] = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
     $archive_panel_2_2[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['num']];
     $archive_panel_2_2[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['num']];
+    $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
 
 
