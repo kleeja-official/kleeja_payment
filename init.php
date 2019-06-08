@@ -873,7 +873,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $user_is = $usrcp->id();
 
             $titlee       = $olang['KJP_BOUGHT_FILES'];
-            $no_request   = flase;
+            $no_request   = false;
             $stylee       = 'bought_files';
             $is_style_supported = is_style_supported();
             $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/bought_files.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
@@ -922,7 +922,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $username = $usrcp->name();
             $user_id  = $usrcp->id();
             $titlee       = 'KJ Payment CP';
-            $no_request   = flase;
+            $no_request   = false;
             $stylee       = 'my_kj_payment';
             $is_style_supported = is_style_supported();
             $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/my_kj_payment.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
