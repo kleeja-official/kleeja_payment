@@ -144,6 +144,11 @@ if (empty($current_smt))
         $years[]['value'] = $year['payment_year'];
     }
 
+    if(count($years) == 0)
+    {
+        $years[]['value'] = date('Y');
+    }
+
     // Lazy person !! Ja Ja , Normalerweise bin ich faul .
     $months = [];
 
