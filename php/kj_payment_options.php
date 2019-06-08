@@ -144,7 +144,7 @@ if (empty($current_smt))
         $years[]['value'] = $year['payment_year'];
     }
 
-    if(count($years) == 0)
+    if (count($years) == 0)
     {
         $years[]['value'] = date('Y');
     }
@@ -658,8 +658,9 @@ elseif ($current_smt == 'payouts')
             'ORDER BY' => 'id DESC'
         ];
 
-        $result     = $SQL->build($query);
-        $havePayout = $page_nums = false;
+        $result        = $SQL->build($query);
+        $havePayout    = $page_nums    = false;
+        $no_payout_msg = sprintf($olang['KJP_NO_ITEM'], $olang['KJP_PAYOUTS']);
 
         if ($num_rows = $SQL->num_rows($result))
         {
@@ -696,8 +697,9 @@ elseif ($current_smt == 'payouts')
             'ORDER BY' => 'id DESC'
         ];
 
-        $result     = $SQL->build($query);
-        $havePayout = $page_nums = false;
+        $result            = $SQL->build($query);
+        $havePayout        = $page_nums        = false;
+        $no_acc_payout_msg = sprintf($olang['KJP_NO_ITEM'], $olang['KJP_ACCEPTED'] . ' ' . $olang['KJP_PAYOUTS']);
 
         if ($num_rows = $SQL->num_rows($result))
         {
@@ -734,8 +736,9 @@ elseif ($current_smt == 'payouts')
             'ORDER BY' => 'id DESC'
         ];
 
-        $result     = $SQL->build($query);
-        $havePayout = $page_nums = false;
+        $result             = $SQL->build($query);
+        $havePayout         = $page_nums         = false;
+        $no_cncl_payout_msg = sprintf($olang['KJP_NO_ITEM'], $olang['KJP_CANCELED'] . ' ' . $olang['KJP_PAYOUTS']);
 
         if ($num_rows = $SQL->num_rows($result))
         {

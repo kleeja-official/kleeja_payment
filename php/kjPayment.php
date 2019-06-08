@@ -17,7 +17,7 @@ interface KJPaymentMethod
     // do = buy_file OR join_group
     // info = is an array about File infrmations or group informations
     // check getFileInfo() function and getGroupInfo() function;
-    public function CreatePayment( $do ,$info);
+    public function CreatePayment($do, $info);
 
 
     // we call this function after create Payment
@@ -47,7 +47,7 @@ interface KJPaymentMethod
     // return the e-mail adress that kleeja have to send download link to it
     // if you are working with a method that dont have an e-mail adress , return 'false';
     // then kleeja will display a form to enter the e-mail adress to recive the download link
-    # called after successful payments
+    // called after successful payments
     public function linkMailer();
 
 

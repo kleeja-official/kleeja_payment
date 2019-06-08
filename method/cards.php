@@ -165,7 +165,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                 if ($_SESSION['kj_payment']['payment_action'] == 'join_group' && $usrcp->name())
                 {
                     $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
-                    $update_user    = [
+                    $update_user                 = [
                         'UPDATE'       => "{$dbprefix}users",
                         'SET'          => "group_id = '" . $_SESSION['kj_payment']['item_id'] . "'" ,
                         'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
@@ -178,8 +178,8 @@ class kjPayMethod_cards implements KJPaymentMethod
                     $this->downloadLinkMailer    = $stripe_buyer_mail;
                     $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
                     $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
-                    $user_id      = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
-                    $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
+                    $user_id                     = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
+                    $user_group                  = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
                     if (user_can('recaive_profits', $user_group))
                     {
                         // becuse the payment is successfuly , let's give some profits to the file owner
@@ -192,9 +192,6 @@ class kjPayMethod_cards implements KJPaymentMethod
 
                 // now we can say that the payment made successfuly
                 $this->successPayment = true;
-
-
-
             }
         }
         catch (\Throwable $th)

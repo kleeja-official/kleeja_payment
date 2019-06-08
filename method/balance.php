@@ -10,7 +10,7 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function paymentStart()
     {
-        if(! user_can('recaive_profits'))
+        if (! user_can('recaive_profits'))
         {
             /**
              * this will check for permission
@@ -18,11 +18,13 @@ class kjPayMethod_balance implements KJPaymentMethod
              * anyway , the Guest don't have this permission
              */
             kleeja_err('member area');
+
             exit;
         }
-        else if(! in_array('balance',getPaymentMethods()))
+        elseif (! in_array('balance', getPaymentMethods()))
         {
             kleeja_err('it\'s not active method');
+
             exit;
         }
     }
@@ -33,7 +35,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         $this->currency = $currency;
     }
 
-    public function CreatePayment( $do , $info )
+    public function CreatePayment($do, $info)
     {
         global $config , $olang ,$THIS_STYLE_PATH_ABS;
 
@@ -41,22 +43,22 @@ class kjPayMethod_balance implements KJPaymentMethod
         $_SESSION['kj_payment'] =
         [
             'payment_action'    => $do ,
-            'item_id'   => g('id') ,
-            'item_name' => $do === 'buy_file' ? $info['real_filename'] : $info['name'] ,
+            'item_id'           => g('id') ,
+            'item_name'         => $do === 'buy_file' ? $info['real_filename'] : $info['name'] ,
         ];
 
-        $kjFormKeyGet  = kleeja_add_form_key_get('payFor_'.$do.($do === 'buy_file' ? $info['real_filename'].$info['id'] : $info['name'].$info['id']));
-        $kjFormKeyPost = kleeja_add_form_key('payFor_'.$do.($do === 'buy_file' ? $info['real_filename'].$info['id'] : $info['name'].$info['id']));
+        $kjFormKeyGet  = kleeja_add_form_key_get('payFor_' . $do . ($do === 'buy_file' ? $info['real_filename'] . $info['id'] : $info['name'] . $info['id']));
+        $kjFormKeyPost = kleeja_add_form_key('payFor_' . $do . ($do === 'buy_file' ? $info['real_filename'] . $info['id'] : $info['name'] . $info['id']));
 
         $this->varsForCreate['no_request']      = false; 
         $this->varsForCreate['titlee']          = 'Pay By Balance'; 
         $this->varsForCreate['stylee']          = 'pay_balance';
-        $this->varsForCreate['styleePath']      = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_balance.html') ? $THIS_STYLE_PATH_ABS. 'kj_payment/' : dirname(__FILE__) . '/../html/';
-        $this->varsForCreate['FormAction']      = $config['siteurl'] . 'go.php?go=kj_payment&method=balance&action=check&'.$kjFormKeyGet;
+        $this->varsForCreate['styleePath']      = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_balance.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/../html/';
+        $this->varsForCreate['FormAction']      = $config['siteurl'] . 'go.php?go=kj_payment&method=balance&action=check&' . $kjFormKeyGet;
         $this->varsForCreate['itemName']        = $do === 'buy_file' ? $info['real_filename'] : $info['name'];
         $this->varsForCreate['payAction']       = $do === 'buy_file' ? $olang['KJP_BUY_FILE'] : $olang['KJP_JUNG_GRP'];
         $this->varsForCreate['paymentCurrency'] = $this->currency;
-        $this->varsForCreate['itemPrice']       = $info['price'] . ' ' . $this->currency ;
+        $this->varsForCreate['itemPrice']       = $info['price'] . ' ' . $this->currency;
         $this->varsForCreate['kjFormKeyPost']   = $kjFormKeyPost;
     }
 
@@ -68,35 +70,39 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function checkPayment()
     {
-        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo;
+        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang;
 
         if (! $usrcp->name())
         {
             // to be sure 100% , thats we are on the right way
-            kleeja_err('User Area');
+            kleeja_err($lang['USER_PLACE']);
         }
         // is he comming from our page
-        elseif ( ! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']) ) 
+        elseif (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
             kleeja_err('What Are U Doing Here ??');
+
             exit;
         }
         // really from our page
-        elseif (!kleeja_check_form_key('payFor_'.$_SESSION['kj_payment']['payment_action'].$_SESSION['kj_payment']['item_name'].$_SESSION['kj_payment']['item_id'])
-        || !kleeja_check_form_key_get('payFor_'.$_SESSION['kj_payment']['payment_action'].$_SESSION['kj_payment']['item_name'].$_SESSION['kj_payment']['item_id']))
+        elseif (! kleeja_check_form_key('payFor_' . $_SESSION['kj_payment']['payment_action'] . $_SESSION['kj_payment']['item_name'] . $_SESSION['kj_payment']['item_id'])
+        || ! kleeja_check_form_key_get('payFor_' . $_SESSION['kj_payment']['payment_action'] . $_SESSION['kj_payment']['item_name'] . $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err($lang['INVALID_FORM_KEY']);
+
             exit;
         }
         // really really , check if the item is exists
-        elseif ( ( $_SESSION['kj_payment']['payment_action'] == 'buy_file' ) && ! $fileinfo = getFileInfo($_SESSION['kj_payment']['item_id']) ) 
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $fileinfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err($olang['KJP_FL_NT_FUND']);
+
             exit;
         }
-        elseif ( ( $_SESSION['kj_payment']['payment_action'] == 'join_group' ) && ! $groupinfo = getGroupInfo( $d_groups ,$_SESSION['kj_payment']['item_id']) ) 
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $groupinfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err($olang['KJP_GP_NT_FUND']);
+
             exit;
         }
 
@@ -106,15 +112,15 @@ class kjPayMethod_balance implements KJPaymentMethod
         if ($itemPrice <= 0)
         {
             // this is free item
-            kleeja_err('it\'s not able for you to buy this item');
+            kleeja_err($olang['KJP_FRE_ITM']);
         }
         //get freash user balance
         $userBalance = (float) $usrcp->get_data('balance')['balance'];
-        
+
         if ($itemPrice > $userBalance)
         {
             // son , collect some money , then come to buy
-            kleeja_err('AL-Dain mamnu3 u alrezeq 3la allah');
+            kleeja_err($olang['KJP_NO_BLNC']);
         }
 
         // i will take the money from you , then i will give you the item loooool
@@ -126,17 +132,17 @@ class kjPayMethod_balance implements KJPaymentMethod
         $payment_method    = 'balance';
         $payment_state     = 'approved';
         $payment_currency  = $this->currency;
-        $payment_action    = $_SESSION['kj_payment']['payment_action'] ;
-        $payment_token     = createToken() ;
+        $payment_action    = $_SESSION['kj_payment']['payment_action'];
+        $payment_token     = createToken();
         $payment_amount    = $_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $fileinfo['price'] : $groupinfo['price'];
         $payment_payer_ip  = get_ip();
         $item_id           = $_SESSION['kj_payment']['item_id'];
         $item_name         = $_SESSION['kj_payment']['item_name'];
         $user              = $usrcp->id();
-        $payment_year      = date("Y");
-        $payment_month     = date("m");
-        $payment_day       = date("d");
-        $payment_time      = date("H:i:s");
+        $payment_year      = date('Y');
+        $payment_month     = date('m');
+        $payment_day       = date('d');
+        $payment_time      = date('H:i:s');
 
         $insert_query    = [
             'INSERT'      => 'payment_state , payment_method , payment_amount , payment_currency , payment_token , payment_payer_ip , payment_action , item_id , item_name , user , payment_year , payment_month , payment_day , payment_time',
@@ -152,7 +158,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         if ($_SESSION['kj_payment']['payment_action'] == 'join_group' && $usrcp->name())
         {
             $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
-            $update_user    = [
+            $update_user                 = [
                 'UPDATE'       => "{$dbprefix}users",
                 'SET'          => "group_id = '" . $_SESSION['kj_payment']['item_id'] . "'" ,
                 'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
@@ -165,8 +171,8 @@ class kjPayMethod_balance implements KJPaymentMethod
             $this->downloadLinkMailer    = $usrcp->mail();
             $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'];
             $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
-            $user_id      = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
-            $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
+            $user_id                     = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
+            $user_group                  = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
             if (user_can('recaive_profits', $user_group))
             {
                 // becuse the payment is successfuly , let's give some profits to the file owner
@@ -176,7 +182,6 @@ class kjPayMethod_balance implements KJPaymentMethod
         }
         // now we can say that the payment made successfuly
         $this->successPayment = true;
-
     }
 
     public function isSuccess()
@@ -212,18 +217,22 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             case 'createPayment':
                 return true;
+
                 break;
-            
+
           case 'createPayout': // sending money to users
               return false;
+
               break;
 
           case 'checkPayouts':
               return false;
+
               break;
 
             default:
                 return false;
+
                 break;
         }
     }

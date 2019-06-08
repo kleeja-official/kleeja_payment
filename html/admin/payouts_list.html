@@ -4,7 +4,6 @@
         <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
     </ol>
 </nav>
-
 <div class="card">
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
@@ -34,30 +33,29 @@
         <a class="nav-link (case == payouts?active:)" href="{action}">Payouts</a>
     </li> -->
             <li class="nav-item">
-                <a class="nav-link (case == list?active:)" href="{action}&amp;case=list">Request List</a>
+                <a class="nav-link (case == list?active:)" href="{action}&amp;case=list">{olang.KJP_REQ_LIST}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link (case == accepted?active:)" href="{action}&amp;case=accepted">Accepted</a>
+                <a class="nav-link (case == accepted?active:)"
+                    href="{action}&amp;case=accepted">{olang.KJP_ACCEPTED}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link (case == canceled?active:)" href="{action}&amp;case=canceled">Canceled</a>
+                <a class="nav-link (case == canceled?active:)"
+                    href="{action}&amp;case=canceled">{olang.KJP_CANCELED}</a>
             </li>
         </ul>
-
         <IF NAME="case == payouts">
-
             <ELSEIF NAME="case == list">
-
                 <IF NAME="havePayout">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
-                                <th scope="col">Payout ID</th>
-                                <th scope="col">Member</th>
-                                <th scope="col">Payout Method</th>
-                                <th scope="col">Payout Amount</th>
+                                <th scope="col">{olang.KJP_POUT_ID}</th>
+                                <th scope="col">{olang.KJP_MEMBER}</th>
+                                <th scope="col">{olang.KJP_PAY_MTHD}</th>
+                                <th scope="col">{olang.KJP_PAY_AMNT}</th>
                                 <th scope="col">{olang.KJP_DATE_TIME}</th>
-                                <th scope="col">Payout State</th>
+                                <th scope="col">{olang.KJP_POUT_ST}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,7 +71,6 @@
                                             data-target="#exampleModal{{ID}}">
                                             Check
                                         </button>
-
                                         <!-- Modal -->
                                         <div class="modal fade" id="exampleModal{{ID}}" tabindex="-1" role="dialog"
                                             aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -91,17 +88,13 @@
                                                         <h3><strong>{{USER}}</strong> request to withdraw {{AMOUNT}}
                                                             <br> By <strong>{{METHOD}}</strong>
                                                         </h3>
-
                                                         <form action="{FormAction}" method="POST">
-
                                                             <input type="hidden" name="payoutID" value="{{ID}}">
                                                             <hr>
-
-
                                                             <button type="submit" name="sendPayout"
-                                                                class="btn btn-success">Send Payout</button>
+                                                                class="btn btn-success">{olang.KJP_SND_POUT}</button>
                                                             <button type="submit" name="cancelPayout"
-                                                                class="btn btn-danger">Cancel Payout</button>
+                                                                class="btn btn-danger">{olang.KJP_CNCL_POUT}</button>
                                                         </form>
                                                     </div>
 
@@ -116,25 +109,21 @@
                     {page_nums}
                     <ELSE>
                         <div class="alert alert-primary" role="alert">
-                            there is no payouts made yet
+                            {no_payout_msg}
                         </div>
-
                 </IF>
                 <!-- End Payout List -->
-
                 <ELSEIF NAME="case == accepted">
-
-
                     <IF NAME="havePayout">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th scope="col">Payout ID</th>
+                                    <th scope="col">{olang.KJP_POUT_ID}</th>
                                     <th scope="col">{olang.KJP_MEMBER}</th>
-                                    <th scope="col">Payout Method</th>
-                                    <th scope="col">Payout Amount</th>
+                                    <th scope="col">{olang.KJP_PAY_MTHD}</th>
+                                    <th scope="col">{olang.KJP_PAY_AMNT}</th>
                                     <th scope="col">{olang.KJP_DATE_TIME}</th>
-                                    <th scope="col">Payout State</th>
+                                    <th scope="col">{olang.KJP_POUT_ST}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -153,30 +142,23 @@
                         {page_nums}
                         <ELSE>
                             <div class="alert alert-primary" role="alert">
-                                there is no payout accepted yet
+                                {no_acc_payout_msg}
                             </div>
-
                     </IF>
-
                     <!--
                               End Accepted payout
-                            -->
-
-
+                    -->
                     <ELSEIF NAME="case == canceled">
-
-
-
                         <IF NAME="havePayout">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
-                                        <th scope="col">Payout ID</th>
+                                        <th scope="col">{olang.KJP_POUT_ID}</th>
                                         <th scope="col">{olang.KJP_MEMBER}</th>
-                                        <th scope="col">Payout Method</th>
-                                        <th scope="col">Payout Amount</th>
+                                        <th scope="col">{olang.KJP_PAY_MTHD}</th>
+                                        <th scope="col">{olang.KJP_PAY_AMNT}</th>
                                         <th scope="col">{olang.KJP_DATE_TIME}</th>
-                                        <th scope="col">Payout State</th>
+                                        <th scope="col">{olang.KJP_POUT_ST}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -195,18 +177,12 @@
                             {page_nums}
                             <ELSE>
                                 <div class="alert alert-primary" role="alert">
-                                    there is no payout canceled yet
+                                    {no_cncl_payout_msg}
                                 </div>
-
                         </IF>
-
                         <!--
                                   End canceled payout
                                 -->
-
-
-
-
         </IF>
     </div>
 </div>

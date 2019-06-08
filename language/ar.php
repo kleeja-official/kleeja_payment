@@ -79,7 +79,7 @@ return [
     'KJP_PAY_MTHD'                        => 'طريقة الدفع' ,
     'CONFIG_KLJ_MENUS_KJ_PAY_ACTIVE_MTHD' => 'طرق الدفع النشطة',
     'ACTIVE_PAYPAL'                       => 'تنشط باي بال' ,
-    'KJP_MAIL_TPL' => "تم شراء ملف @fileName   بنجاح \r\n يمكنك تنزيل الملف من: @downLink  \r\n ستنتهي صلاحية هذا الرابط على: @linkExpire" ,
+    'KJP_MAIL_TPL'                        => "تم شراء ملف @fileName   بنجاح \r\n يمكنك تنزيل الملف من: @downLink  \r\n ستنتهي صلاحية هذا الرابط على: @linkExpire" ,
     'KJP_MAIL'                            => 'عنوان بريد الكتروني',
     'KJP_MAIL_INFO_1'                     => 'تلقي رابط التحميل عبر البريد الإلكتروني',
     'KJP_MAIL_INFO_2'                     => 'سنرسل رابط التنزيل لهذا البريد الإلكتروني',
@@ -89,18 +89,43 @@ return [
     'KJP_NO_BOUGHT_FILES'                 => 'لا توجد لديك ملفات مشتراة بعد',
 
     // stripe method langs
-    'ACTIVE_CARDS' => 'تفعيل سترايب (Stripe)',
+    'ACTIVE_CARDS'           => 'تفعيل سترايب (Stripe)',
     'STRIPE_PUBLISHABLE_KEY' => 'المفتاح العام ل (Stripe)' ,
-    'STRIPE_SECRET_KEY' => 'المفتاح السري ل (Stripe)' ,
+    'STRIPE_SECRET_KEY'      => 'المفتاح السري ل (Stripe)' ,
 
     // STRIPE MORE INFORMATIONS
 
-    'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'       => 'رقم المعاملة (Stripe)',
-    'KJP_VIW_TPL_STRIPE_BUYER_MAIL'       => 'بريد المشتري (Stripe)',
-    'KJP_VIW_TPL_STRIPE_CARD_TYPE'       => 'نوع بطاقة الدفع',
-    'KJP_VIW_TPL_STRIPE_CARD_FUNDING'       => 'تمويل البطاقة',
-    'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'       => 'بلد البطاقة',
-    'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'       => 'اخر 4 ارقام ',
+    'KJP_VIW_TPL_STRIPE_TRANSACTION_ID'         => 'رقم المعاملة (Stripe)',
+    'KJP_VIW_TPL_STRIPE_BUYER_MAIL'             => 'بريد المشتري (Stripe)',
+    'KJP_VIW_TPL_STRIPE_CARD_TYPE'              => 'نوع بطاقة الدفع',
+    'KJP_VIW_TPL_STRIPE_CARD_FUNDING'           => 'تمويل البطاقة',
+    'KJP_VIW_TPL_STRIPE_CARD_COUNTRY'           => 'بلد البطاقة',
+    'KJP_VIW_TPL_STRIPE_CARD_LAST_4NUMS'        => 'اخر 4 ارقام ',
     'KJP_VIW_TPL_STRIPE_CARD_FINGERPRINT'       => 'بصم البطاقة',
     'KJP_VIW_TPL_STRIPE_CARD_EXPIRE_DATE'       => 'تاريخ انتهاء البطاقة',
+
+    // paypal payout info
+    'KJP_VIW_TPL_PAYOUT_ITEM_ID'         => 'رقم عملية السحب (PayPal)',
+    'KJP_VIW_TPL_PAYOUT_BATCH_ID'        => 'معرف دفعة PayPal',
+    'KJP_VIW_TPL_TRANSACTION_FEES'       => 'رسوم معاملات PayPal',
+    'KJP_VIW_TPL_RECEIVER'               => 'بريد باي بال',
+    'KJP_VIW_TPL_SENDTO'                 => 'بريد باي بال',
+
+
+    'MIN_PRICE_LIMIT'                      => 'الحد الأدنى للسعر',
+    'MAX_PRICE_LIMIT'                      => 'الحد الأقصى للسعر ',
+    'KJP_PRC_LMT'                          => 'يجب أن يكون سعر الملف بين %u و %u %s',
+    'KJP_PAYOUTS'                          => 'طلبات السحب',
+    'KJP_REQ_LIST'                         => 'قائمة الطلبات',
+    'KJP_ACCEPTED'                         => 'وافقت',
+    'KJP_CANCELED'                         => 'ألغيت',
+    'KJP_NO_ITEM'                          => 'لم يتم ايجاد %s',
+    'KJP_FL_NT_FUND'                       => 'الملف غير موجود',
+    'KJP_GP_NT_FUND'                       => 'المجموعة ليست موجودة',
+    'KJP_NO_BLNC'                          => 'لا يمكنك شراء هذا العنصر ، لعدم كفاية الرصيد',
+    'KJP_FRE_ITM'                          => 'انها عنصر مجاني ، لا تحتاج لشراء',
+    'KJP_POUT_ID'                          => 'رقم عملية السحب',
+    'KJP_POUT_ST'                          => 'حالة عملية السحب',
+    'KJP_SND_POUT'                         => 'ارسال عملية السحب',
+    'KJP_CNCL_POUT'                        => 'الغاءعملية السحب',
 ];
