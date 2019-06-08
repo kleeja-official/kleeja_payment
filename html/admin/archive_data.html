@@ -1,145 +1,160 @@
 <nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
-    <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Archive ( {_GET.date} )</li>
-  </ol>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+        <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Archive ( {archive_date} )</li>
+    </ol>
 </nav>
-<div class="card" style="margin: 20px;">
-  <div class="card-body">
+<div class="card">
+    <div class="card-body">
+
+        <div class="row">
+            <div class="col-sm-12 mb-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between p-1">
+                            <div>
+                                {olang.KJP_ALL_TRNC}
+                                <span class="badge badge-secondary badge-pill">{archive_trnc_count}</span>
+                            </div>
+                        </div>
+                        <p class="m-0"><small class="muted">{olang.KJP_TRNC_CP_INFO}</small></p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <LOOP NAME="archive_panel_1">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{methodName}}
+                                <span class="badge badge-secondary">{{htmlContent}}</span>
+                            </li>
+                        </LOOP>
+                    </ul>
+                </div>
+            </div>
 
 
+            <div class="col-sm-6 mb-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between p-1">
+                            <div>
+                                {olang.KJP_FILE_TRNCS}
+                                <span class="badge badge-secondary badge-pill">{archive_file_trnc}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <LOOP NAME="archive_panel_2_1">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{methodName}}
+                                <span class="badge badge-secondary">{{htmlContent}}</span>
+                            </li>
+                        </LOOP>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-sm-6 mb-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between p-1">
+                            <div>
+                                {olang.KJP_GRP_TRNCS}
+                                <span class="badge badge-secondary badge-pill">{archive_group_trnc}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <LOOP NAME="archive_panel_2_2">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{methodName}}
+                                <span class="badge badge-secondary">{{htmlContent}}</span>
+                            </li>
+                        </LOOP>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <h5 class="mb-3">{olang.KJP_ARC_PAYS}</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">{olang.KJP_MEMBER}</th>
+                    <th scope="col">{olang.KJP_ACTION}</th>
+                    <th scope="col">IP</th>
+                    <th scope="col">{olang.KJP_DATE_TIME}</th>
+                    <th scope="col">{olang.KJP_VIEW}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <IF NAME="ArchivePayNum">
+
+                    <LOOP NAME="ArchivePay">
+                        <tr>
+                            <th scope="row">{{PayID}}</th>
+                            <td>{{PayUser}}</td>
+                            <td>{{PayAction}}</td>
+                            <td>{{PayIP}}</td>
+                            <td>{{PayDateTime}}</td>
+                            <td><a href="{{view_link}}" class="btn btn-primary">{olang.KJP_VIEW}</a></td>
+                        </tr>
+
+                    </LOOP>
+
+                    <ELSE>
+
+                        <tr role="alert">
+                           <td class="alert alert-info" colspan="6">{olang.KJP_NO_PAY_ARCH}</td>
+                        </tr>
+
+                </IF>
 
 
-<div class="row" >
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{archive_trnc_count} {olang.KJP_TRNC}</h5>
+            </tbody>
+        </table>
 
-        <LOOP NAME="archive_panel_1"> <!-- if you have better name for varaible , change it ^_^ -->
-          <h5 class="card-title">{{methodName}} -> {{htmlContent}}</h5>
-        </LOOP>
+        {page_nums}
 
-      </div>
-    </div>
-  </div>
+        <hr class="my-4">
 
-
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{archive_file_trnc} {olang.KJP_FILE_TRNCS}</h5>
-
-        <LOOP NAME="archive_panel_2_1"> <!-- ^_^ -->
-          <h5 class="card-title">{{methodName}} -> {{htmlContent}}</h5>
-        </LOOP>
-
-        <hr>
-
-        <h5 class="card-title">{archive_group_trnc} {olang.KJP_GRP_TRNCS}</h5>
-
-        <LOOP NAME="archive_panel_2_2">
-          <h5 class="card-title">{{methodName}} -> {{htmlContent}}</h5>
-        </LOOP>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-
-  </div>
-</div>
-
-
-
-<div class="card" style="margin: 15px;">
-	      <div class="card-body">
-        <h4 class="card-title">{olang.KJP_ARC_PAYS}</h4>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">{olang.KJP_MEMBER}</th>
-      <th scope="col">{olang.KJP_ACTION}</th>
-      <th scope="col">IP</th>
-      <th scope="col">{olang.KJP_DATE_TIME}</th>
-      <th scope="col">{olang.KJP_VIEW}</th>
-    </tr>
-  </thead>
-  <tbody>
-<IF NAME="ArchivePayNum">
-	
-	<LOOP NAME="ArchivePay">
-    <tr>
-      <th scope="row">{{PayID}}</th>
-      <td>{{PayUser}}</td>
-      <td>{{PayAction}}</td>
-      <td>{{PayIP}}</td>
-      <td>{{PayDateTime}}</td>
-      <td><a href="{{view_link}}" class="btn btn-primary">{olang.KJP_VIEW}</a></td>
-    </tr>
-
-</LOOP>
-
-<ELSE>
-
-<div class="alert alert-info" role="alert">
-  {olang.KJP_NO_PAY_ARCH}
-</div>
-
-</IF>
-
-
-  </tbody>
-</table>
-
-{page_nums}
-</div>
-</div>
-
-
-
-<div class="card" style="margin: 15px;">
-	      <div class="card-body">
-        <h4 class="card-title">Archive Payouts</h4>
+        <h5 class="mb-3">Archive Payouts</h5>
 
         <IF NAME="havePayout">
             <table class="table table-bordered">
                 <thead>
-                  <tr>
-                    <th scope="col">Payout ID</th>
-                    <th scope="col">Payout User</th>
-                    <th scope="col">Payout Method</th>
-                    <th scope="col">Payout Amount</th>
-                    <th scope="col">{olang.KJP_DATE_TIME}</th>
-                    <th scope="col">Payout State</th>
-                  </tr>
+                    <tr>
+                        <th scope="col">Payout ID</th>
+                        <th scope="col">Payout User</th>
+                        <th scope="col">Payout Method</th>
+                        <th scope="col">Payout Amount</th>
+                        <th scope="col">{olang.KJP_DATE_TIME}</th>
+                        <th scope="col">Payout State</th>
+                    </tr>
                 </thead>
                 <tbody>
-                  <LOOP NAME="payouts">
-                  <tr
-                  </tr>
-                    <th scope="row">{{ID}}</th>
-                    <th scope="row">{{PayoutUser}}</th>
-                    <td>{{METHOD}}</td>
-                    <td>{{AMOUNT}}</td>
-                    <td>{{DATE_TIME}}</td>
-                    <td>{{STATE}}</td>
-                  </tr>
-                  </LOOP>
+                    <LOOP NAME="payouts">
+                        <tr>
+                            <th scope="row">{{ID}}</th>
+                            <th scope="row">{{PayoutUser}}</th>
+                            <td>{{METHOD}}</td>
+                            <td>{{AMOUNT}}</td>
+                            <td>{{DATE_TIME}}</td>
+                            <td>{{STATE}}</td>
+                        </tr>
+                    </LOOP>
                 </tbody>
-              </table>
-              {page_numsPO}
-              <ELSE>
-                  <div class="alert alert-primary" role="alert">
-                      you did not make any payout yet
-                    </div>
-            
-            </IF>
+            </table>
+            {page_numsPO}
+            <ELSE>
+                <div class="alert alert-primary" role="alert">
+                    you did not make any payout yet
+                </div>
 
-{page_nums}
-</div>
-</div>
+        </IF>
 
+        {page_nums}
+    </div>
+</div>

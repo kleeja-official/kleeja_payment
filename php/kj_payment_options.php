@@ -16,24 +16,6 @@ if (intval($userinfo['founder']) !== 1)
     exit;
 }
 
-echo "<div style='font-size:12px;display:block !important;background:#afc113 !important;margin:5px; padding:2px 3px; position:fixed;bottom:0;" . ($lang['DIR'] == 'ltr' ? 'right' : 'left') . ":5%;z-index:99999;text-align:center;'>
-<!-- Default dropup button -->
-<div class='btn-group dropup'>
-  <button type='button' class='btn btn-dark bg-dark dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-    <i class=\"fa fa-fw fa-bars\"></i>
-  </button>
-  <div class='dropdown-menu'>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options'>" . $olang['R_KJ_PAYMENT_OPTIONS'] . "</a>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options&smt=all_transactions'>" . $olang['KJP_ALL_TRNC'] . "</a>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options&smt=payouts'>Payouts</a>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options&smt=pricing_file'>" . $olang['KJP_PRC_FILE'] . "</a>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options&smt=paid_files'>" . $olang['KJP_PAID_FILE'] . "</a>
-  <a class='dropdown-item' href='" . basename(ADMIN_PATH) . "?cp=kj_payment_options&smt=help'>" . $olang['KJP_HLP'] . '</a>
-</div>
-  </div>
-</div>
-    </div>';
-
 is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:begin_options', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 $styleePath = dirname(__FILE__) . '/../html/admin/';
@@ -52,15 +34,16 @@ if (empty($current_smt))
 
     if (ip('open_payment'))
     {
-        (int) p('payment_number') ?
-        redirect(basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=view&amp;payment=' . p('payment_number'))
-        : null;
+        if (ip('payment_number') && p('payment_number', 'int') > 0)
+        {
+            redirect(basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=view&amp;payment=' . p('payment_number'));
+        }
     }
     elseif (ip('open_archive'))
     {
-        $archive_year  =  p('archive_year');
-        $archive_month =  p('archive_month');
-        $archive_day   =  p('archive_day') !=='' ? p('archive_day') . '-' : '';
+        $archive_year  =  p('archive_year', 'int');
+        $archive_month =  p('archive_month', 'int');
+        $archive_day   =  p('archive_day', 'int') !== 0 ? p('archive_day') . '-' : '';
 
         redirect(basename(ADMIN_PATH) . "?cp=kj_payment_options&amp;smt=archive&amp;date={$archive_day}{$archive_month}-{$archive_year}");
 
@@ -454,7 +437,8 @@ elseif ($current_smt == 'archive' && ig('date'))
     $archive_panel_2_1 = [/* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */];
     $archive_panel_2_2 = [/* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */];
 
-    $Archive_data = get_archive(g('date'));
+    $archive_date = g('date');
+    $Archive_data = get_archive($archive_date);
 
 
     // the panel of all transactions

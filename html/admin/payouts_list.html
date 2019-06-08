@@ -1,182 +1,212 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
-      <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
-      <li class="breadcrumb-item active" aria-current="page">Payouts</li>
+        <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+        <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
     </ol>
-  </nav>
+</nav>
 
-
-<ul class="nav nav-tabs">
- <!--  <li class="nav-item">
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="./?cp=kj_payment_options">{lang.HOME}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./?cp=kj_payment_options&amp;smt=all_transactions">{olang.KJP_ALL_TRNC}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="./?cp=kj_payment_options&amp;smt=payouts">{olang.KJP_PAYOUTS}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./?cp=kj_payment_options&amp;smt=pricing_file">{olang.KJP_PRC_FILE}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./?cp=kj_payment_options&amp;smt=paid_files">{olang.KJP_PAID_FILE}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="./?cp=kj_payment_options&amp;smt=help">{olang.KJP_HLP}</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-pills mb-3">
+            <!--  <li class="nav-item">
         <a class="nav-link (case == payouts?active:)" href="{action}">Payouts</a>
     </li> -->
-    <li class="nav-item">
-        <a class="nav-link (case == list?active:)" href="{action}&amp;case=list">Request List</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link (case == accepted?active:)" href="{action}&amp;case=accepted">Accepted</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link (case == canceled?active:)" href="{action}&amp;case=canceled">Canceled</a>
-    </li>
-</ul>
+            <li class="nav-item">
+                <a class="nav-link (case == list?active:)" href="{action}&amp;case=list">Request List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link (case == accepted?active:)" href="{action}&amp;case=accepted">Accepted</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link (case == canceled?active:)" href="{action}&amp;case=canceled">Canceled</a>
+            </li>
+        </ul>
 
-<IF NAME="case == payouts">
- 
-<ELSEIF NAME="case == list">
+        <IF NAME="case == payouts">
+
+            <ELSEIF NAME="case == list">
 
                 <IF NAME="havePayout">
                     <table class="table table-bordered">
                         <thead>
-                          <tr>
-                            <th scope="col">Payout ID</th>
-                            <th scope="col">Member</th>
-                            <th scope="col">Payout Method</th>
-                            <th scope="col">Payout Amount</th>
-                            <th scope="col">{olang.KJP_DATE_TIME}</th>
-                            <th scope="col">Payout State</th>
-                          </tr>
+                            <tr>
+                                <th scope="col">Payout ID</th>
+                                <th scope="col">Member</th>
+                                <th scope="col">Payout Method</th>
+                                <th scope="col">Payout Amount</th>
+                                <th scope="col">{olang.KJP_DATE_TIME}</th>
+                                <th scope="col">Payout State</th>
+                            </tr>
                         </thead>
                         <tbody>
-                          <LOOP NAME="payouts">
-                          <tr>
-                            <th scope="row">{{ID}}</th>
-                            <th scope="row">{{USER}}</th>
-                            <td>{{METHOD}}</td>
-                            <td>{{AMOUNT}}</td>
-                            <td>{{DATE_TIME}}</td>
-                            <td>
-                                    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#exampleModal{{ID}}">
+                            <LOOP NAME="payouts">
+                                <tr>
+                                    <th scope="row">{{ID}}</th>
+                                    <th scope="row">{{USER}}</th>
+                                    <td>{{METHOD}}</td>
+                                    <td>{{AMOUNT}}</td>
+                                    <td>{{DATE_TIME}}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-info" data-toggle="modal"
+                                            data-target="#exampleModal{{ID}}">
                                             Check
-                                          </button>
-                                          
-                                          <!-- Modal -->
-                                          <div class="modal fade" id="exampleModal{{ID}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        </button>
+
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="exampleModal{{ID}}" tabindex="-1" role="dialog"
+                                            aria-labelledby="exampleModalLabel" aria-hidden="true">
                                             <div class="modal-dialog" role="document">
-                                              <div class="modal-content">
-                                                <div class="modal-header">
-                                                  <h5 class="modal-title" id="exampleModalLabel">Payout {{ID}}</h5>
-                                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                  </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <h3><strong>{{USER}}</strong> request to withdraw {{AMOUNT}} 
-                                                        <br> By <strong>{{METHOD}}</strong>
-                                                    </h3>
-                                                    
-                                          <form action="{FormAction}" method="POST">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="exampleModalLabel">Payout {{ID}}
+                                                        </h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <h3><strong>{{USER}}</strong> request to withdraw {{AMOUNT}}
+                                                            <br> By <strong>{{METHOD}}</strong>
+                                                        </h3>
 
-                                              <input type="hidden" name="payoutID" value="{{ID}}">
-                                              <hr>
-                                          
-                                          
-                                            <button type="submit" name="sendPayout" class="btn btn-success">Send Payout</button>
-                                            <button type="submit" name="cancelPayout" class="btn btn-danger">Cancel Payout</button>
-                                          </form>
+                                                        <form action="{FormAction}" method="POST">
+
+                                                            <input type="hidden" name="payoutID" value="{{ID}}">
+                                                            <hr>
+
+
+                                                            <button type="submit" name="sendPayout"
+                                                                class="btn btn-success">Send Payout</button>
+                                                            <button type="submit" name="cancelPayout"
+                                                                class="btn btn-danger">Cancel Payout</button>
+                                                        </form>
+                                                    </div>
+
                                                 </div>
-                                          
-                                              </div>
                                             </div>
-                                          </div>
-                            </td>
-                          </tr>
-                          </LOOP>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </LOOP>
                         </tbody>
-                      </table>
-                      {page_nums}
-                      <ELSE>
-                          <div class="alert alert-primary" role="alert">
-                              there is no payouts made yet
-                            </div>
-                    
-                    </IF>
-                    <!-- End Payout List -->
+                    </table>
+                    {page_nums}
+                    <ELSE>
+                        <div class="alert alert-primary" role="alert">
+                            there is no payouts made yet
+                        </div>
 
-<ELSEIF NAME="case == accepted">
+                </IF>
+                <!-- End Payout List -->
+
+                <ELSEIF NAME="case == accepted">
 
 
-                        <IF NAME="havePayout">
-                            <table class="table table-bordered">
-                                <thead>
-                                  <tr>
+                    <IF NAME="havePayout">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
                                     <th scope="col">Payout ID</th>
                                     <th scope="col">{olang.KJP_MEMBER}</th>
                                     <th scope="col">Payout Method</th>
                                     <th scope="col">Payout Amount</th>
                                     <th scope="col">{olang.KJP_DATE_TIME}</th>
                                     <th scope="col">Payout State</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <LOOP NAME="payouts">
-                                  <tr>
-                                    <th scope="row">{{ID}}</th>
-                                    <th scope="row">{{USER}}</th>
-                                    <td>{{METHOD}}</td>
-                                    <td>{{AMOUNT}}</td>
-                                    <td>{{DATE_TIME}}</td>
-                                    <td> <a href="{{VIEW_LINK}}" class="btn btn-primary">VIEW</a> </td>
-                                  </tr>
-                                  </LOOP>
-                                </tbody>
-                              </table>
-                              {page_nums}
-                              <ELSE>
-                                  <div class="alert alert-primary" role="alert">
-                                      there is no payout accepted yet
-                                    </div>
-                            
-                            </IF>
-
-                            <!--
-                              End Accepted payout
-                            -->
-
-
-<ELSEIF NAME="case == canceled">
-
-              
-
-                              <IF NAME="havePayout">
-                                <table class="table table-bordered">
-                                    <thead>
-                                      <tr>
-                                        <th scope="col">Payout ID</th>
-                                        <th scope="col">{olang.KJP_MEMBER}</th>
-                                        <th scope="col">Payout Method</th>
-                                        <th scope="col">Payout Amount</th>
-                                        <th scope="col">{olang.KJP_DATE_TIME}</th>
-                                        <th scope="col">Payout State</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <LOOP NAME="payouts">
-                                      <tr>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <LOOP NAME="payouts">
+                                    <tr>
                                         <th scope="row">{{ID}}</th>
                                         <th scope="row">{{USER}}</th>
                                         <td>{{METHOD}}</td>
                                         <td>{{AMOUNT}}</td>
                                         <td>{{DATE_TIME}}</td>
                                         <td> <a href="{{VIEW_LINK}}" class="btn btn-primary">VIEW</a> </td>
-                                      </tr>
-                                      </LOOP>
-                                    </tbody>
-                                  </table>
-                                  {page_nums}
-                                  <ELSE>
-                                      <div class="alert alert-primary" role="alert">
-                                          there is no payout canceled yet
-                                        </div>
-                                
-                                </IF>
-    
-                                <!--
+                                    </tr>
+                                </LOOP>
+                            </tbody>
+                        </table>
+                        {page_nums}
+                        <ELSE>
+                            <div class="alert alert-primary" role="alert">
+                                there is no payout accepted yet
+                            </div>
+
+                    </IF>
+
+                    <!--
+                              End Accepted payout
+                            -->
+
+
+                    <ELSEIF NAME="case == canceled">
+
+
+
+                        <IF NAME="havePayout">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Payout ID</th>
+                                        <th scope="col">{olang.KJP_MEMBER}</th>
+                                        <th scope="col">Payout Method</th>
+                                        <th scope="col">Payout Amount</th>
+                                        <th scope="col">{olang.KJP_DATE_TIME}</th>
+                                        <th scope="col">Payout State</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <LOOP NAME="payouts">
+                                        <tr>
+                                            <th scope="row">{{ID}}</th>
+                                            <th scope="row">{{USER}}</th>
+                                            <td>{{METHOD}}</td>
+                                            <td>{{AMOUNT}}</td>
+                                            <td>{{DATE_TIME}}</td>
+                                            <td> <a href="{{VIEW_LINK}}" class="btn btn-primary">VIEW</a> </td>
+                                        </tr>
+                                    </LOOP>
+                                </tbody>
+                            </table>
+                            {page_nums}
+                            <ELSE>
+                                <div class="alert alert-primary" role="alert">
+                                    there is no payout canceled yet
+                                </div>
+
+                        </IF>
+
+                        <!--
                                   End canceled payout
                                 -->
-    
-                      
 
 
-</IF>
+
+
+        </IF>
+    </div>
+</div>
