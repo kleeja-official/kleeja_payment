@@ -220,6 +220,8 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             // if the payment is for joining a group and the payer is in login and member in kleeja
                             if ($PaymentInfo['payment_action'] == 'join_group' && $usrcp->name())
                             {
+                                $this->toGlobal['groupName'] = $db_Payment_Info['item_name'];
+
                                 $update_user    = [
                                     'UPDATE'       => "{$dbprefix}users",
                                     'SET'          => "group_id = '" . $PaymentInfo['item_id'] . "'" ,
@@ -230,7 +232,11 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             }
                             elseif ($PaymentInfo['payment_action'] == 'buy_file')
                             {
-                                $user_id      = getFileInfo($PaymentInfo['item_id'], 'user')['user']; // File Owner ID
+                                $this->downloadLinkMailer    = $PPI['payer']['payer_info']['email'];
+                                $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
+                                $this->toGlobal['file_name'] = $db_Payment_Info['item_name'];
+
+                                $user_id          = getFileInfo($PaymentInfo['item_id'], 'user')['user']; // File Owner ID
                                 $user_group       = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
                                 if (user_can('recaive_profits', $user_group))
                                 {
@@ -240,24 +246,8 @@ class kjPayMethod_paypal implements KJPaymentMethod
                                 }
                             }
 
-
-
                             // now we can say that the payment made successfuly
                             $this->successPayment = true;
-
-                            // send download link to the buyer
-                            // send varible to global -> go.php
-
-                            if ($PaymentInfo['payment_action'] == 'buy_file')
-                            {
-                                $this->downloadLinkMailer    = $PPI['payer']['payer_info']['email'];
-                                $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
-                                $this->toGlobal['file_name'] = $db_Payment_Info['item_name'];
-                            }
-                            else
-                            { // payment_action = join_group
-                                $this->toGlobal['groupName'] = $db_Payment_Info['item_name'];
-                            }
                         }
                         catch (PayPal\Exception\PayPalConnectionException $ex)
                         {

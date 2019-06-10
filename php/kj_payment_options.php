@@ -604,7 +604,7 @@ elseif ($current_smt == 'payouts')
                     //let's update the payout state and back the amount to user balance
                     $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$pOutInfo['amount']} WHERE id ='{$pOutInfo['user']}'");
                     $SQL->query("UPDATE {$dbprefix}payments_out SET `state` = 'cancel' WHERE id = '" . p('payoutID') . "'");
-                    kleeja_admin_info('payout canceled successfuly and the amount ' . $pOutInfo['amount'] . ' is back to user balance', $action . '&amp;case=list');
+                    kleeja_admin_info(sprintf($olang['KJP_CNCLD_POUT'], $pOutInfo['method']), $action . '&amp;case=list');
 
                     exit;
                 }
@@ -638,13 +638,13 @@ elseif ($current_smt == 'payouts')
 
                     if ($PAY->isSuccess())
                     {
-                        kleeja_admin_info('payout made successfuly and the amount ' . $pOutInfo['amount'] . ' is send to user balance', $action . '&amp;case=list');
+                        kleeja_admin_info(sprintf($olang['KJP_SUCS_POUT'], $pOutInfo['amount']), $action . '&amp;case=list');
 
                         exit;
                     }
                     else
                     {
-                        kleeja_admin_err('Error when making payout', $action . '&amp;case=list');
+                        kleeja_admin_err($olang['KJP_ERR_POUT'], $action . '&amp;case=list');
                     }
                 }
             }
@@ -683,7 +683,8 @@ elseif ($current_smt == 'payouts')
                     'METHOD'    => $payout['method'],
                     'AMOUNT'    => $payout['amount'] . ' ' . $config['iso_currency_code'],
                     'DATE_TIME' => "{$payout['payout_year']}-{$payout['payout_month']}-{$payout['payout_day']} / {$payout['payout_time']}",
-                    'STATE'     => $payout['state']
+                    'STATE'     => $payout['state'],
+                    'MDL_MSG'   => sprintf($olang['KJP_POUT_REQ_MDL'], $UserById[$payout['user']], $payout['amount'] . ' ' . $config['iso_currency_code'], $payout['method']),
                 ];
             }
         }
@@ -773,9 +774,10 @@ elseif ($current_smt == 'help')
 }
 elseif ($current_smt == 'viewPayout' && ig('id'))
 {
-    $stylee = 'view_payout';
+    $stylee    = 'view_payout';
+    $poutID    = preg_replace('/[^a-z0-9_]/i', '', g('id', 'int', ''));
 
-    $payoutInfo  = getpayoutInfo(g('id'), "state != 'verify'", false);
+    $payoutInfo  = getpayoutInfo($poutID, "state != 'verify'", false);
     $have_payout = false;
 
     if ($payoutInfo)
@@ -808,11 +810,11 @@ elseif ($current_smt == 'viewPayout' && ig('id'))
 
             if ($PAY->isSuccess())
             {
-                kleeja_admin_info('payout is recaived successfuly');
+                kleeja_admin_info($olang['KJP_POUT_RCV_SUCS']);
             }
             else
             {
-                kleeja_admin_err('payout is not recaived successfuly');
+                kleeja_admin_err($olang['KJP_POUT_NOT_RCV_SUCS']);
             }
         }
         $FormAction  = $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=viewPayout&id=' . $payoutInfo['id'];

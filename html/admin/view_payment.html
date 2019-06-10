@@ -2,7 +2,7 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
     <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{olang.KJP_VIEW_PAY} ( {_GET.payment} )</li>
+    <li class="breadcrumb-item active" aria-current="page">{olang.KJP_VIEW_PAY} ( {id} )</li>
   </ol>
 </nav>
 <div class="card" style="margin: 20px;">
@@ -87,7 +87,7 @@
 <ELSE>
 
 <div class="alert alert-info" role="alert">
-  There is no Payment with this ID ..
+  {olang.KJP_NO_PMNT_ID}
 </div>
 
 </IF>

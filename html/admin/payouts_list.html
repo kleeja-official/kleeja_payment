@@ -77,7 +77,7 @@
                                             <div class="modal-dialog" role="document">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel">Payout {{ID}}
+                                                        <h5 class="modal-title" id="exampleModalLabel">{olang.KJP_PAYOUTS} {{ID}}
                                                         </h5>
                                                         <button type="button" class="close" data-dismiss="modal"
                                                             aria-label="Close">
@@ -85,8 +85,7 @@
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <h3><strong>{{USER}}</strong> request to withdraw {{AMOUNT}}
-                                                            <br> By <strong>{{METHOD}}</strong>
+                                                        <h3>{{MDL_MSG}}
                                                         </h3>
                                                         <form action="{FormAction}" method="POST">
                                                             <input type="hidden" name="payoutID" value="{{ID}}">

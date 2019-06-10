@@ -655,7 +655,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $titlee = 'Paid Group';
             $is_style_supported = is_style_supported();
             // to allow the developers to including 'paid_group.html' with their styles .
-            $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paid_group.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+            $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paid_group.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
 
             $PaidGroups = getGroupInfo($args['d_groups']);
 
@@ -686,7 +686,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                 if (! filter_var($mailAdress, FILTER_VALIDATE_EMAIL))
                 {
-                    kleeja_err('put right e-mail', '', true, $config['siteurl'] . 'go.php?go=KJPaymentMailer', 2);
+                    kleeja_err($lang['WRONG_EMAIL'], '', true, $config['siteurl'] . 'go.php?go=KJPaymentMailer', 2);
 
                     exit; // again :)
                 }
@@ -699,7 +699,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                 if (! $mailer)
                 {
-                    kleeja_err('Error in sending e-mail , try again', '', true, $config['siteurl'] . 'go.php?go=KJPaymentMailer', 3);
+                    kleeja_err($olang['KJP_ERR_SND_MIL'], '', true, $config['siteurl'] . 'go.php?go=KJPaymentMailer', 3);
 
                     exit;
                 }
@@ -725,7 +725,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $FormAction = $config['siteurl'] . 'go.php?go=KJPaymentMailer';
             $is_style_supported = is_style_supported();
             $stylee = 'kjpayment_mailer';
-            $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/kjpaymentmailer.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+            $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/kjpaymentmailer.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
             return compact('stylee', 'styleePath', 'fileName', 'no_request', 'is_style_supported');
         }
     } ,
@@ -882,14 +882,24 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $query = [
                 'SELECT'   => 'id , payment_token , item_name, item_id , payment_currency , payment_amount, payment_year , payment_month , payment_day , payment_time' ,
                 'FROM'     => $dbprefix . 'payments' ,
-                'WHERE'    => "payment_state = 'approved' AND user = '{$user_is}' AND payment_action = 'buy_file'" ,
+                'WHERE'    => "payment_state = 'approved' AND user = {$user_is} AND payment_action = 'buy_file'" ,
                 'ORDER BY' => 'id DESC'
             ];
 
             $all_payments = $SQL->build($query);
 
-            if ($SQL->num_rows($all_payments))
+            if ($num_rows = $SQL->num_rows($all_payments))
             {
+                $perpage          = 21;
+                $currentPage    = ig('page') ? g('page', 'int') : 1;
+                $Pager            = new Pagination($perpage, $num_rows, $currentPage);
+                $start            = $Pager->getStartRow();
+                $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=bought_files';
+                $page_nums        = $Pager->print_nums($linkgoto);
+                $query['LIMIT'] = "$start, $perpage";
+                $all_payments = $SQL->build($query);
+
+
                 $myPayments = [];
                 $havePayments = true;
 
@@ -907,7 +917,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
 
 
-            return compact('is_style_supported', 'titlee', 'no_request', 'stylee', 'styleePath', 'myPayments', 'havePayments');
+            return compact('is_style_supported', 'titlee', 'no_request', 'stylee', 'page_nums', 'styleePath', 'myPayments', 'havePayments');
         }
         // Payment UCP
         elseif (g('go') == 'my_kj_payment')
@@ -918,7 +928,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             }
             $action = $config['siteurl'] . 'ucp.php?go=my_kj_payment'; // for withdraw form
             $case = ig('case') ? g('case') : 'cp';
-            $user_balance = $usrcp->get_data('balance')['balance'] . ' ' . strtoupper($config['iso_currency_code']); // to have it fresh
+            $userData = $usrcp->get_data('balance , password_salt');
+            $user_balance = $userData['balance'] . ' ' . strtoupper($config['iso_currency_code']); // to have it fresh
             $username = $usrcp->name();
             $user_id  = $usrcp->id();
             $titlee       = 'KJ Payment CP';
@@ -960,7 +971,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     exit;
                 }
                 // if erro password stop
-                if (empty(p('userPass')) || ! $usrcp->kleeja_hash_password(p('userPass') . $userinfo['password_salt'], $userinfo['password']))
+                if (empty(p('userPass')) || ! $usrcp->kleeja_hash_password(p('userPass') . $userData['password_salt'], $userinfo['password']))
                 {
                     kleeja_err('your password is not correct');
 
@@ -974,14 +985,20 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     if ($requestAmount < 0 || $requestAmount > $user_balance)
                     {
                         // no -> he don't have it
-                        kleeja_err('you can not request this amount from your balance or the number is not vailed Amount');
+                        kleeja_err($olang['KJP_NOT_VAILED_AMNT']);
 
                         exit;
                     }
                     else
                     {
-                        ! (float) $requestAmount ? kleeja_err('you can not request this amount from your balance or the number is not vailed Amount') : null;
-                        $method   = 'paypal';
+                        if (! (float) $requestAmount)
+                        {
+                            kleeja_err($olang['KJP_NOT_VAILED_AMNT']);
+
+                            exit;
+                        }
+
+                        $method   = 'paypal'; // until now , only method support payout is paypal
                         $amount   = $requestAmount;
                         $state    = 'verify';
                         $payout_year      = date('Y');
@@ -1004,14 +1021,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         {
                             $new_balance = $user_balance - $requestAmount;
                             $SQL->query("UPDATE {$dbprefix}users SET `balance` = '{$new_balance}' WHERE `name` = '{$username}'");
-                            kleeja_info("the amount {$requestAmount} is requested , it will be in your account in 24 hour
-                            <br> your new balance is {$new_balance}");
+                            kleeja_info(sprintf($olang['KJP_SUCES_SND_WTHD'], $requestAmount, $new_balance));
                         }
                     }
                 }
             }
 
-            if ($case == 'Requested_Amounts')
+            if ($case == 'withdrawals')
             {
                 // only if the case is (Requested_Amounts) we will call this query
                 $query = [
@@ -1030,7 +1046,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     $currentPage    = ig('page') ? g('page', 'int') : 1;
                     $Pager            = new Pagination($perpage, $num_rows, $currentPage);
                     $start            = $Pager->getStartRow();
-                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=Requested_Amounts';
+                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=withdrawals';
                     $page_nums        = $Pager->print_nums($linkgoto);
                     $query['LIMIT'] = "$start, $perpage";
                     $result = $SQL->build($query);
@@ -1141,7 +1157,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         exit;
                     }
 
-                    if ($file_info = getFileInfo($FileID))
+                    if ($file_info = getFileInfo($FileID, 'user = ' . $usrcp->id()))
                     {
                         $update_query = [
                             'UPDATE' => $dbprefix . 'files' ,
@@ -1157,12 +1173,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                             $AlertMsg = sprintf($olang['KJP_NO_FILE_NEW_PRICE'], $FileName, $FilePrice, strtoupper($config['iso_currency_code']));
                             $AlertRole = 'success';
                         }
-                        else
-                        {
-                            $OpenAlert = true;
-                            $AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] . ' ' . $FileID;
-                            $AlertRole = 'danger';
-                        }
+                    }
+                    else
+                    {
+                        $OpenAlert = true;
+                        $AlertMsg = $olang['KJP_NO_FILE_WITH_ID'] . ' ' . $FileID;
+                        $AlertRole = 'danger';
                     }
                 }
             }

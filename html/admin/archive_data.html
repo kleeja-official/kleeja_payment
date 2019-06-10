@@ -120,18 +120,18 @@
 
         <hr class="my-4">
 
-        <h5 class="mb-3">Archive Payouts</h5>
+        <h5 class="mb-3">{olang.KJP_POUT_ARCH}</h5>
 
         <IF NAME="havePayout">
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th scope="col">Payout ID</th>
-                        <th scope="col">Payout User</th>
-                        <th scope="col">Payout Method</th>
-                        <th scope="col">Payout Amount</th>
+                        <th scope="col">{olang.KJP_POUT_ID}</th>
+                        <th scope="col">{olang.KJP_MEMBER}</th>
+                        <th scope="col">{olang.KJP_PAY_MTHD}</th>
+                        <th scope="col">{olang.KJP_PAY_AMNT}</th>
                         <th scope="col">{olang.KJP_DATE_TIME}</th>
-                        <th scope="col">Payout State</th>
+                        <th scope="col">{olang.KJP_POUT_ST}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,7 +150,7 @@
             {page_numsPO}
             <ELSE>
                 <div class="alert alert-primary" role="alert">
-                    you did not make any payout yet
+                    {olang.KJP_NO_POUT_YET}
                 </div>
 
         </IF>

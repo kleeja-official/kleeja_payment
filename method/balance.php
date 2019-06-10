@@ -16,6 +16,7 @@ class kjPayMethod_balance implements KJPaymentMethod
              * this will check for permission
              * and also it will check if user is login or not .
              * anyway , the Guest don't have this permission
+             * if the user have this permission , that mean it's able for hem to use the balance
              */
             kleeja_err('member area');
 
