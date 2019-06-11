@@ -134,6 +134,14 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
             'type'   => 'groups',
             'order'  => '1',
         ],
+        'min_payout_limit' =>
+        [
+            'value'  => '0',
+            'html'   => configField('min_payout_limit'),
+            'plg_id' => $plg_id,
+            'type'   => 'groups',
+            'order'  => '1',
+        ],
 
         'pp_client_id' =>
         [
@@ -287,6 +295,7 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
 
     delete_config([
         'join_price',
+        'min_payout_limit',
         'paypal_client_secret',
         'pp_client_id',
         'iso_currency_code',
@@ -819,13 +828,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     } ,
 
     'Saaheader_links_func' => function ($args) {
-        global $d_groups , $config;
+        global $d_groups , $config , $olang;
         $top_menu = $args['top_menu'];
         $side_menu = $args['side_menu'];
         $user_is = $args['user_is'];
 
         $side_menu[] = ['name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false)];
-        $side_menu[] = ['name' => 'my_kj_payment', 'title' => 'Payments Control', 'url' => $config['siteurl'] . 'ucp.php?go=my_kj_payment', 'show' => ($user_is && user_can('recaive_profits') ? true : false)];
+        $side_menu[] = ['name' => 'my_kj_payment', 'title' => $olang['R_KJ_PAYMENT_OPTIONS'], 'url' => $config['siteurl'] . 'ucp.php?go=my_kj_payment', 'show' => ($user_is && user_can('recaive_profits') ? true : false)];
         $top_menu[] = ['name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => getGroupInfo($d_groups)];
 
         return compact('top_menu', 'side_menu');
@@ -863,7 +872,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         }
     },
     'default_usrcp_page' => function ($args) {
-        global $SQL , $dbprefix , $usrcp , $config ,$olang , $userinfo;
+        global $SQL , $dbprefix , $usrcp , $config ,$olang , $userinfo ,$d_groups;
         // all user bought file
         if (g('go') == 'bought_files')
         {
@@ -974,6 +983,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 if (empty(p('userPass')) || ! $usrcp->kleeja_hash_password(p('userPass') . $userData['password_salt'], $userinfo['password']))
                 {
                     kleeja_err('your password is not correct');
+
+                    exit;
+                }
+                elseif (($lmt = getGroupInfo($d_groups, $usrcp->group_id())['min_payout_limit']) !== '0' && $lmt > p('AmountNumber'))
+                {
+                    kleeja_err(sprintf($olang['KJP_MIN_POUT_LMT'], $lmt, $config['iso_currency_code']));
 
                     exit;
                 }

@@ -16,8 +16,6 @@ if (intval($userinfo['founder']) !== 1)
     exit;
 }
 
-is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:begin_options', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
-
 $styleePath = dirname(__FILE__) . '/../html/admin/';
 
 
@@ -97,7 +95,7 @@ if (empty($current_smt))
 
     // add what u want to the panels by this hook using the examples befor
 
-    is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:add_to_panels', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+    is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:addToCPanel', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 
 
@@ -481,6 +479,7 @@ elseif ($current_smt == 'archive' && ig('date'))
     $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['num']];
     $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
 
+    is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:addToArchive', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 
 
@@ -604,7 +603,7 @@ elseif ($current_smt == 'payouts')
                     //let's update the payout state and back the amount to user balance
                     $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$pOutInfo['amount']} WHERE id ='{$pOutInfo['user']}'");
                     $SQL->query("UPDATE {$dbprefix}payments_out SET `state` = 'cancel' WHERE id = '" . p('payoutID') . "'");
-                    kleeja_admin_info(sprintf($olang['KJP_CNCLD_POUT'], $pOutInfo['method']), $action . '&amp;case=list');
+                    kleeja_admin_info(sprintf($olang['KJP_CNCLD_POUT'], $pOutInfo['amount']), $action . '&amp;case=list');
 
                     exit;
                 }

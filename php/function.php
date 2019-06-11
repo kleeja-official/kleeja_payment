@@ -118,15 +118,17 @@ function getGroupInfo($groupData, $getGroup = 'all')
         { // maybe the webmaster using another group as default registration group ..
             if ($getGroup == 'all')
             {
-                $group_id   = $data['data']['group_id'];
-                $group_name = $data['data']['group_name'];
-                $join_price = $data['configs']['join_price'];
+                $group_id         = $data['data']['group_id'];
+                $group_name       = $data['data']['group_name'];
+                $join_price       = $data['configs']['join_price'];
+                $min_payout_limit = $data['configs']['min_payout_limit'];
 
 
                 $return[] = [
-                    'id'    => $group_id ,
-                    'name'  => $group_name ,
-                    'price' => $join_price ,
+                    'id'               => $group_id ,
+                    'name'             => $group_name ,
+                    'price'            => $join_price ,
+                    'min_payout_limit' => $min_payout_limit ,
                 ];
             }
             elseif ((int) $getGroup
@@ -134,15 +136,17 @@ function getGroupInfo($groupData, $getGroup = 'all')
             && $data['data']['group_id'] == $getGroup
             && $data['data']['group_is_default'] == 0)
             {
-                $group_id   = $data['data']['group_id'];
-                $group_name = $data['data']['group_name'];
-                $join_price = $data['configs']['join_price'];
+                $group_id         = $data['data']['group_id'];
+                $group_name       = $data['data']['group_name'];
+                $join_price       = $data['configs']['join_price'];
+                $min_payout_limit = $data['configs']['min_payout_limit'];
 
 
                 $return = [
-                    'id'    => $group_id ,
-                    'name'  => $group_name ,
-                    'price' => $join_price ,
+                    'id'               => $group_id ,
+                    'name'             => $group_name ,
+                    'price'            => $join_price ,
+                    'min_payout_limit' => $min_payout_limit ,
                 ];
             }
         }

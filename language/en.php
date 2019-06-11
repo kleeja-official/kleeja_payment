@@ -155,4 +155,6 @@ return [
     'KJP_POUT_REQ_MDL'                     => '<strong>%s</strong> request to withdraw %s <br> By <strong>%s</strong>',
     'ACTIVE_BALANCE'                       => 'Active Balance',
     'KJP_POUT_ARCH'                        => 'Archive Payouts',
+    'MIN_PAYOUT_LIMIT'                     => 'Min Withdrawal Limit',
+    'KJP_MIN_POUT_LMT'                     => 'The Min Withdrawal Limit is %u %s',
 ];
