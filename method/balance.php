@@ -107,7 +107,7 @@ class kjPayMethod_balance implements KJPaymentMethod
             exit;
         }
 
-        // no Error , let's check if the user this amount in hes balance or not
+        // no Error , let's check if the user have this amount in hes balance or not
         $itemPrice = $_SESSION['kj_payment']['payment_action'] == 'buy_file' ? $fileinfo['price'] : $groupinfo['price'];
 
         if ($itemPrice <= 0)

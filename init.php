@@ -519,6 +519,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                         exit;
                     }
+                    elseif ($userIs['group_id'] == 1 && ! defined('DEV_STAGE'))
+                    {
+                        kleeja_err('YOU ARE ADMIN');
+
+                        exit;
+                    }
                     else
                     {
                         $groupInfo = getGroupInfo($args['d_groups'], g('id'));
@@ -638,7 +644,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         {
             if (ip('join_grp'))
             {
-                // to be sure that no when playing with html file
+                // to be sure that no one playing with html file
                 if (in_array(p('method'), getPaymentMethods()))
                 {
                     redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('method') . '&action=join_group&id=' . p('group_id'));
@@ -654,14 +660,14 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             {
                 $value = trim($value);
 
-                $MethodOption .= "<option value='" . $value . "'>" . strtoupper($value) . "</option>\n";
+                $MethodOption .= "<option value='{$value}'>" . strtoupper($value) . "</option>\n";
                 // loop inside loop doesn't work in kleeja styles
             }
 
 
             $no_request = false;
             $stylee = 'paid_group';
-            $titlee = 'Paid Group';
+            $titlee = $olang['KJP_PID_GRP'];
             $is_style_supported = is_style_supported();
             // to allow the developers to including 'paid_group.html' with their styles .
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paid_group.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
@@ -845,7 +851,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         global $config , $usrcp;
 
         if (ig('downPaidFile'))
-        { // the mailed link to Buyer mail
+        {
+            // the mailed link to Buyer mail
             // EX: domain.io/kleeja/go.php?downPaidFile=fileID_dbID_payToken
             $downToken = explode('_', g('downPaidFile'));
             $fileID    = $downToken[0];
@@ -932,7 +939,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         elseif (g('go') == 'my_kj_payment')
         {
             if (! user_can('recaive_profits'))
-            { // this is not Guests page
+            {
+                // this is not Guests page
                 return;
             }
             $action = $config['siteurl'] . 'ucp.php?go=my_kj_payment'; // for withdraw form
@@ -1274,11 +1282,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         if (file_exists($langFiles))
         {
             $langFiles = require_once $langFiles;
-
-            foreach ($langFiles as $key => $value)
-            {
-                $olang[$key] = $value;
-            }
+            $olang = array_merge($olang, $langFiles);
         }
         return compact('olang');
     }
