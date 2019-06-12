@@ -71,7 +71,7 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function checkPayment()
     {
-        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang;
+        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang , $olang;
 
         if (! $usrcp->name())
         {
