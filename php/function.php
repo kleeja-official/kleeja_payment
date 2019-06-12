@@ -501,7 +501,7 @@ function get_archive ($date = '30-2-yyyy')
 
 function getPaymentMethods()
 {
-    global $SQL , $dbprefix , $usrcp;
+    global $SQL , $dbprefix;
 
     $get_methods = $SQL->query("SELECT `name` FROM {$dbprefix}config WHERE `value` = '1' AND `type` = 'kj_pay_active_mthd'");
 
@@ -511,7 +511,7 @@ function getPaymentMethods()
     {
         while ($methods = $SQL->fetch($get_methods))
         {
-            if (! $usrcp->name() && $methods['name'] == 'active_balance')
+            if (! user_can('recaive_profits') && $methods['name'] == 'active_balance')
             {
                 continue;
             }
