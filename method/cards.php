@@ -159,7 +159,8 @@ class kjPayMethod_cards implements KJPaymentMethod
                 ];
 
                 $SQL->build($insert_query);
-                $insert_id = $SQL->insert_id();
+                $_SESSION['kj_payment']['db_id']         = $SQL->insert_id();
+                $_SESSION['kj_payment']['payment_token'] = $payment_token;
 
 
                 // if the payment is for joining a group and the payer is in login and member in kleeja
@@ -177,7 +178,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                 elseif ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
                 {
                     $this->downloadLinkMailer    = $stripe_buyer_mail;
-                    $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $insert_id . '_' . $payment_token;
+                    $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $payment_token;
                     $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
                     $user_id                     = getFileInfo($_SESSION['kj_payment']['item_id'], 'user')['user']; // File Owner ID
                     $user_group                  = $usrcp->get_data('group_id', $user_id)['group_id']; // get the group id
