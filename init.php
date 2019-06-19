@@ -16,7 +16,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
         'ar' => 'مدفوعات كليجا'
     ],
     // who wrote this plugin?
-    'plugin_developer' => 'Mitan Omar',
+    'plugin_developer' => 'Kleeja Team',
     // this plugin version
     'plugin_version' => '1.1',
     // explain what is this plugin, why should i use it?
