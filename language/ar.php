@@ -155,4 +155,13 @@ return [
     'KJP_POUT_ARCH'                        => 'أرشيف عمليات السحب',
     'MIN_PAYOUT_LIMIT'                     => 'الحد الأدنى لسحب الربح',
     'KJP_MIN_POUT_LMT'                     => 'الحد الأدنى لسحب الربح %u %s',
+
+    'KJP_ACT_BUY_FILE'                          => 'شراء الملف %s' ,
+    'KJP_ACT_JOIN_GROUP'                        => 'الانضمام إلى المجموعة %s' ,
+    'KJP_ARCH_TBL_NAME'                         => 'مدفوعات  %s' ,
+    'KJP_ACT_ARCH_JOIN_GROUP'                   => 'الانضمام إلى المجموعة' ,
+    'KJP_ACT_ARCH_BUY_FILE'                     => 'شراء الملف' ,
+    'KJP_MTHD_NAME_CARDS'                       => 'سترايب ( بطاقات فيزا و ماستر )' ,
+    'KJP_MTHD_NAME_PAYPAL'                      => 'باي بال' ,
+    'KJP_MTHD_NAME_BALANCE'                     => 'رصيد حساب' ,
 ];

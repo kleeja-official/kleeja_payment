@@ -196,7 +196,7 @@ elseif ($current_smt == 'all_transactions')
     elseif (ig('file') && (int) g('file'))
     {
         $query['WHERE'] .= ' AND payment_action = "buy_file" AND item_id = "' . g('file') . '"';
-        $all_trnc_page_title = $olang['KJP_FILE_PAYMNT'] . ' : ' . getFileInfo(g('file'), 'real_filename')['real_filename']; // i didn't find another way :( -> connect
+        $all_trnc_page_title = $olang['KJP_FILE_PAYMNT'] . ' : ' . getFileInfo(g('file'), 'real_filename')['name']; // i didn't find another way :( -> connect
     }
     // show all transactions of joining group .
     elseif (ig('group') && (int) g('group'))
@@ -284,7 +284,7 @@ elseif ($current_smt == 'view' && (int) g('payment'))
         $id                 = $PayInfo['id'];
         $amount             = $PayInfo['payment_amount'] . ' ' . $PayInfo['payment_currency'];
         $token              = $PayInfo['payment_token'];
-        $payment_method     = strtoupper($PayInfo['payment_method']);
+        $payment_method     = $olang['KJP_MTHD_NAME_' . strtoupper($PayInfo['payment_method'])];
         $payer_mail         = $PayInfo['payment_payer_mail'];
         $payer_ip           = $PayInfo['payment_payer_ip'];
 
@@ -349,7 +349,7 @@ elseif ($current_smt == 'pricing_file')
 
             $price_file_image = ''; //TODO!
             $FileID           = $file_info['id'];
-            $FileName         = $file_info['real_filename'];
+            $FileName         = $file_info['name'];
             $FileSize         = readable_size($file_info['size']);
             $FileUser         = $file_info['user'] > 0 ? $UserById[$file_info['user']] : $olang['KJP_GUEST'];
             $FilePrice        = $file_info['price'];
@@ -442,42 +442,15 @@ elseif ($current_smt == 'archive' && ig('date'))
 {
     $stylee = 'archive_data';
 
-    $archive_panel_1   = [/* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */];
-    $archive_panel_2_1 = [/* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */];
-    $archive_panel_2_2 = [/* 0 => array(  'methodName' => 'PayPal' , 'htmlContent' => '<h1> display this info </h1>'  ) */];
-
     $archive_date = g('date');
     $Archive_data = get_archive($archive_date);
 
+    $archiveTables = [];
 
-    // the panel of all transactions
-    $archive_trnc_count = $Archive_data['all_trnc_num'];
-    $archive_panel_1[]  = ['methodName' => 'PayPal' , 'htmlContent' =>  $Archive_data['paypalArchive']['all']['num']];
-    $archive_panel_1[]  = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_1[]  = ['methodName' => 'Stripe' , 'htmlContent' =>  $Archive_data['cardsArchive']['all']['num']];
-    $archive_panel_1[]  = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_1[]  = ['methodName' => 'Balance' , 'htmlContent' =>  $Archive_data['balanceArchive']['all']['num']];
-    $archive_panel_1[]  = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['all']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-
-
-    // the panel of files transactions
-    $archive_file_trnc   = $Archive_data['file_trnc_num'];
-    $archive_panel_2_1[] = ['methodName' => 'PayPal' , 'htmlContent' => ' ' . $Archive_data['paypalArchive']['file']['num']];
-    $archive_panel_2_1[] = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_2_1[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['num']];
-    $archive_panel_2_1[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_2_1[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['file']['num']];
-    $archive_panel_2_1[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['file']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-
-
-    // the panel of joining groups transactions
-    $archive_group_trnc  = $Archive_data['group_trnc_num'];
-    $archive_panel_2_2[] = ['methodName' => 'PayPal' , 'htmlContent' => ' ' . $Archive_data['paypalArchive']['group']['num']];
-    $archive_panel_2_2[] = ['methodName' => 'PayPal' , 'htmlContent' => $olang['KJP_NT_PRFIT'] . ' : ' . $Archive_data['paypalArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_2_2[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['num']];
-    $archive_panel_2_2[] = ['methodName' => 'Stripe' , 'htmlContent' => ' ' . $Archive_data['cardsArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
-    $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['num']];
-    $archive_panel_2_2[] = ['methodName' => 'Balance' , 'htmlContent' => ' ' . $Archive_data['balanceArchive']['group']['amount'] . ' ' . strtoupper($config['iso_currency_code'])];
+    foreach ($Archive_data['paymentActions'] as $key => $value)
+    {
+        $archiveTables[] = ['html' => create_Archive_Panel($key, $value, ($key == 'all' ? true : false))];
+    }
 
     is_array($plugin_run_result = Plugins::getInstance()->run('kjPay:addToArchive', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 

@@ -22,7 +22,9 @@ function getFileInfo($fileID = 0, $getInfo = '*')
 
     if ($SQL->num_rows($result))
     {
-        return $SQL->fetch_array($result);
+        $return         = $SQL->fetch_array($result);
+        $return['name'] = $return['real_filename'];
+        return $return;
     }
     else
     {
@@ -352,13 +354,11 @@ function get_archive ($date = '30-2-yyyy')
 
     $date = explode('-', $date);
 
-
     $query = [
         'SELECT' => 'payment_action , payment_method , payment_more_info , payment_amount ,payment_year , payment_month , payment_day' ,
         'FROM'   => $dbprefix . 'payments' ,
         'WHERE'  => "payment_state = 'approved' AND "
     ];
-
 
     if (count($date) == 2)
     {
@@ -378,50 +378,18 @@ function get_archive ($date = '30-2-yyyy')
             'month' => $date[1] ,
             'day'   => $date[0]
         ];
-
         $query['WHERE'] .= "payment_year = '" . $date['year'] . "' AND payment_month = '" . $date['month'] . "' AND payment_day = '" . $date['day'] . "'";
     }
 
     $archive_result = $SQL->build($query);
 
-    $all_trnc_num                 = 0; // the number of all transactions .
-    $file_trnc_num                = 0; // the number of all transaction of buying files
-    $group_trnc_num               = 0; // the number of all transaction og joining groups
-
-    $paypalArchive = [
-        'all' => [
-            'num' => 0 , 'amount' => 0
-        ] ,
-        'file' => [
-            'num' => 0 , 'amount' => 0
-        ] ,
-        'group' => [
-            'num' => 0 , 'amount' => 0
+    $paymentActions = [
+        'all' =>
+        [
+            //'payment_method' => [
+            //  'num' => 0 , 'amount' => 0
+            //]
         ]
-    ];
-
-    $cardsArchive = [
-        'all' => [
-            'num' => 0 , 'amount' => 0
-        ],
-        'file' => [
-            'num' => 0 , 'amount' => 0
-        ],
-        'group' => [
-            'num' => 0 , 'amount' => 0
-        ],
-    ];
-
-    $balanceArchive = [
-        'all' => [
-            'num' => 0 , 'amount' => 0
-        ],
-        'file' => [
-            'num' => 0 , 'amount' => 0
-        ],
-        'group' => [
-            'num' => 0 , 'amount' => 0
-        ],
     ];
 
 
@@ -431,72 +399,77 @@ function get_archive ($date = '30-2-yyyy')
     {
         $row = payment_more_info('from_db', $row);
 
-        $all_trnc_num++;
-
-        if ($row['payment_method'] == 'paypal')
+        // first we will add to all panel
+        //let's check is it exist or not
+        if (! isset($paymentActions['all'][$row['payment_method']]))
         {
-            $paypalArchive['all']['num']++;
-            $paypalArchive['all']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+            $paymentActions['all'][$row['payment_method']] = [
+                'num' => 0 , 'amount' => 0
+            ];
+        }
+        $paymentActions['all'][$row['payment_method']]['num']++;
+        $paymentActions['all'][$row['payment_method']]['amount'] += $row['payment_amount'];
 
-            if ($row['payment_action'] == 'buy_file')
+        // now we will add it to action
+        // but befor we need to check is it added to array or not
+        if (! isset($paymentActions[$row['payment_action']]))
+        {
+            $paymentActions[$row['payment_action']] = []; // make an array
+
+            if (! isset($paymentActions[$row['payment_action']][$row['payment_method']]))
             {
-                $paypalArchive['file']['num']++;
-                $paypalArchive['file']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
-            }
-            else
-            {
-                $paypalArchive['group']['num']++;
-                $paypalArchive['group']['amount'] += ($row['payment_amount'] - $row['paypal_payment_fees']);
+                $paymentActions[$row['payment_action']][$row['payment_method']] =
+                [
+                    'num' => 0 , 'amount' => 0
+                ];
             }
         }
-        elseif ($row['payment_method'] == 'cards')
-        {
-            $cardsArchive['all']['num']++;
-            $cardsArchive['all']['amount'] += $row['payment_amount'];
-
-            if ($row['payment_action'] == 'buy_file')
-            {
-                $cardsArchive['file']['num']++;
-                $cardsArchive['file']['amount'] += $row['payment_amount'];
-            }
-            else
-            {
-                $cardsArchive['group']['num']++;
-                $cardsArchive['group']['amount'] += $row['payment_amount'];
-            }
-        }
-        elseif ($row['payment_method'] == 'balance')
-        {
-            $balanceArchive['all']['num']++;
-            $balanceArchive['all']['amount'] += $row['payment_amount'];
-
-            if ($row['payment_action'] == 'buy_file')
-            {
-                $balanceArchive['file']['num']++;
-                $balanceArchive['file']['amount'] += $row['payment_amount'];
-            }
-            else
-            {
-                $balanceArchive['group']['num']++;
-                $balanceArchive['group']['amount'] += $row['payment_amount'];
-            }
-        }
-
-        $row['payment_action'] == 'buy_file' ? $file_trnc_num++ : $group_trnc_num++;
+        $paymentActions[$row['payment_action']][$row['payment_method']]['num']++;
+        $paymentActions[$row['payment_action']][$row['payment_method']]['amount'] += $row['payment_amount'];
     }
-
-
 
     return [
         'query'               => $query , // we dont want to write it again , we will add some change and evrybody is happy .
-        'all_trnc_num'        => $all_trnc_num ,
-        'file_trnc_num'       => $file_trnc_num ,
-        'group_trnc_num'      => $group_trnc_num ,
-        'paypalArchive'       => $paypalArchive ,
-        'cardsArchive'        => $cardsArchive ,
-        'balanceArchive'      => $balanceArchive ,
-        'date'                => $date
+        'date'                => $date,
+        'paymentActions'      => $paymentActions,
+
     ];
+}
+
+function create_Archive_Panel($action, $actionInfo, $isForAll = false)
+{
+    global $olang,$config;
+    $tableTrncCount = 0; // to add it to table header
+    $return         = '
+    <div class="col-sm-' . ($isForAll ? '12' : '6') . ' mb-2">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between p-1">
+                <div>
+                    ' . ($isForAll ? $olang['KJP_ALL_TRNC'] : (sprintf($olang['KJP_ARCH_TBL_NAME'], $olang['KJP_ACT_ARCH_' . strtoupper($action)]) ? 
+                    sprintf($olang['KJP_ARCH_TBL_NAME'], $olang['KJP_ACT_ARCH_' . strtoupper($action)]) : strtoupper($action))) . '
+                    <span class="badge badge-secondary badge-pill"> %s </span>
+                </div>
+            </div>
+            <p class="m-0"><small class="muted">' . ($isForAll ? $olang['KJP_TRNC_CP_INFO'] : '') . '</small></p>
+        </div>
+        <ul class="list-group list-group-flush">';
+
+    foreach ($actionInfo as $methodName => $methodCounts)
+    {
+        $tableTrncCount += $methodCounts['num'];
+        $return .= '<li class="list-group-item d-flex justify-content-between align-items-center">
+            ' . ($olang['KJP_MTHD_NAME_' . strtoupper($methodName)] ? $olang['KJP_MTHD_NAME_' . strtoupper($methodName)] : $methodName) . '
+            <span class="badge badge-secondary">' . $methodCounts['num'] . '</span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+            ' . ($olang['KJP_MTHD_NAME_' . strtoupper($methodName)] ? $olang['KJP_MTHD_NAME_' . strtoupper($methodName)] : $methodName) . '
+            <span class="badge badge-secondary">' . $methodCounts['amount'] . ' ' . $config['iso_currency_code'] . '</span></li>';
+    }
+
+
+    $return .= '</ul></div></div>';
+
+    return sprintf($return, $tableTrncCount);
 }
 
 function getPaymentMethods()

@@ -157,4 +157,13 @@ return [
     'KJP_POUT_ARCH'                        => 'Archive Payouts',
     'MIN_PAYOUT_LIMIT'                     => 'Min Withdrawal Limit',
     'KJP_MIN_POUT_LMT'                     => 'The Min Withdrawal Limit is %u %s',
+    // for actions & archives
+    'KJP_ACT_BUY_FILE'                          => 'Purchasing File %s' ,
+    'KJP_ACT_JOIN_GROUP'                        => 'Joining Group %s' ,
+    'KJP_ARCH_TBL_NAME'                         => 'Payments Of %s' ,
+    'KJP_ACT_ARCH_JOIN_GROUP'                   => 'Joining Group' ,
+    'KJP_ACT_ARCH_BUY_FILE'                     => 'Buying Files' ,
+    'KJP_MTHD_NAME_CARDS'                       => 'Stripe (visa , master)' ,
+    'KJP_MTHD_NAME_PAYPAL'                      => 'PayPal' ,
+    'KJP_MTHD_NAME_BALANCE'                     => 'Balance' ,
 ];

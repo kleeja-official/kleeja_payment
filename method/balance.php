@@ -10,6 +10,8 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function paymentStart()
     {
+        global $lang , $config;
+
         if (! user_can('recaive_profits'))
         {
             /**
@@ -18,7 +20,7 @@ class kjPayMethod_balance implements KJPaymentMethod
              * anyway , the Guest don't have this permission
              * if the user have this permission , that mean it's able for hem to use the balance
              */
-            kleeja_err('member area');
+            kleeja_err($lang['USER_PLACE']);
 
             exit;
         }
@@ -45,7 +47,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         [
             'payment_action'    => $do ,
             'item_id'           => g('id') ,
-            'item_name'         => $do === 'buy_file' ? $info['real_filename'] : $info['name'] ,
+            'item_name'         => $info['name'] ,
         ];
 
         $kjFormKeyGet  = kleeja_add_form_key_get('payFor_' . $do . ($do === 'buy_file' ? $info['real_filename'] . $info['id'] : $info['name'] . $info['id']));
@@ -56,7 +58,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         $this->varsForCreate['stylee']          = 'pay_balance';
         $this->varsForCreate['styleePath']      = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_balance.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/../html/';
         $this->varsForCreate['FormAction']      = $config['siteurl'] . 'go.php?go=kj_payment&method=balance&action=check&' . $kjFormKeyGet;
-        $this->varsForCreate['itemName']        = $do === 'buy_file' ? $info['real_filename'] : $info['name'];
+        $this->varsForCreate['itemName']        = $info['name'];
         $this->varsForCreate['payAction']       = $do === 'buy_file' ? $olang['KJP_BUY_FILE'] : $olang['KJP_JUNG_GRP'];
         $this->varsForCreate['paymentCurrency'] = $this->currency;
         $this->varsForCreate['itemPrice']       = $info['price'] . ' ' . $this->currency;
@@ -76,12 +78,12 @@ class kjPayMethod_balance implements KJPaymentMethod
         if (! $usrcp->name())
         {
             // to be sure 100% , thats we are on the right way
-            kleeja_err($lang['USER_PLACE']);
+            kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl']);
         }
         // is he comming from our page
         elseif (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
-            kleeja_err('What Are U Doing Here ??');
+            kleeja_err('What Are U Doing Here ??', '', true, $config['siteurl']);
 
             exit;
         }
@@ -122,6 +124,8 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             // son , collect some money , then come to buy
             kleeja_err($olang['KJP_NO_BLNC']);
+
+            exit;
         }
 
         // i will take the money from you , then i will give you the item loooool
@@ -154,10 +158,12 @@ class kjPayMethod_balance implements KJPaymentMethod
         $SQL->build($insert_query);
         $_SESSION['kj_payment']['db_id']         = $SQL->insert_id();
         $_SESSION['kj_payment']['payment_token'] = $payment_token;
+        $foundedAction                           = false;
 
         // if the payment is for joining a group and the payer is in login and member in kleeja
         if ($_SESSION['kj_payment']['payment_action'] == 'join_group' && $usrcp->name())
         {
+            $foundedAction               = true;
             $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
             $update_user                 = [
                 'UPDATE'       => "{$dbprefix}users",
@@ -169,6 +175,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         }
         elseif ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
         {
+            $foundedAction               = true;
             $this->downloadLinkMailer    = $usrcp->mail();
             $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'];
             $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
@@ -179,6 +186,20 @@ class kjPayMethod_balance implements KJPaymentMethod
                 // becuse the payment is successfuly , let's give some profits to the file owner
                 $user_profits = $payment_amount * $config['file_owner_profits'] / 100;
                 $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = {$user_id}");
+            }
+        }
+
+        if (! $foundedAction)
+        {
+            $toGlobal = [];
+            //export here $toGlobal and do what u want
+            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+            if (count($toGlobal) !== 0)
+            {
+                foreach ($toGlobal as $key => $value)
+                {
+                    $this->toGlobal[$key] = $value;
+                }
             }
         }
         // now we can say that the payment made successfuly
