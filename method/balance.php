@@ -96,21 +96,23 @@ class kjPayMethod_balance implements KJPaymentMethod
             exit;
         }
         // really really , check if the item is exists
-        elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $fileinfo = getFileInfo($_SESSION['kj_payment']['item_id']))
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
             kleeja_err($olang['KJP_FL_NT_FUND']);
 
             exit;
         }
-        elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $groupinfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
             kleeja_err($olang['KJP_GP_NT_FUND']);
 
             exit;
         }
+        //export here $itemInfo
+                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
         // no Error , let's check if the user have this amount in hes balance or not
-        $itemPrice = $_SESSION['kj_payment']['payment_action'] == 'buy_file' ? $fileinfo['price'] : $groupinfo['price'];
+        $itemPrice = $itemInfo['price'];
 
         if ($itemPrice <= 0)
         {
@@ -123,7 +125,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         if ($itemPrice > $userBalance)
         {
             // son , collect some money , then come to buy
-            kleeja_err($olang['KJP_NO_BLNC']);
+            kleeja_err($olang['KJP_NO_BLNC'], '', true, $config['siteurl']);
 
             exit;
         }
@@ -139,7 +141,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         $payment_currency  = $this->currency;
         $payment_action    = $_SESSION['kj_payment']['payment_action'];
         $payment_token     = createToken();
-        $payment_amount    = $_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $fileinfo['price'] : $groupinfo['price'];
+        $payment_amount    = $itemInfo['price'];
         $payment_payer_ip  = get_ip();
         $item_id           = $_SESSION['kj_payment']['item_id'];
         $item_name         = $_SESSION['kj_payment']['item_name'];
@@ -193,7 +195,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             $toGlobal = [];
             //export here $toGlobal and do what u want
-            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance2_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
             if (count($toGlobal) !== 0)
             {
                 foreach ($toGlobal as $key => $value)

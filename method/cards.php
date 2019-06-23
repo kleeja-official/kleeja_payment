@@ -71,8 +71,6 @@ class kjPayMethod_cards implements KJPaymentMethod
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups;
 
-        $foundedItem = false;
-
         if (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
             kleeja_err('What Are U Doing Here ??');
@@ -81,24 +79,20 @@ class kjPayMethod_cards implements KJPaymentMethod
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
-            $foundedItem = true;
             kleeja_err('ERROR REQUEST');
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
-            $foundedItem = true;
             kleeja_err('ERROR REQUEST');
 
             exit;
         }
 
-        if (! $foundedItem)
-        {
-            //export here $itemInfo
-            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:stripe_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
-        }
+        //export here $itemInfo
+        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:stripe_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+
 
         try
         {
