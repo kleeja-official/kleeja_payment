@@ -38,8 +38,8 @@ $kleeja_plugin['kleeja_payment']['information'] = [
 //after installation message, you can remove it, it's not requiered
 $kleeja_plugin['kleeja_payment']['first_run']['ar'] = "
 باستخدام هذا البرنامج المساعد ، يمكنك تسعير الملفات والمجموعات لبيعها ، واستلام الدفعات إلى حساب paypal الخاص بك تلقائيًا <br>
-قم يزيارة صفحة الساعدة للمزيد <br>
-<a href='./index.php?cp=kj_payment_options&smt=help' >الساعدة</a>
+قم يزيارة صفحة المساعدة للمزيد <br>
+<a href='./index.php?cp=kj_payment_options&smt=help' >المساعدة</a>
 
 ";
 
