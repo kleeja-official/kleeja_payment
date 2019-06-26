@@ -91,7 +91,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         }
 
         //export here $itemInfo
-        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:stripe_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:itemInfoExport_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 
         try
@@ -199,7 +199,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                 {
                     $toGlobal = [];
                     //export here $toGlobal and do what u want
-                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:stripe2_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:notFoundedAction_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
                     if (count($toGlobal) !== 0)
                     {
                         foreach ($toGlobal as $key => $value)

@@ -18,7 +18,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.2',
+    'plugin_version' => '1.2.1',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
@@ -30,7 +30,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // max version of kleeja that support this plugin, use 0 for unlimited
     'plugin_kleeja_version_max' => '3.9',
     // should this plugin run before others?, 0 is normal, and higher number has high priority
-    'plugin_priority' => 0 ,
+    'plugin_priority' => 10 , // only for define support_kjPay
     // setting page to display in plugins page
     'settings_page' => 'cp=options&smt=kleeja_payment'
 ];

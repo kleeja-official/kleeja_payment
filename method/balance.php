@@ -50,8 +50,8 @@ class kjPayMethod_balance implements KJPaymentMethod
             'item_name'         => $info['name'] ,
         ];
 
-        $kjFormKeyGet  = kleeja_add_form_key_get('payFor_' . $do . ($do === 'buy_file' ? $info['real_filename'] . $info['id'] : $info['name'] . $info['id']));
-        $kjFormKeyPost = kleeja_add_form_key('payFor_' . $do . ($do === 'buy_file' ? $info['real_filename'] . $info['id'] : $info['name'] . $info['id']));
+        $kjFormKeyGet  = kleeja_add_form_key_get('payFor_' . $do . $info['name'] . $info['id']);
+        $kjFormKeyPost = kleeja_add_form_key('payFor_' . $do . $info['name'] . $info['id']);
 
         $this->varsForCreate['no_request']      = false; 
         $this->varsForCreate['titlee']          = 'Pay By Balance'; 
@@ -59,7 +59,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         $this->varsForCreate['styleePath']      = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_balance.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/../html/';
         $this->varsForCreate['FormAction']      = $config['siteurl'] . 'go.php?go=kj_payment&method=balance&action=check&' . $kjFormKeyGet;
         $this->varsForCreate['itemName']        = $info['name'];
-        $this->varsForCreate['payAction']       = $do === 'buy_file' ? $olang['KJP_BUY_FILE'] : $olang['KJP_JUNG_GRP'];
+        $this->varsForCreate['payAction']       = sprintf($olang['KJP_ACT_' . strtoupper($do)], $info['name']);
         $this->varsForCreate['paymentCurrency'] = $this->currency;
         $this->varsForCreate['itemPrice']       = $info['price'] . ' ' . $this->currency;
         $this->varsForCreate['kjFormKeyPost']   = $kjFormKeyPost;
@@ -109,7 +109,7 @@ class kjPayMethod_balance implements KJPaymentMethod
             exit;
         }
         //export here $itemInfo
-                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:itemInfoExport_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
         // no Error , let's check if the user have this amount in hes balance or not
         $itemPrice = $itemInfo['price'];
@@ -195,7 +195,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             $toGlobal = [];
             //export here $toGlobal and do what u want
-            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:balance2_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+            is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:notFoundedAction_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
             if (count($toGlobal) !== 0)
             {
                 foreach ($toGlobal as $key => $value)

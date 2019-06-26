@@ -253,7 +253,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             {
                                 $toGlobal = [];
                                 //export here $toGlobal and do what u want
-                                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:paypal_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+                                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:notFoundedAction_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
                                 if (count($toGlobal) !== 0)
                                 {
                                     foreach ($toGlobal as $key => $value)
@@ -303,6 +303,10 @@ class kjPayMethod_paypal implements KJPaymentMethod
                 elseif ($payment_info['payment_action'] == 'join_group')
                 {
                     redirect($config['siteurl'] . 'go.php?go=paid_group');
+                }
+                else
+                {
+                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:PayCancel_' . $payment_info['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
                 }
 
                 exit;

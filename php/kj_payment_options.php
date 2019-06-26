@@ -249,10 +249,9 @@ elseif ($current_smt == 'all_transactions')
 
         while ($trnc = $SQL->fetch($all_result))
         {
-            $PayID     = $trnc['id'];
-            $PayUser   = $trnc['user'] > 0 ? $UserById[$trnc['user']] : $olang['KJP_GUEST'];
-            $PayAction = $trnc['payment_action'] == 'buy_file' ? $olang['KJP_BYNG_FILE'] . ' : ' . $trnc['item_name']
-                         : $olang['KJP_JUNG_GRP'] . ' : ' . $trnc['item_name'];
+            $PayID       = $trnc['id'];
+            $PayUser     = $trnc['user'] > 0 ? $UserById[$trnc['user']] : $olang['KJP_GUEST'];
+            $PayAction   = sprintf($olang['KJP_ACT_' . strtoupper($trnc['payment_action'])], $trnc['item_name']);
             $PayDateTime = $trnc['payment_year'] . '-' . $trnc['payment_month'] . '-' . $trnc['payment_day'] . '/' . $trnc['payment_time'];
 
             $transactions[] = [
@@ -288,8 +287,7 @@ elseif ($current_smt == 'view' && (int) g('payment'))
         $payer_mail         = $PayInfo['payment_payer_mail'];
         $payer_ip           = $PayInfo['payment_payer_ip'];
 
-        $item        =  $PayInfo['payment_action'] == 'buy_file' ? $olang['KJP_BYNG_FILE'] . ' : <a target="_blank" href="' . $config['siteurl'] . 'do.php?id=' . $PayInfo['item_id'] . '">' . $PayInfo['item_name'] . '</a>'
-                     : $olang['KJP_JUNG_GRP'] . ' : <a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=g_users&smt=group_data&qg=' . $PayInfo['item_id'] . '">' . $PayInfo['item_name'] . '</a>';
+        $item        = sprintf($olang['KJP_ACT_' . strtoupper($PayInfo['payment_action'])], $PayInfo['item_name']);
 
         $member      = $PayInfo['user'] > 0 ? '<a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=g_users&smt=edit_user&uid=' . $PayInfo['user'] . '">' . $UserById[$PayInfo['user']] . '</a>'
                      : $olang['KJP_GUEST'];
@@ -484,7 +482,7 @@ elseif ($current_smt == 'archive' && ig('date'))
         {
             $PayID       = $rows['id'];
             $PayUser     = $rows['user'] > 0 ? $UserById[$rows['user']] : $olang['KJP_GUEST'];
-            $PayAction   = $rows['payment_action'] == 'buy_file' ? $olang['KJP_BYNG_FILE'] . ' : ' . $rows['item_name'] : $olang['KJP_JUNG_GRP'] . ' : ' . $rows['item_name'];
+            $PayAction   = sprintf($olang['KJP_ACT_' . strtoupper($rows['payment_action'])], $rows['item_name']);
             $PayIP       = $rows['payment_payer_ip'];
             $PayDateTime = $rows['payment_year'] . '-' . $rows['payment_month'] . '-' . $rows['payment_day'] . '/' . $rows['payment_time'];
 
@@ -740,10 +738,6 @@ elseif ($current_smt == 'payouts')
         }
     }
 }
-elseif ($current_smt == 'help')
-{
-    $stylee = 'help';
-}
 elseif ($current_smt == 'viewPayout' && ig('id'))
 {
     $stylee    = 'view_payout';
@@ -811,6 +805,12 @@ elseif ($current_smt == 'viewPayout' && ig('id'))
             ];
         }
     }
+}
+elseif ($current_smt == 'help')
+{
+    $stylee   = 'help';
+    $KJP_HELP = [/* [ 'ID' => 'Example_ID' , 'TITLE' => 'Example Title', 'CONTENT' => 'Example Content'] */];
+    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:KLJ_HELP', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 }
 
 $go_menu = [
