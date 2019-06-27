@@ -48,14 +48,14 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
     public function CreatePayment($do, $info = [])
     {
-        global $config , $usrcp , $SQL , $dbprefix;
+        global $config , $usrcp , $SQL , $dbprefix , $olang;
         // start ..
 
         $payer = new \PayPal\Api\Payer();
         $payer->setPaymentMethod('paypal');
 
         $item = new PayPal\Api\Item();
-        $item->setName(($do == 'buy_file' ? 'File : ' . $info['real_filename'] : 'Join Group : ' . $info['name']))
+        $item->setName(sprintf($olang['KJP_ACT_' . strtoupper($do)], $info['name']))
             ->setCurrency($this->currency)
             ->setQuantity(1)
             ->setSku($info['id']) // its like ItemNumber .
@@ -101,7 +101,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
             $payment_amount    = $info['price'];
             $payment_payer_ip  = get_ip();
             $item_id           = $info['id'];
-            $item_name         = $do === 'buy_file' ? $info['real_filename'] : $info['name'];
+            $item_name         = $info['name'];
             $user              = $usrcp->name() ? $usrcp->id() : 0;
             $payment_year      = date('Y');
             $payment_month     = date('m');
@@ -216,10 +216,12 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             ];
 
                             $SQL->build($update_query);
+                            $foundedAction = false;
 
                             // if the payment is for joining a group and the payer is in login and member in kleeja
                             if ($PaymentInfo['payment_action'] == 'join_group' && $usrcp->name())
                             {
+                                $foundedAction               = true;
                                 $this->toGlobal['groupName'] = $db_Payment_Info['item_name'];
 
                                 $update_user    = [
@@ -232,6 +234,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
                             }
                             elseif ($PaymentInfo['payment_action'] == 'buy_file')
                             {
+                                $foundedAction               = true;
                                 $this->downloadLinkMailer    = $PPI['payer']['payer_info']['email'];
                                 $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $db_Payment_Info['id'] . '_' . $db_Payment_Info['payment_token'];
                                 $this->toGlobal['file_name'] = $db_Payment_Info['item_name'];
@@ -243,6 +246,20 @@ class kjPayMethod_paypal implements KJPaymentMethod
                                     // becuse the payment is successfuly , let's give some profits to the file owner
                                     $user_profits = $db_Payment_Info['payment_amount'] * $config['file_owner_profits'] / 100;
                                     $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = '{$user_id}'");
+                                }
+                            }
+
+                            if (! $foundedAction)
+                            {
+                                $toGlobal = [];
+                                //export here $toGlobal and do what u want
+                                is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:notFoundedAction_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+                                if (count($toGlobal) !== 0)
+                                {
+                                    foreach ($toGlobal as $key => $value)
+                                    {
+                                        $this->toGlobal[$key] = $value;
+                                    }
                                 }
                             }
 
@@ -286,6 +303,10 @@ class kjPayMethod_paypal implements KJPaymentMethod
                 elseif ($payment_info['payment_action'] == 'join_group')
                 {
                     redirect($config['siteurl'] . 'go.php?go=paid_group');
+                }
+                else
+                {
+                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:PayCancel_' . $payment_info['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
                 }
 
                 exit;

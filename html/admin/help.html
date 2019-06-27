@@ -278,6 +278,24 @@
                 </div>
             </div>
 
+            <LOOP NAME="KJP_HELP">
+                <div class="card mb-1">
+                    <div class="card-header" id="{{ID}}_1">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#{{ID}}_2"
+                                aria-expanded="true" aria-controls="{{ID}}_2">
+                                {{TITLE}}
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="{{ID}}_2" class="collapse" aria-labelledby="{{ID}}_1" data-parent="#accordionHelpList">
+                        <div class="card-body">
+                           {{CONTENT}}
+                        </div>
+                    </div>
+                </div>
+            </LOOP>
+
 
         </div>
     </div>

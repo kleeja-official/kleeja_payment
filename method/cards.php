@@ -43,8 +43,8 @@ class kjPayMethod_cards implements KJPaymentMethod
         $_SESSION['kj_payment'] =
         [
             'payment_action'    => $do ,
-            'item_id'           => g('id') ,
-            'item_name'         => $do === 'buy_file' ? $info['real_filename'] : $info['name'] ,
+            'item_id'           => $info['id'] ,
+            'item_name'         => $info['name'] ,
         ];
 
         $this->varsForCreate['no_request']             = false;
@@ -52,8 +52,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         $this->varsForCreate['stylee']                 = 'pay_card';
         $this->varsForCreate['styleePath']             = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_card.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/../html/';
         $this->varsForCreate['FormAction']             = $config['siteurl'] . 'go.php?go=kj_payment&method=cards&action=check';
-        $this->varsForCreate['itemName']               = $do === 'buy_file' ? $info['real_filename'] : $info['name'];
-        $this->varsForCreate['payAction']              = $do === 'buy_file' ? $olang['KJP_BUY_FILE'] : $olang['KJP_JUNG_GRP'];
+        $this->varsForCreate['payAction']              = sprintf($olang['KJP_ACT_' . strtoupper($do)], $info['name']);
         $this->varsForCreate['storeName']              = strtoupper($config['sitename']);
         $this->varsForCreate['storeIcon']              = $config['siteurl'] . 'images/apple-touch-icon.png';
         $this->varsForCreate['paymentCurrency']        = $this->currency;
@@ -72,25 +71,28 @@ class kjPayMethod_cards implements KJPaymentMethod
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups;
 
-
         if (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
             kleeja_err('What Are U Doing Here ??');
 
             exit;
         }
-        elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $fileinfo = getFileInfo($_SESSION['kj_payment']['item_id']))
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
             kleeja_err('ERROR REQUEST');
 
             exit;
         }
-        elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $groupinfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
             kleeja_err('ERROR REQUEST');
 
             exit;
         }
+
+        //export here $itemInfo
+        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:itemInfoExport_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+
 
         try
         {
@@ -104,11 +106,11 @@ class kjPayMethod_cards implements KJPaymentMethod
 
             $charge = \Stripe\Charge::create([
                 'customer' => $customer->id,
-                'amount'   => ($_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $this->convertPrice($fileinfo['price']) : $this->convertPrice($groupinfo['price'])),
+                'amount'   => $this->convertPrice($itemInfo['price']),
                 'currency' => $this->currency,
             ]);
 
-            if ($charge->paid  && $charge->amount == ($_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $this->convertPrice($fileinfo['price']) : $this->convertPrice($groupinfo['price'])))
+            if ($charge->paid  && $charge->amount == $this->convertPrice($itemInfo['price']))
             {
                 // insert to the DataBase
                 $payment_method    = 'cards';
@@ -116,10 +118,10 @@ class kjPayMethod_cards implements KJPaymentMethod
                 $payment_currency  = $this->currency;
                 $payment_action    = $_SESSION['kj_payment']['payment_action'];
                 $payment_token     = createToken();
-                $payment_amount    = $_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $fileinfo['price'] : $groupinfo['price'];
+                $payment_amount    = $itemInfo['price'];
                 $payment_payer_ip  = get_ip();
                 $item_id           = $_SESSION['kj_payment']['item_id'];
-                $item_name         = $_SESSION['kj_payment']['payment_action'] === 'buy_file' ? $fileinfo['real_filename'] : $groupinfo['name'];
+                $item_name         = $itemInfo['name'];
                 $user              = $usrcp->name() ? $usrcp->id() : 0;
                 $payment_year      = date('Y');
                 $payment_month     = date('m');
@@ -163,9 +165,11 @@ class kjPayMethod_cards implements KJPaymentMethod
                 $_SESSION['kj_payment']['payment_token'] = $payment_token;
 
 
+                $foundedAction = false;
                 // if the payment is for joining a group and the payer is in login and member in kleeja
                 if ($_SESSION['kj_payment']['payment_action'] == 'join_group' && $usrcp->name())
                 {
+                    $foundedAction               = true;
                     $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
                     $update_user                 = [
                         'UPDATE'       => "{$dbprefix}users",
@@ -177,6 +181,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                 }
                 elseif ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
                 {
+                    $foundedAction               = true;
                     $this->downloadLinkMailer    = $stripe_buyer_mail;
                     $this->toGlobal['down_link'] = $config['siteurl'] . 'do.php?downPaidFile=' . $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $payment_token;
                     $this->toGlobal['file_name'] = $_SESSION['kj_payment']['item_name'];
@@ -187,6 +192,20 @@ class kjPayMethod_cards implements KJPaymentMethod
                         // becuse the payment is successfuly , let's give some profits to the file owner
                         $user_profits = $payment_amount * $config['file_owner_profits'] / 100;
                         $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = {$user_id}");
+                    }
+                }
+
+                if (! $foundedAction)
+                {
+                    $toGlobal = [];
+                    //export here $toGlobal and do what u want
+                    is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:notFoundedAction_' . $_SESSION['kj_payment']['payment_action'], get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+                    if (count($toGlobal) !== 0)
+                    {
+                        foreach ($toGlobal as $key => $value)
+                        {
+                            $this->toGlobal[$key] = $value;
+                        }
                     }
                 }
 

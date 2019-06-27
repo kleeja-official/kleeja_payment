@@ -1,6 +1,6 @@
 <?php
 // kleeja plugin
-// developer: Mitan Omar
+// developer: KLEEJA TEAM
 
 // prevent illegal run
 if (! defined('IN_PLUGINS_SYSTEM'))
@@ -18,7 +18,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.1',
+    'plugin_version' => '1.2.1',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
@@ -30,7 +30,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // max version of kleeja that support this plugin, use 0 for unlimited
     'plugin_kleeja_version_max' => '3.9',
     // should this plugin run before others?, 0 is normal, and higher number has high priority
-    'plugin_priority' => 0 ,
+    'plugin_priority' => 10 , // only for define support_kjPay
     // setting page to display in plugins page
     'settings_page' => 'cp=options&smt=kleeja_payment'
 ];
@@ -346,7 +346,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     } ,
 
     'err_navig_download_page' => function($args) {
-        global $config, $SQL, $dbprefix, $lang , $tpl , $THIS_STYLE_PATH_ABS;
+        global $config, $SQL, $dbprefix, $olang, $lang , $tpl , $THIS_STYLE_PATH_ABS;
 
         if (ig('file') && (int) g('file'))
         {
@@ -358,7 +358,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             foreach (getPaymentMethods() as $value)
             {
                 $value = trim($value);
-                $payment_methods[$value] = ['name' => strtoupper($value) , 'method' => $value];
+                $payment_methods[$value] = ['name' => $olang['KJP_MTHD_NAME_' . strtoupper($value)] , 'method' => $value];
             }
 
             if (ip('buy_file'))
@@ -483,6 +483,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                         exit;
                     }
+
 
                     $PAY->CreatePayment('buy_file', $fileInfo);
 
@@ -660,7 +661,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             {
                 $value = trim($value);
 
-                $MethodOption .= "<option value='{$value}'>" . strtoupper($value) . "</option>\n";
+                $MethodOption .= "<option value='{$value}'>" . $olang['KJP_MTHD_NAME_' . strtoupper($value)] . "</option>\n";
                 // loop inside loop doesn't work in kleeja styles
             }
 
@@ -692,7 +693,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
             $payCookieInfoExplode = explode('_', $payCookieInfo);
 
-            $fileName = getFileInfo($payCookieInfoExplode[0])['real_filename'];
+            $fileName = getFileInfo($payCookieInfoExplode[0])['name'];
 
 
             if (ip('sendMail'))
@@ -1129,7 +1130,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     {
                         $payments[] = [
                             'ID'        => $row['id'],
-                            'METHOD'    => $row['payment_method'],
+                            'METHOD'    => $olang['KJP_MTHD_NAME_' . strtoupper($row['payment_method'])],
                             'FILE_NAME' => $row['item_name'],
                             'BUYER'     => ! empty($UserById[$row['user']]) ? $UserById[$row['user']] : 'Guest',
                             'DATE_TIME' => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
@@ -1154,7 +1155,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         { // no be sure that every user will change hes files only
                             $show_price_panel = true;
                             $FileID = $file_info['id'];
-                            $FileName = $file_info['real_filename'];
+                            $FileName = $file_info['name'];
                             $FileSize = readable_size($file_info['size']);
                             $FileUser = $usrcp->name();
                             $FilePrice = $file_info['price'];
