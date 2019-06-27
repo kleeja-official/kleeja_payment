@@ -43,7 +43,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         $_SESSION['kj_payment'] =
         [
             'payment_action'    => $do ,
-            'item_id'           => g('id') ,
+            'item_id'           => $info['id'] ,
             'item_name'         => $info['name'] ,
         ];
 

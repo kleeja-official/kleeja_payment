@@ -193,16 +193,26 @@ elseif ($current_smt == 'all_transactions')
         $all_trnc_page_title = $olang['KJP_M_TRNC'];
     }
     // show al transactions of buying file
-    elseif (ig('file') && (int) g('file'))
+    // never never think to make this msg dynamic ,
+    // we did not get anything from the DB yet , and sprintf function is not useful here
+    elseif (ig('action') && g('action') == 'buy_file' && ig('item_id'))
     {
-        $query['WHERE'] .= ' AND payment_action = "buy_file" AND item_id = "' . g('file') . '"';
-        $all_trnc_page_title = $olang['KJP_FILE_PAYMNT'] . ' : ' . getFileInfo(g('file'), 'real_filename')['name']; // i didn't find another way :( -> connect
+        $query['WHERE'] .= ' AND payment_action = "buy_file" AND item_id = "' . g('item_id') . '"';
+        $all_trnc_page_title = sprintf($olang['KJP_PAY_OF'], sprintf($olang['KJP_ACT_BUY_FILE'], getFileInfo(g('item_id'), 'real_filename')['name'])); // i didn't find another way :( -> connect
     }
     // show all transactions of joining group .
-    elseif (ig('group') && (int) g('group'))
+    elseif (ig('action') && g('action') == 'join_group' && ig('item_id'))
     {
-        $query['WHERE'] .= ' AND payment_action = "join_group" AND item_id = "' . g('group') . '"';
-        $all_trnc_page_title = $olang['KJP_GRP_PAYMNT'] . ' : ' . getGroupInfo($d_groups, g('group'))['name']; // if the group become for free later , we can not see the group name
+        $query['WHERE'] .= ' AND payment_action = "join_group" AND item_id = "' . g('item_id') . '"';
+        // if the group become for free later , we can not see the group name
+        $all_trnc_page_title = sprintf($olang['KJP_PAY_OF'], sprintf($olang['KJP_ACT_JOIN_GROUP'], getGroupInfo($d_groups, g('item_id'))['name']));
+    }
+    // contenue here
+    elseif (ig('action') && g('action') !== 'join_group' && g('action') !== 'buy_file' && ig('item_id'))
+    {
+        $query['WHERE'] .= ' AND payment_action = "' . g('action') . '" AND item_id = "' . g('item_id') . '"';
+        // export this msg only ,,,$all_trnc_page_title 
+        is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:allTrnc_' . g('action'), get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
     }
 
 
@@ -222,7 +232,7 @@ elseif ($current_smt == 'all_transactions')
     elseif (ig('method'))
     {
         $query['WHERE'] .= ' AND payment_method = "' . g('method') . '"';
-        $all_trnc_page_title = $olang['KJP_PAY_BY_MTHD'] . ' : ' . strtoupper(g('method'));
+        $all_trnc_page_title = $olang['KJP_PAY_BY_MTHD'] . ' : ' . $olang['KJP_MTHD_NAME_' . strtoupper(g('method'))];
     }
 
     $all_result       = $SQL->build($query);
@@ -294,9 +304,7 @@ elseif ($current_smt == 'view' && (int) g('payment'))
 
         $date_time    = $PayInfo['payment_year'] . '-' . $PayInfo['payment_month'] . '-' . $PayInfo['payment_day'] . ' / ' . $PayInfo['payment_time'];
 
-        $file_payments = $PayInfo['payment_action'] == 'buy_file' ?
-        '<a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=all_transactions&file=' . $PayInfo['item_id'] . '">' . $olang['KJP_FILE_PAYMNT'] . ' : ' . $PayInfo['item_name'] . '</a>'
-        : '<a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=all_transactions&group=' . $PayInfo['item_id'] . '">' . $olang['KJP_GRP_PAYMNT'] . ' : ' . $PayInfo['item_name'] . '</a>';
+        $file_payments = '<a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=all_transactions&action=' . $PayInfo['payment_action'] . '&item_id=' . $PayInfo['item_id'] . '">' . sprintf($olang['KJP_PAY_OF'], sprintf($olang['KJP_ACT_' . strtoupper($PayInfo['payment_action'])], $PayInfo['item_name'])) . '</a>';
 
         $user_payments = $PayInfo['user'] > 0 ?
         '<a target="_blank" href="' . basename(ADMIN_PATH) . '?cp=kj_payment_options&smt=all_transactions&user=' . $PayInfo['user'] . '">' . $olang['KJP_USR_PAYMNT'] . ' : ' . $UserById[$PayInfo['user']] . '</a>'
