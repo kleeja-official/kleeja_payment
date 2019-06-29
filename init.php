@@ -18,7 +18,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.2.1',
+    'plugin_version' => '1.2.2',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
@@ -235,37 +235,6 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
 
     add_config_r($options);
-
-
-    if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
-    {
-        // extract paypal sdk
-        if (file_exists(dirname(__FILE__) . '/paypal_sdk.zip'))
-        {
-            $paypalZip = new ZipArchive;
-
-            if ($paypalZip->open(dirname(__FILE__) . '/paypal_sdk.zip'))
-            {
-                $paypalZip->extractTo(dirname(__FILE__));
-                $paypalZip->close();
-            }
-        }
-    }
-
-    if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
-    {
-        // extract stripe sdk
-        if (file_exists(dirname(__FILE__) . '/stripe-sdk.zip'))
-        {
-            $stripeZip = new ZipArchive;
-
-            if ($stripeZip->open(dirname(__FILE__) . '/stripe-sdk.zip'))
-            {
-                $stripeZip->extractTo(dirname(__FILE__));
-                $stripeZip->close();
-            }
-        }
-    }
 };
 
 
@@ -1285,6 +1254,37 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $langFiles = require_once $langFiles;
             $olang = array_merge($olang, $langFiles);
         }
+
+        if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
+        {
+            // extract paypal sdk
+            if (file_exists(dirname(__FILE__) . '/paypal_sdk.zip'))
+            {
+                $paypalZip = new ZipArchive;
+
+                if ($paypalZip->open(dirname(__FILE__) . '/paypal_sdk.zip'))
+                {
+                    $paypalZip->extractTo(dirname(__FILE__));
+                    $paypalZip->close();
+                }
+            }
+        }
+
+        if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+        {
+            // extract stripe sdk
+            if (file_exists(dirname(__FILE__) . '/stripe-sdk.zip'))
+            {
+                $stripeZip = new ZipArchive;
+
+                if ($stripeZip->open(dirname(__FILE__) . '/stripe-sdk.zip'))
+                {
+                    $stripeZip->extractTo(dirname(__FILE__));
+                    $stripeZip->close();
+                }
+            }
+        }
+
         return compact('olang');
     }
 
