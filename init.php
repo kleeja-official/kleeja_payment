@@ -1116,12 +1116,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     $ExampleID = $config['siteurl'] . 'do.php?id=';
                     $ExampleIMG = $config['siteurl'] . 'do.php?img=';
 
-                    ! (int) $select_file_id ? $select_file_id = str_replace([$ExampleID , $ExampleIMG], '', $select_file_id) : $select_file_id;
+                    if (! (int) $select_file_id)
+                    {
+                        $select_file_id = str_replace([$ExampleID , $ExampleIMG], '', $select_file_id);
+                    }
 
                     if ($select_file_id !== null && $select_file_id > 0 && $file_info = getFileInfo($select_file_id))
                     {
                         if ($file_info['user'] == $usrcp->id())
-                        { // no be sure that every user will change hes files only
+                        { // to be sure that every user will change hes files only
                             $show_price_panel = true;
                             $FileID = $file_info['id'];
                             $FileName = $file_info['name'];
