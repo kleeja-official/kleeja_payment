@@ -1178,7 +1178,50 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     }
                 }
             }
-            return compact('AlertRole','AlertMsg','OpenAlert',
+            elseif ($case == 'my_paid_files')
+            {
+                $all_paid_file = [];
+
+                $query = [
+                    'SELECT' => 'id , real_filename , price' ,
+                    'FROM'   => "{$dbprefix}files" ,
+                    'WHERE'  => 'price > 0 AND user = ' . $usrcp->id()
+                ];
+
+                $paid_f = $SQL->build($query);
+
+                $page_nums = $have_paid_file = false;
+
+                if ($num_rows = $SQL->num_rows($paid_f))
+                {
+
+                   // Pagination //
+
+                    $perpage                 = 21;
+                    $currentPage             = ig('page') ? g('page', 'int') : 1;
+                    $Pager                   = new Pagination($perpage, $num_rows, $currentPage);
+                    $start                   = $Pager->getStartRow();
+                    $linkgoto                = $config['siteurl'] . 'ucp.php?go=my_kj_payment&amp;case=my_paid_files';
+                    $page_nums               = $Pager->print_nums($linkgoto);
+                    $query['LIMIT']          = "$start, $perpage";
+                    $paid_f                  = $SQL->build($query);
+
+
+
+                    $have_paid_file = true;
+                    while ($paid_file = $SQL->fetch($paid_f))
+                    {
+                        $all_paid_file[] = [
+                            'id'    => $paid_file['id'] ,
+                            'name'  => $paid_file['real_filename'] ,
+                            'price' => $paid_file['price'] . ' ' . $config['iso_currency_code'],
+                            'link'  => $config['siteurl'] . 'do.php?id=' . $paid_file['id']
+                        ];
+                    }
+                }
+            }
+            return compact('have_paid_file','all_paid_file',
+                'AlertRole','AlertMsg','OpenAlert',
                 'show_price_panel','FileID', 'FileName','FileUser','FilePrice','FileSize',
                 'havePayments','payments','page_nums','havePayout','payouts',
             'case', 'action', 'titlee', 'no_request', 'stylee', 'styleePath', 'user_balance');

@@ -11,6 +11,9 @@
   <li class="nav-item">
     <a class="nav-link (case == files_payments?active:)" href="{action}&amp;case=files_payments">{olang.KJP_FRO}</a>
   </li>
+  <li class="nav-item">
+    <a class="nav-link (case == my_paid_files?active:)" href="{action}&amp;case=my_paid_files">{olang.KJP_PAID_FILE}</a>
+  </li>
 </ul>
 <div class="card">
   <div class="card-body">
@@ -83,7 +86,7 @@
         <table class="table table-bordered">
           <thead>
             <tr>
-              <th scope="col">{olang.KJP_POUT_ID}</th>
+              <th scope="col">{olang.KJP_PAY_ID}</th>
               <th scope="col">{olang.KJP_PAY_MTHD}</th>
               <th scope="col">{olang.KJP_MEMBER}</th>
               <th scope="col">{olang.KJP_FILE_NAME}</th>
@@ -110,6 +113,50 @@
           </div>
 
       </IF>
+
+    <ELSEIF NAME="case == my_paid_files">
+
+    <table class="table table-bordered">
+      <thead>
+          <tr>
+              <th scope="col">ID</th>
+              <th scope="col">{olang.KJP_FILE_NAME}</th>
+              <th scope="col">{olang.KJP_PRC}</th>
+              <th scope="col">{olang.KJP_ACTION}</th>
+
+          </tr>
+      </thead>
+      <tbody>
+          <IF NAME="have_paid_file == true">
+
+              <LOOP NAME="all_paid_file">
+                  <tr>
+                      <th scope="row">{{id}}</th>
+                      <td>
+                          <a href="{{link}}" target="_blank">{{name}}</a>
+                      </td>
+                      <td>{{price}}</td>
+                      <td>
+                          <form method="POST" action="./ucp.php?go=my_kj_payment&case=pricing_file">
+                              <input type="hidden" name="select_file_id" value="{{id}}">
+                              <button name="open_file" class="btn btn-primary btn-sm" type="submit">{olang.KJP_EDT_PRC}</button>
+                          </form>
+                      </td>
+
+                  </tr>
+
+              </LOOP>
+
+              <ELSE>
+
+                  <div class="alert alert-info" role="alert">
+                      {olang.KJP_NO_PAID_FILES}
+                  </div>
+
+          </IF>
+      </tbody>
+  </table>
+  {page_nums}
 
 
       <ELSEIF NAME="case == pricing_file">
