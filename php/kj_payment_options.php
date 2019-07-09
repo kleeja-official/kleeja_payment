@@ -823,7 +823,7 @@ elseif ($current_smt == 'help')
 
 $go_menu = [
     'all_transactions' => ['name'=> $olang['KJP_ALL_TRNC'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=all_transactions', 'goto'=>'all_transactions', 'current'=> $current_smt == 'all_transactions'],
-    'payouts'          => ['name'=> 'Payouts', 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=payouts', 'goto'=>'payouts', 'current'=> $current_smt == 'payouts'],
+    'payouts'          => ['name'=> $olang['KJP_PAYOUTS'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=payouts', 'goto'=>'payouts', 'current'=> $current_smt == 'payouts'],
     'pricing_file'     => ['name'=> $olang['KJP_PRC_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=pricing_file', 'goto'=>'pricing_file', 'current'=> $current_smt == 'pricing_file'],
     'paid_files'       => ['name'=> $olang['KJP_PAID_FILE'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=paid_files', 'goto'=>'paid_files', 'current'=> $current_smt == 'paid_files'],
     'help'             => ['name'=> $olang['KJP_HLP'], 'link'=> basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=help', 'goto'=>'help', 'current'=> $current_smt == 'help'],
