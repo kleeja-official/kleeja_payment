@@ -79,6 +79,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             // to be sure 100% , thats we are on the right way
             kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl']);
+            exit;
         }
         // is he comming from our page
         elseif (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
