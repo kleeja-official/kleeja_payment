@@ -1059,6 +1059,55 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     }
                 }
             }
+            elseif ($case == 'my_payments')
+            {
+                $fileQuery = [
+                    'SELECT'  => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
+                    'FROM'    => "{$dbprefix}payments p",
+                    'JOINS'   =>
+                    [
+                        [
+                            'INNER JOIN' => "{$dbprefix}files f",
+                            'ON'         => 'p.item_id = f.id'
+                        ]
+                    ],
+                    'WHERE'     => 'p.user = ' . $usrcp->id(),
+                    'ORDER BY'  => 'p.id DESC',
+                ];
+
+                $filePay = $SQL->build($fileQuery);
+
+                $havePayments = false;
+
+                if ($num_rows = $SQL->num_rows($filePay))
+                {
+                    $perpage          = 21;
+                    $currentPage    = ig('page') ? g('page', 'int') : 1;
+                    $Pager            = new Pagination($perpage, $num_rows, $currentPage);
+                    $start            = $Pager->getStartRow();
+                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=files_payments';
+                    $page_nums        = $Pager->print_nums($linkgoto);
+                    $fileQuery['LIMIT'] = "$start, $perpage";
+                    $filePay = $SQL->build($fileQuery);
+
+                    $UserById = UserById();
+
+
+                    $payments = [];
+                    $havePayments = true;
+                    while ($row = $SQL->fetch_array($filePay))
+                    {
+                        $payments[] = [
+                            'ID'         => $row['id'],
+                            'METHOD'     => $olang['KJP_MTHD_NAME_' . strtoupper($row['payment_method'])],
+                            'FILE_NAME'  => $row['item_name'],
+                            'AMOUNT'     => $row['payment_amount'] . ' ' . $config['iso_currency_code'],
+                            'ACTION'     => sprintf($olang['KJP_ACT_' . strtoupper($row['payment_action'])], $row['item_name']),
+                            'DATE_TIME'  => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
+                        ];
+                    }
+                }
+            }
             elseif ($case == 'files_payments')
             {
                 $fileQuery = [

@@ -86,6 +86,7 @@ return [
     'ACLS_ACCESS_BOUGHT_FILES'            => 'الوصول إلى صفحة "الملفات المشتراة"',
     'KJP_BOUGHT_FILES'                    => 'الملفات المشتراة',
     'KJP_NO_BOUGHT_FILES'                 => 'لا توجد لديك ملفات مشتراة بعد',
+    'KJP_MY_PAYS'                         => 'دفعاتي',
 
     // stripe method langs
     'ACTIVE_CARDS'           => 'تفعيل سترايب (Stripe)',

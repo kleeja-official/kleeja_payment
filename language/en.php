@@ -156,6 +156,7 @@ return [
     'KJP_POUT_ARCH'                        => 'Archive Payouts',
     'MIN_PAYOUT_LIMIT'                     => 'Min Withdrawal Limit',
     'KJP_MIN_POUT_LMT'                     => 'The Min Withdrawal Limit is %u %s',
+    'KJP_MY_PAYS'                          => 'My Payments',
     // for actions & archives
     'KJP_ACT_BUY_FILE'                          => 'Purchasing File %s' ,
     'KJP_ACT_JOIN_GROUP'                        => 'Joining Group %s' ,
