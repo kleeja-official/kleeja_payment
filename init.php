@@ -1062,15 +1062,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             elseif ($case == 'my_payments')
             {
                 $fileQuery = [
-                    'SELECT'  => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
-                    'FROM'    => "{$dbprefix}payments p",
-                    'JOINS'   =>
-                    [
-                        [
-                            'INNER JOIN' => "{$dbprefix}files f",
-                            'ON'         => 'p.item_id = f.id'
-                        ]
-                    ],
+                    'SELECT'    => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
+                    'FROM'      => "{$dbprefix}payments p",
                     'WHERE'     => 'p.user = ' . $usrcp->id(),
                     'ORDER BY'  => 'p.id DESC',
                 ];
