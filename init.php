@@ -1061,34 +1061,34 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             }
             elseif ($case == 'my_payments')
             {
-                $fileQuery = [
+                $myPaymentQuery = [
                     'SELECT'    => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
                     'FROM'      => "{$dbprefix}payments p",
                     'WHERE'     => 'p.user = ' . $usrcp->id(),
                     'ORDER BY'  => 'p.id DESC',
                 ];
 
-                $filePay = $SQL->build($fileQuery);
+                $myPays = $SQL->build($myPaymentQuery);
 
                 $havePayments = false;
 
-                if ($num_rows = $SQL->num_rows($filePay))
+                if ($num_rows = $SQL->num_rows($myPays))
                 {
                     $perpage          = 21;
                     $currentPage    = ig('page') ? g('page', 'int') : 1;
                     $Pager            = new Pagination($perpage, $num_rows, $currentPage);
                     $start            = $Pager->getStartRow();
-                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=files_payments';
+                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=my_payments';
                     $page_nums        = $Pager->print_nums($linkgoto);
-                    $fileQuery['LIMIT'] = "$start, $perpage";
-                    $filePay = $SQL->build($fileQuery);
+                    $myPaymentQuery['LIMIT'] = "$start, $perpage";
+                    $myPays = $SQL->build($myPaymentQuery);
 
                     $UserById = UserById();
 
 
                     $payments = [];
                     $havePayments = true;
-                    while ($row = $SQL->fetch_array($filePay))
+                    while ($row = $SQL->fetch_array($myPays))
                     {
                         $payments[] = [
                             'ID'         => $row['id'],
