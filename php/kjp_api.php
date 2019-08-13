@@ -67,7 +67,7 @@ class KJP
 
                 if ($paypalZip->open(dirname(__FILE__) . '/../paypal_sdk.zip'))
                 {
-                    $paypalZip->extractTo(dirname(__FILE__));
+                    $paypalZip->extractTo(dirname(__FILE__) . '/../');
                     $paypalZip->close();
                 }
             }
@@ -82,7 +82,7 @@ class KJP
 
                 if ($stripeZip->open(dirname(__FILE__) . '/../stripe-sdk.zip'))
                 {
-                    $stripeZip->extractTo(dirname(__FILE__));
+                    $stripeZip->extractTo(dirname(__FILE__) . '/../');
                     $stripeZip->close();
                 }
             }
