@@ -1,6 +1,8 @@
 # kleeja plugin
 # kleeja payment
-a plugin for kleeja script , · selling files and joining paid groups and receiving profits
+------------------------------------------
+### a plugin for kleeja script .
+* Create file store & Sell paid groups & included Subscription system
 
 kleeja is a File Upload PHP Script, used by thousands of webmasters since 2007. http://github.com/kleeja-official
 
