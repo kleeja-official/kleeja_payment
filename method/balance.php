@@ -73,12 +73,13 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function checkPayment()
     {
-        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang , $olang;
+        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang , $olang , $subscription;
 
         if (! $usrcp->name())
         {
             // to be sure 100% , thats we are on the right way
             kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl']);
+
             exit;
         }
         // is he comming from our page
@@ -106,6 +107,12 @@ class kjPayMethod_balance implements KJPaymentMethod
         elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
             kleeja_err($olang['KJP_GP_NT_FUND']);
+
+            exit;
+        }
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'subscripe') && ! $itemInfo = $subscription->get($_SESSION['kj_payment']['item_id']))
+        {
+            kleeja_err('ERROR REQUEST');
 
             exit;
         }
@@ -170,8 +177,8 @@ class kjPayMethod_balance implements KJPaymentMethod
             $this->toGlobal['groupName'] = $_SESSION['kj_payment']['item_name'];
             $update_user                 = [
                 'UPDATE'       => "{$dbprefix}users",
-                'SET'          => "group_id = '" . $_SESSION['kj_payment']['item_id'] . "'" ,
-                'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
+                'SET'          => 'group_id = ' . $_SESSION['kj_payment']['item_id'],
+                'WHERE'        => 'id = ' . $usrcp->id(),
             ];
 
             $SQL->build($update_user);
@@ -187,9 +194,23 @@ class kjPayMethod_balance implements KJPaymentMethod
             if (user_can('recaive_profits', $user_group))
             {
                 // becuse the payment is successfuly , let's give some profits to the file owner
-                $user_profits = $payment_amount * $config['file_owner_profits'] / 100;
+                $user_profits = $payment_amount * $config['kjp_file_owner_profits'] / 100;
                 $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = {$user_id}");
             }
+        }
+        elseif ($_SESSION['kj_payment']['payment_action'] == 'subscripe' && $usrcp->name())
+        {
+            $foundedAction               = true;
+            $package_expire              = $subscription->expire_at($_SESSION['kj_payment']['item_id']);
+            $olang['KJP_JUIN_SUCCESS']   = sprintf($olang['KJP_SUCCESS_SUBSCRIPE'], $_SESSION['kj_payment']['item_name'], date('Y/m/d', $package_expire));
+            $this->toGlobal['olang']     = $olang;
+            $update_user                 = [
+                'UPDATE'       => "{$dbprefix}users",
+                'SET'          => 'package = ' . $_SESSION['kj_payment']['item_id'] . " , package_expire = {$package_expire}",
+                'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
+            ];
+
+            $SQL->build($update_user);
         }
 
         if (! $foundedAction)

@@ -9,9 +9,6 @@
     <a class="nav-link (case == withdrawals?active:)" href="{action}&amp;case=withdrawals">{olang.KJP_WTHDR}</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link (case == my_payments?active:)" href="{action}&amp;case=my_payments">{olang.KJP_MY_PAYS}</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link (case == files_payments?active:)" href="{action}&amp;case=files_payments">{olang.KJP_FRO}</a>
   </li>
   <li class="nav-item">
@@ -24,7 +21,12 @@
     <IF NAME="case == cp">
       <div class="card">
         <div class="card-body">
-          <h3>{olang.KJP_BLNC} : {user_balance}</h3>
+        <div class="row">
+          <h3 class="col-md-6">{olang.KJP_BLNC} : {user_balance}</h3>
+          <IF NAME="config.kjp_active_subscriptions">
+            <h3 class="col-md-6">{olang.KJP_POINTS} : {user_subs_points}</h3>
+          </IF>
+        </div>
           <hr>
           <form action="{action}" method="POST">
             <div class="form-group">
@@ -104,40 +106,6 @@
               <td>{{METHOD}}</td>
               <td>{{BUYER}}</td>
               <td>{{FILE_NAME}}</td>
-              <td>{{DATE_TIME}}</td>
-              </tr>
-            </LOOP>
-          </tbody>
-        </table>
-        {page_nums}
-        <ELSE>
-          <div class="alert alert-primary" role="alert">
-            {olang.KJP_NO_FL_PMNT}
-          </div>
-
-      </IF>
-    <ELSEIF NAME="case == my_payments">
-
-
-      <IF NAME="havePayments">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">{olang.KJP_PAY_ID}</th>
-              <th scope="col">{olang.KJP_PAY_MTHD}</th>
-              <th scope="col">{olang.KJP_PAY_AMNT}</th>
-              <th scope="col">{olang.KJP_ACTION}</th>
-              <th scope="col">{olang.KJP_DATE_TIME}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <LOOP NAME="payments">
-              <tr>
-              </tr>
-              <th scope="row">{{ID}}</th>
-              <td>{{METHOD}}</td>
-              <td>{{AMOUNT}}</td>
-              <td>{{ACTION}}</td>
               <td>{{DATE_TIME}}</td>
               </tr>
             </LOOP>

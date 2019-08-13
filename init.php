@@ -18,7 +18,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.2.3',
+    'plugin_version' => '1.2.4',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
@@ -56,46 +56,64 @@ for more info visit help page <br>
 $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
     global $SQL , $dbprefix , $d_groups;
 
-    $SQL->query(
+    $InstallQuerys = [
         "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments` (
-        `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-        `payment_state` text COLLATE utf8_bin NOT NULL,
-        `payment_method` VARCHAR(100) NULL DEFAULT NULL,
-        `payment_more_info` LONGTEXT NOT NULL,
-        `payment_amount` float NOT NULL,
-        `payment_currency` VARCHAR(10) NOT NULL,
-        `payment_token` text COLLATE utf8_bin NOT NULL,
-        `payment_payer_ip` text COLLATE utf8_bin NOT NULL,
-        `payment_action` text COLLATE utf8_bin NOT NULL,
-        `item_id` int(11) NOT NULL,
-        `item_name` text COLLATE utf8_bin NOT NULL,
-        `user` int(11) NOT NULL,
-        `payment_year` int(11) NOT NULL,
-        `payment_month` int(11) NOT NULL,
-        `payment_day` int(11) NOT NULL,
-        `payment_time` text COLLATE utf8_bin NOT NULL,
-        PRIMARY KEY (`id`)
-        )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
-        );
+            `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+            `payment_state` text COLLATE utf8_bin NOT NULL,
+            `payment_method` VARCHAR(100) NULL DEFAULT NULL,
+            `payment_more_info` LONGTEXT NOT NULL,
+            `payment_amount` float NOT NULL,
+            `payment_currency` VARCHAR(10) NOT NULL,
+            `payment_token` text COLLATE utf8_bin NOT NULL,
+            `payment_payer_ip` text COLLATE utf8_bin NOT NULL,
+            `payment_action` text COLLATE utf8_bin NOT NULL,
+            `item_id` int(11) NOT NULL,
+            `item_name` text COLLATE utf8_bin NOT NULL,
+            `user` int(11) NOT NULL,
+            `payment_year` int(11) NOT NULL,
+            `payment_month` int(11) NOT NULL,
+            `payment_day` int(11) NOT NULL,
+            `payment_time` text COLLATE utf8_bin NOT NULL,
+            PRIMARY KEY (`id`)
+            )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;" ,
 
-    $SQL->query(
-            "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments_out` (
+        "CREATE TABLE IF NOT EXISTS `{$dbprefix}payments_out` (
                 `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
                 `user` int(11) NOT NULL,
                 `method` text COLLATE utf8_bin NOT NULL,
                 `amount` float NOT NULL,
                 `payment_more_info` text COLLATE utf8_bin NOT NULL,
-                `payout_year` int(11) NOT NULL,
-                `payout_month` int(11) NOT NULL,
-                `payout_day` int(11) NOT NULL,
+               `payout_year` int(11) NOT NULL,
+               `payout_month` int(11) NOT NULL,
+               `payout_day` int(11) NOT NULL,
                 `payout_time` text COLLATE utf8_bin NOT NULL,
-                `state` text COLLATE utf8_bin NOT NULL,
-                PRIMARY KEY (`id`)
-              ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
-        );
+               `state` text COLLATE utf8_bin NOT NULL,
+              PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;" ,
 
-    $SQL->query("ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';");
-    $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `balance` FLOAT NOT NULL DEFAULT '0.00';");
+        "CREATE TABLE IF NOT EXISTS `{$dbprefix}subscriptions` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `name` text COLLATE utf8_bin NOT NULL,
+                `days` int(11) NOT NULL,
+                `price` float NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;" ,
+
+        "ALTER TABLE `{$dbprefix}files` ADD `price` FLOAT NOT NULL DEFAULT '0';" ,
+
+        "ALTER TABLE `{$dbprefix}users` ADD `package` INT NOT NULL DEFAULT '0';" ,
+
+        "ALTER TABLE `{$dbprefix}users` ADD `balance` FLOAT NOT NULL DEFAULT '0.00';" ,
+
+        "ALTER TABLE `{$dbprefix}users` ADD `subs_point` INT NOT NULL DEFAULT '0';" ,
+
+        "ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';"
+    ];
+
+    foreach ($InstallQuerys as  $query)
+    {
+        $SQL->query($query);
+    }
 
     // create group permission to access bought files
 
@@ -117,120 +135,147 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
         $SQL->build($insert_acl);
 
         // recaive_profits
-        $insert_acl = [
-            'INSERT'       => 'acl_name, acl_can, group_id',
-            'INTO'         => "{$dbprefix}groups_acl",
-            'VALUES'       => "'recaive_profits', 0 , " . $group_id
-        ];
+        $insert_acl['VALUES'] = "'recaive_profits', 0 , " . $group_id;
         $SQL->build($insert_acl);
     }
 
     $options = [
-        'join_price' =>
+        'kjp_join_price' =>
         [
             'value'  => '0',
-            'html'   => configField('join_price'),
+            'html'   => configField('kjp_join_price'),
             'plg_id' => $plg_id,
             'type'   => 'groups',
-            'order'  => '1',
+            'order'  => '0',
         ],
-        'min_payout_limit' =>
+
+        'kjp_min_payout_limit' =>
         [
             'value'  => '0',
-            'html'   => configField('min_payout_limit'),
+            'html'   => configField('kjp_min_payout_limit'),
             'plg_id' => $plg_id,
             'type'   => 'groups',
             'order'  => '1',
         ],
 
-        'pp_client_id' =>
+        'kjp_active_subscriptions' =>
         [
             'value'  => '0',
-            'html'   => configField('pp_client_id'),
+            'html'   => configField('kjp_active_subscriptions', 'yesno'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '0',
         ],
 
-        'paypal_client_secret' =>
+        'kjp_paypal_client_id' =>
         [
             'value'  => '0',
-            'html'   => configField('paypal_client_secret'),
+            'html'   => configField('kjp_paypal_client_id'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '1',
         ],
-        'stripe_publishable_key' =>
+
+        'kjp_paypal_client_secret' =>
         [
             'value'  => '0',
-            'html'   => configField('stripe_publishable_key'),
+            'html'   => configField('kjp_paypal_client_secret'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '2',
         ],
-        'stripe_secret_key' =>
+
+        'kjp_stripe_publishable_key' =>
         [
             'value'  => '0',
-            'html'   => configField('stripe_secret_key'),
+            'html'   => configField('kjp_stripe_publishable_key'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '3',
         ],
-        'iso_currency_code' =>
+
+        'kjp_stripe_secret_key' =>
+        [
+            'value'  => '0',
+            'html'   => configField('kjp_stripe_secret_key'),
+            'plg_id' => $plg_id,
+            'type'   => 'kleeja_payment',
+            'order'  => '4',
+        ],
+
+        'kjp_iso_currency_code' =>
         [
             'value'  => 'USD',
-            'html'   => configField('iso_currency_code'),
+            'html'   => configField('kjp_iso_currency_code'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '5',
         ],
-        'down_link_expire' =>
+
+        'kjp_down_link_expire' =>
         [
             'value'  => '1',
-            'html'   => configField('down_link_expire'),
+            'html'   => configField('kjp_down_link_expire'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '6',
         ],
-        'file_owner_profits' =>
+
+        'kjp_file_owner_profits' =>
         [
             'value'  => '0',
-            'html'   => configField('file_owner_profits'),
+            'html'   => configField('kjp_file_owner_profits'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '7',
         ],
-        'min_price_limit' =>
+
+        'kjp_min_price_limit' =>
         [
             'value'  => '1',
-            'html'   => configField('min_price_limit'),
+            'html'   => configField('kjp_min_price_limit'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
+            'order'  => '9',
         ],
-        'max_price_limit' =>
+
+        'kjp_max_price_limit' =>
         [
             'value'  => '5',
-            'html'   => configField('max_price_limit'),
+            'html'   => configField('kjp_max_price_limit'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
-        ],
+            'order'  => '8',
+        ]
     ];
 
     // an example to add your method to kleeja payments
     // be sure that the type is ('kj_pay_active_mthd') and the name is (active_{$your_method})
     // check getPaymentMethods() function for more informations
 
-    $options['active_paypal'] = [
+    $options['kjp_active_paypal'] = [
         'value'  => '1',
-        'html'   => configField('active_paypal', 'yesno'),
+        'html'   => configField('kjp_active_paypal', 'yesno'),
         'plg_id' => $plg_id,
         'type'   => 'kj_pay_active_mthd',
+        'order'  => '1',
 
     ];
-    $options['active_cards'] = [
+
+    $options['kjp_active_cards'] = [
         'value'  => '1',
-        'html'   => configField('active_cards', 'yesno'),
+        'html'   => configField('kjp_active_cards', 'yesno'),
         'plg_id' => $plg_id,
         'type'   => 'kj_pay_active_mthd',
+        'order'  => '2',
     ];
-    $options['active_balance'] = [
+
+    $options['kjp_active_balance'] = [
         'value'  => '1',
-        'html'   => configField('active_balance', 'yesno'),
+        'html'   => configField('kjp_active_balance', 'yesno'),
         'plg_id' => $plg_id,
         'type'   => 'kj_pay_active_mthd',
+        'order'  => '0',
     ];
 
 
@@ -240,15 +285,220 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
 //plugin update function, called if plugin is already installed but version is different than current
 $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_version) {
-    // if(version_compare($old_version, '0.5', '<')){
-    //     //... update to 0.5
-    // }
-    //
-    // if(version_compare($old_version, '0.6', '<')){
-    //     //... update to 0.6
-    // }
+    global $SQL , $dbprefix;
 
-    //you could use update_config, update_olang
+    // becouse kleeja delete all content in the plugin when it update ,
+    // we need to extract the SDK again with every update
+    if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
+    {
+        // extract paypal sdk
+        if (file_exists(dirname(__FILE__) . '/paypal_sdk.zip'))
+        {
+            $paypalZip = new ZipArchive;
+
+            if ($paypalZip->open(dirname(__FILE__) . '/paypal_sdk.zip'))
+            {
+                $paypalZip->extractTo(dirname(__FILE__));
+                $paypalZip->close();
+            }
+        }
+    }
+
+    if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+    {
+        // extract stripe sdk
+        if (file_exists(dirname(__FILE__) . '/stripe-sdk.zip'))
+        {
+            $stripeZip = new ZipArchive;
+
+            if ($stripeZip->open(dirname(__FILE__) . '/stripe-sdk.zip'))
+            {
+                $stripeZip->extractTo(dirname(__FILE__));
+                $stripeZip->close();
+            }
+        }
+    }
+
+    if (version_compare($old_version, '1.2.4', '<'))
+    {
+        // create subscription table
+        $SQL->query(
+            "CREATE TABLE IF NOT EXISTS `{$dbprefix}subscriptions` (
+                `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+                `name` text COLLATE utf8_bin NOT NULL,
+                `days` int(11) NOT NULL,
+                `price` float NOT NULL,
+                PRIMARY KEY (`id`)
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
+        );
+        // add package colum to users table
+        $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package` INT NOT NULL DEFAULT '0';");
+        $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';");
+        $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `subs_point` INT NOT NULL DEFAULT '0';");
+
+        //we need the id of kleeja_payment plugin
+
+        $plg_id = KJP::info()['plugin_id'];
+
+        // Add new Config for Subscriptions and add prefix to plugins setting
+
+        add_config_r([
+            'kjp_join_price' =>
+            [
+                'value'  => '0',
+                'html'   => configField('kjp_join_price'),
+                'plg_id' => $plg_id,
+                'type'   => 'groups',
+                'order'  => '0',
+            ],
+
+            'kjp_min_payout_limit' =>
+            [
+                'value'  => '0',
+                'html'   => configField('kjp_min_payout_limit'),
+                'plg_id' => $plg_id,
+                'type'   => 'groups',
+                'order'  => '1',
+            ],
+
+            'kjp_paypal_client_id' =>
+            [
+                'value'  => get_config('pp_client_id'),
+                'html'   => configField('kjp_paypal_client_id'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '1',
+            ],
+
+            'kjp_paypal_client_secret' =>
+            [
+                'value'  => get_config('paypal_client_secret'),
+                'html'   => configField('kjp_paypal_client_secret'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '2',
+            ],
+
+            'kjp_stripe_publishable_key' =>
+            [
+                'value'  => get_config('stripe_publishable_key'),
+                'html'   => configField('kjp_stripe_publishable_key'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '3',
+            ],
+
+            'kjp_stripe_secret_key' =>
+            [
+                'value'  => get_config('stripe_secret_key'),
+                'html'   => configField('kjp_stripe_secret_key'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '4',
+            ],
+
+            'kjp_iso_currency_code' =>
+            [
+                'value'  => get_config('iso_currency_code'),
+                'html'   => configField('kjp_iso_currency_code'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '5',
+            ],
+
+            'kjp_down_link_expire' =>
+            [
+                'value'  => get_config('down_link_expire'),
+                'html'   => configField('kjp_down_link_expire'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '6',
+            ],
+
+            'kjp_file_owner_profits' =>
+            [
+                'value'  => get_config('file_owner_profits'),
+                'html'   => configField('kjp_file_owner_profits'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '7',
+            ],
+
+            'kjp_min_price_limit' =>
+            [
+                'value'  => get_config('min_price_limit'),
+                'html'   => configField('kjp_min_price_limit'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '9',
+            ],
+
+            'kjp_max_price_limit' =>
+            [
+                'value'  => get_config('max_price_limit'),
+                'html'   => configField('kjp_max_price_limit'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '8',
+            ],
+
+            'kjp_active_subscriptions' =>
+            [
+                'value'  => '0',
+                'html'   => configField('kjp_active_subscriptions', 'yesno'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '0',
+            ],
+
+            'kjp_active_balance'=>
+            [
+                'value'  => get_config('active_balance'),
+                'html'   => configField('kjp_active_balance', 'yesno'),
+                'plg_id' => $plg_id,
+                'type'   => 'kj_pay_active_mthd',
+                'order'  => '0',
+            ],
+
+            'kjp_active_paypal'=>
+            [
+                'value'  => get_config('active_paypal'),
+                'html'   => configField('kjp_active_paypal', 'yesno'),
+                'plg_id' => $plg_id,
+                'type'   => 'kj_pay_active_mthd',
+                'order'  => '0',
+            ],
+
+            'kjp_active_cards'=>
+            [
+                'value'  => get_config('active_cards'),
+                'html'   => configField('kjp_active_cards', 'yesno'),
+                'plg_id' => $plg_id,
+                'type'   => 'kj_pay_active_mthd',
+                'order'  => '0',
+            ],
+        ]);
+        // we will delete the old configs , becouse we will add prefix to it
+
+        delete_config([
+            'join_price',
+            'min_payout_limit',
+            'paypal_client_secret',
+            'pp_client_id',
+            'iso_currency_code',
+            'active_paypal',
+            'active_cards',
+            'active_balance',
+            'down_link_expire',
+            'stripe_publishable_key',
+            'stripe_secret_key',
+            'min_price_limit',
+            'max_price_limit' ,
+            'file_owner_profits' ,
+        ]);
+    }
+
+    //you could use update_config
 };
 
 
@@ -257,37 +507,44 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
     global $SQL , $dbprefix;
 
     $SQL->query("ALTER TABLE `{$dbprefix}files` DROP `price`;");
-    $SQL->query("ALTER TABLE `{$dbprefix}users` DROP `balance`;");
+    $SQL->query("ALTER TABLE `{$dbprefix}users` DROP `balance` , DROP `package` , DROP `package_expire` , DROP `subs_point`;");
 
     // removed from db
     //delete_olang(null, null , $plg_id);
 
     delete_config([
-        'join_price',
-        'min_payout_limit',
-        'paypal_client_secret',
-        'pp_client_id',
-        'iso_currency_code',
-        'payment_method',
-        'active_paypal',
-        'active_cards',
-        'down_link_expire',
-        'stripe_publishable_key',
-        'stripe_secret_key',
-        'min_price_limit',
-        'max_price_limit'
+        'kjp_join_price',
+        'kjp_min_payout_limit',
+        'kjp_paypal_client_secret',
+        'kjp_paypal_client_id',
+        'kjp_iso_currency_code',
+        'kjp_payment_method',
+        'kjp_active_paypal',
+        'kjp_active_cards',
+        'kjp_active_balance',
+        'kjp_down_link_expire',
+        'kjp_stripe_publishable_key',
+        'kjp_stripe_secret_key',
+        'kjp_min_price_limit',
+        'kjp_max_price_limit' ,
+        'kjp_active_subscriptions',
+        'kjp_file_owner_profits'
     ]);
 
     // DELETE ACCESS BOUGHT FILES PERMISSIONS AND recaive profits
 
     $SQL->query("DELETE FROM `{$dbprefix}groups_acl` WHERE acl_name = 'access_bought_files' OR acl_name = 'recaive_profits'");
+
+    // in the end , let's delete the olang , not our one , for other packages of this plugin
+
+    delete_olang(null, null, $plg_id);
 };
 
 // plugin functions
 $kleeja_plugin['kleeja_payment']['functions'] = [
 
     'qr_download_id_filename' => function ($args) {
-        global $SQL , $config , $usrcp;
+        global $SQL , $config , $usrcp , $subscription , $olang;
 
         $query = $args['query'];
         $query['SELECT'] .= ', f.price';
@@ -298,20 +555,58 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         {
             $row = $SQL->fetch_array($result);
 
-            if ($row['price'] > 0)
-            {
-                // wibsite founders and file Owner can download without pay
+            if ($config['kjp_active_subscriptions'])
+            { // if the subscription is active
+                if ($row['price'] > 0 && ! $subscription->is_valid($usrcp->id()))
+                { // subscripe is active but not valid & paid file
 
-                if ($usrcp->get_data('founder')['founder'] == 0 &&
-                     ($row['fuserid'] !== $usrcp->id() || $row['fusername'] !== $usrcp->name()))
+                    // wibsite founders and file Owner can download without pay
+                    if ($usrcp->get_data('founder')['founder'] == 0 &&
+                         ($row['fuserid'] !== $usrcp->id() || $row['fusername'] !== $usrcp->name()))
+                    { // send to buy page && and display subscripes packs
+                        redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
+                        $SQL->close();
+
+                        exit;
+                    }
+                }
+                elseif ($row['price'] == 0 && ! $subscription->is_valid($usrcp->id()))
+                { // subscripe is active but not valid & free file
+
+                    // wibsite founders and file Owner can download without pay
+                    if ($usrcp->get_data('founder')['founder'] == 0 &&
+                         ($row['fuserid'] !== $usrcp->id() || $row['fusername'] !== $usrcp->name()))
+                    { // display an msg to say that we are using subscripe system and redirect to subscripes page
+                        kleeja_err($olang['KJP_WE_USE_SUBSCRIPE_SYS'], '', true, $config['siteurl'] . 'go.php?go=subscription');
+                        $SQL->close();
+
+                        exit;
+                    }
+                }
+                else
                 {
-                    redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
-                    $SQL->close();
-
-                    exit;
+                    /**
+                     * if the code arrive here , that mean the user have valid subscripe , he is free to do what he want
+                     * god bless hem
+                     */
                 }
             }
-        }
+            else
+            { // the subscription is not active
+                if ($row['price'] > 0)
+                { // if paid , send hem to buy page
+                    // wibsite founders and file Owner can download without pay
+                    if ($usrcp->get_data('founder')['founder'] == 0 &&
+                         ($row['fuserid'] !== $usrcp->id() || $row['fusername'] !== $usrcp->name()))
+                    {
+                        redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
+                        $SQL->close();
+
+                        exit;
+                    }
+                } // subscription is not active and the file is free => do nothing , it's not our job
+            }
+        } // file not found -> kleeja will display an error msg
     } ,
 
     'err_navig_download_page' => function($args) {
@@ -353,7 +648,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $tpl->assign('userfolder', $userfolder);
             $tpl->assign('size', $size);
             $tpl->assign('FormAction', $FormAction);
-            $tpl->assign('is_style_supported', $is_style_supported);
             $tpl->assign('payment_methods', $payment_methods);
 
             Saaheader($title);
@@ -367,7 +661,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     } ,
 
     'default_go_page' => function($args) {
-        global $lang , $olang , $usrcp , $config , $THIS_STYLE_PATH_ABS;
+        global $lang , $olang , $usrcp , $config , $THIS_STYLE_PATH_ABS ,$subscription;
 
 
         // request Example : domain.io/kleeja/go.php?go=kj_payment&method=paypal&action=buy_file&id=1
@@ -422,7 +716,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
             $PAY->paymentStart(); // Play some song to enjoy ;
 
-            $PAY->setCurrency(strtoupper($config['iso_currency_code']));
+            $PAY->setCurrency(strtoupper($config['kjp_iso_currency_code']));
 
             switch (g('action')) {
                 case 'buy_file':
@@ -518,6 +812,54 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                     break;
 
+                case 'subscripe':
+
+                if (! ig('id'))
+                {
+                    kleeja_err($lang['ERROR_NAVIGATATION']);
+
+                    exit;
+                }
+
+                if (! $usrcp->name())
+                {
+                    kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl'] . 'go.php?go=subscription');
+
+                    exit;
+                }
+                elseif ($usrcp->group_id() == 1 && ! defined('DEV_STAGE'))
+                {
+                    kleeja_err('YOU ARE ADMIN');
+
+                    exit;
+                }
+                elseif ($subscription->is_valid($usrcp->id()))
+                {
+                    kleeja_err($olang['KJP_U_H_VALID_SUBSCRIPE']);
+
+                    exit;
+                }
+
+
+                $subscripe_info = $subscription->get(g('id'));
+
+                if (! $subscripe_info)
+                {
+                    kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl'] . 'go.php?go=subscription');
+
+                    exit;
+                }
+
+                $PAY->CreatePayment('subscripe', $subscripe_info);
+
+                foreach ($PAY->varsForCreatePayment() as $varName => $varValue)
+                {
+                    $GLOBALS[$varName] = $varValue;
+                }
+
+
+                    break;
+
                 case 'check':
                     // Checking Payments steps
 
@@ -556,15 +898,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                             { // the user can find the file on bought files , don't need to send the download link
                                 if ($PAY->linkMailer())
                                 { // if the method support email
-                                    $mailTemplate = str_replace(['@fileName' , '@downLink' , '@linkExpire'], [$global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s', ($config['down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
+                                    $mailTemplate = str_replace(['@fileName' , '@downLink' , '@linkExpire'], [$global_vars['file_name'] , $global_vars['down_link'] , date('Y-m-d / H:i:s', ($config['kjp_down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_MAIL_TPL']); // error here
 
                                     $mailer =  send_mail($PAY->linkMailer(), $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
 
                                     if ($mailer)
                                     { // mail is sent , don't need mail form & dispaly success msg
-                                        $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace(['@mail' , '@time'], [$PAY->linkMailer() , date('Y-m-d / H:i:s', ($config['down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_DOWN_INFO_2']);
+                                        $GLOBALS['olang']['KJP_DOWN_INFO_2'] = str_replace(['@mail' , '@time'], [$PAY->linkMailer() , date('Y-m-d / H:i:s', ($config['kjp_down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_DOWN_INFO_2']);
                                         $GLOBALS['showMailForm'] = false;
-                                        $usrcp->kleeja_set_cookie('downloadFile_' . $_SESSION['kj_payment']['item_id'], $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'], ($config['down_link_expire'] * 86400) + time());
+                                        $usrcp->kleeja_set_cookie('downloadFile_' . $_SESSION['kj_payment']['item_id'], $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'], ($config['kjp_down_link_expire'] * 86400) + time());
                                     }
                                     else
                                     { // we have to send mail again , i hope we never never arrive to this part :(
@@ -584,7 +926,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                             {
                                 $GLOBALS['olang']['KJP_DOWN_INFO_2'] = 'you can see the file and all bought files on <a href="./ucp.php?go=bought_files">Bought Files </a> Page';
                                 $GLOBALS['showMailForm'] = false;
-                                $usrcp->kleeja_set_cookie('downloadFile_' . $_SESSION['kj_payment']['item_id'], $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'], ($config['down_link_expire'] * 86400) + time());
+                                $usrcp->kleeja_set_cookie('downloadFile_' . $_SESSION['kj_payment']['item_id'], $_SESSION['kj_payment']['item_id'] . '_' . $_SESSION['kj_payment']['db_id'] . '_' . $_SESSION['kj_payment']['payment_token'], ($config['kjp_down_link_expire'] * 86400) + time());
                             }
                         }
                     }
@@ -638,13 +980,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $no_request = false;
             $stylee = 'paid_group';
             $titlee = $olang['KJP_PID_GRP'];
-            $is_style_supported = is_style_supported();
             // to allow the developers to including 'paid_group.html' with their styles .
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/paid_group.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
 
             $PaidGroups = getGroupInfo($args['d_groups']);
 
-            return compact('no_request', 'titlee', 'stylee', 'styleePath', 'PaidGroups', 'MethodOption', 'is_style_supported');
+            return compact('no_request', 'titlee', 'stylee', 'styleePath', 'PaidGroups', 'MethodOption');
         }
 
         // Send Download Link
@@ -678,7 +1019,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                 $downloadLink = $config['siteurl'] . 'do.php?downPaidFile=' . $payCookieInfoExplode[0] . '_' . $payCookieInfoExplode[1] . '_' . $payCookieInfoExplode[2];
 
-                $mailTemplate = str_replace(['@fileName' , '@downLink' , '@linkExpire'], [$fileName , $downloadLink , date('Y-m-d / H:i:s', ($config['down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_MAIL_TPL']);
+                $mailTemplate = str_replace(['@fileName' , '@downLink' , '@linkExpire'], [$fileName , $downloadLink , date('Y-m-d / H:i:s', ($config['kjp_down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_MAIL_TPL']);
 
                 $mailer = send_mail($mailAdress, $mailTemplate, 'kleeja Payment Download Link', $config['sitemail'], $config['sitename']);
 
@@ -692,7 +1033,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 {
 
                     // set cookie for download file
-                    $usrcp->kleeja_set_cookie('downloadFile_' . $payCookieInfoExplode[0], $payCookieInfo, ($config['down_link_expire'] * 86400) + time());
+                    $usrcp->kleeja_set_cookie('downloadFile_' . $payCookieInfoExplode[0], $payCookieInfo, ($config['kjp_down_link_expire'] * 86400) + time());
 
 
                     // delete cookie
@@ -700,7 +1041,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                     // dispaly success msg || I HOPE WE DONE
                     kleeja_info(
-                        str_replace(['@mail' , '@time'], [$mailAdress , date('Y-m-d / H:i:s', ($config['down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_DOWN_INFO_2'])
+                        str_replace(['@mail' , '@time'], [$mailAdress , date('Y-m-d / H:i:s', ($config['kjp_down_link_expire'] * 86400) + time())], $GLOBALS['olang']['KJP_DOWN_INFO_2'])
                     );
                 }
             }
@@ -708,15 +1049,50 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $titlee = 'Download Mail Sender';
             $no_request = false;
             $FormAction = $config['siteurl'] . 'go.php?go=KJPaymentMailer';
-            $is_style_supported = is_style_supported();
             $stylee = 'kjpayment_mailer';
             $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/kjpaymentmailer.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
-            return compact('stylee', 'styleePath', 'fileName', 'no_request', 'is_style_supported');
+            return compact('stylee', 'styleePath', 'fileName', 'no_request');
+        }
+
+        // Subscription list
+        // the page to buy a subscripe
+        elseif (g('go') == 'subscription')
+        {
+            // if submit
+            if (ip('subscripe_now') && ip('subscripe_id') && ip('Pay_method') && kleeja_check_form_key('subscription'))
+            {
+                if (! $usrcp->name())
+                {
+                    kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl'] . 'go.php?go=subscription');
+
+                    exit;
+                }
+                redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('Pay_method') . '&action=subscripe&id=' . p('subscripe_id'));
+
+                exit;
+            }
+            $titlee = $olang['KJP_SUBSCRIPTIONS'];
+            $no_request = false;
+            $FormAction = $config['siteurl'] . 'go.php?go=subscription';
+            $stylee = 'subscripe';
+            $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/subscripe.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment/' : dirname(__FILE__) . '/html/';
+            $subscripe_list = $subscription->get();
+            $MethodOption = '';
+            $form_key = kleeja_add_form_key('subscription');
+
+            foreach (getPaymentMethods() as $value)
+            {
+                $value = trim($value);
+
+                $MethodOption .= "<option value='{$value}'>" . $olang['KJP_MTHD_NAME_' . strtoupper($value)] . "</option>\n";
+                // loop inside loop doesn't work in kleeja styles
+            }
+            return compact('stylee', 'styleePath', 'fileName', 'no_request', 'subscripe_list', 'MethodOption', 'form_key');
         }
     } ,
 
     'qr_down_go_page_filename' => function ($args) {
-        global $SQL , $usrcp , $config;
+        global $SQL , $usrcp , $config , $subscription , $olang;
 
         $query = $args['query'];
         $query['SELECT'] .= ', f.price , f.user';
@@ -726,50 +1102,103 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         {
             $row = $SQL->fetch_array($result);
 
+            // i hate this part
+            $redirect = true;
+
             if ($row['price'] > 0)
             {
-                // i hate this part
-                $redirect = true;
 
                 // wibsite founders and file Owner can download without pay
                 if ($usrcp->get_data('founder')['founder'] == 0 && ! ($row['user'] === $usrcp->id()))
                 {
-                    if (ig('downToken') && ig('db'))
-                    {
-                        $paymentInfo = getPaymentInfo(g('db'), 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "' . g('downToken') . '"');
+                    if ($config['kjp_active_subscriptions'])
+                    {// subscriptions is active 
+                        if ($subscription->is_valid($usrcp->id()))
+                        { // & have valid subscripe
+                            $redirect = false;
+                        }
+                        else
+                        { // have not valid subscripe , let's check if he bought the file or not
+                            if (ig('downToken') && ig('db'))
+                            {
+                                $paymentInfo = getPaymentInfo(g('db'), 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "' . g('downToken') . '"');
 
 
-                        if ($paymentInfo)
-                        {
-                            if ($config['down_link_expire'] > 0)
-                            { // if 0 -> download link will never expire
-                                $downCookie = $usrcp->kleeja_get_cookie('downloadFile_' . g('down'));
-
-                                if ($downCookie)
+                                if ($paymentInfo)
                                 {
-                                    $downCookie = explode('_', $downCookie);
+                                    if ($config['kjp_down_link_expire'] > 0)
+                                    { // if 0 -> download link will never expire
+                                        $downCookie = $usrcp->kleeja_get_cookie('downloadFile_' . g('down'));
 
-                                    if (g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2])
-                                    {
-                                        $month = $paymentInfo['payment_month'];
-                                        $day = $paymentInfo['payment_day'];
-                                        $year = $paymentInfo['payment_year'];
-                                        $payment_time = explode(':', $paymentInfo['payment_time']);
-                                        $hour = $payment_time[0];
-                                        $minute = $payment_time[1];
-                                        $seconde = $payment_time[2];
-                                        $paymentTime = mktime($hour, $minute, $seconde, $month, $day, $year);
-
-                                        if ((($config['down_link_expire'] * 86400) + $paymentTime) >= time())
+                                        if ($downCookie)
                                         {
-                                            $redirect = false;
+                                            $downCookie = explode('_', $downCookie);
+
+                                            if (g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2])
+                                            {
+                                                $month = $paymentInfo['payment_month'];
+                                                $day = $paymentInfo['payment_day'];
+                                                $year = $paymentInfo['payment_year'];
+                                                $payment_time = explode(':', $paymentInfo['payment_time']);
+                                                $hour = $payment_time[0];
+                                                $minute = $payment_time[1];
+                                                $seconde = $payment_time[2];
+                                                $paymentTime = mktime($hour, $minute, $seconde, $month, $day, $year);
+
+                                                if ((($config['kjp_down_link_expire'] * 86400) + $paymentTime) >= time())
+                                                {
+                                                    $redirect = false;
+                                                }
+                                            }
                                         }
+                                    }
+                                    else
+                                    { // $config['down_link_expire'] == 0 -> download link will never expire
+                                        $redirect = false;
                                     }
                                 }
                             }
-                            else
-                            { // $config['down_link_expire'] == 0 -> download link will never expire
-                                $redirect = false;
+                        }
+                    }
+                    else
+                    { // subscriptions is not active , 
+                        if (ig('downToken') && ig('db'))
+                        {
+                            $paymentInfo = getPaymentInfo(g('db'), 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "' . g('downToken') . '"');
+
+
+                            if ($paymentInfo)
+                            {
+                                if ($config['kjp_down_link_expire'] > 0)
+                                { // if 0 -> download link will never expire
+                                    $downCookie = $usrcp->kleeja_get_cookie('downloadFile_' . g('down'));
+
+                                    if ($downCookie)
+                                    {
+                                        $downCookie = explode('_', $downCookie);
+
+                                        if (g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2])
+                                        {
+                                            $month = $paymentInfo['payment_month'];
+                                            $day = $paymentInfo['payment_day'];
+                                            $year = $paymentInfo['payment_year'];
+                                            $payment_time = explode(':', $paymentInfo['payment_time']);
+                                            $hour = $payment_time[0];
+                                            $minute = $payment_time[1];
+                                            $seconde = $payment_time[2];
+                                            $paymentTime = mktime($hour, $minute, $seconde, $month, $day, $year);
+
+                                            if ((($config['kjp_down_link_expire'] * 86400) + $paymentTime) >= time())
+                                            {
+                                                $redirect = false;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                { // $config['down_link_expire'] == 0 -> download link will never expire
+                                    $redirect = false;
+                                }
                             }
                         }
                     }
@@ -778,14 +1207,32 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 { // the user is founder or file owner
                     $redirect = false;
                 }
-
-                if ($redirect)
-                {
-                    redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
-                    $SQL->close();
-
-                    exit;
+            }
+            elseif ($row['price'] == 0)
+            { // the file is free
+                if ($config['kjp_active_subscriptions'])
+                {// subscripe is active
+                    // not Founder or file owner
+                    if ($usrcp->get_data('founder')['founder'] == 0 && ! ($row['user'] === $usrcp->id()))
+                    {
+                        if ($subscription->is_valid($usrcp->id()))
+                        { // if he have a valid subscripe
+                            $redirect = false;
+                        }
+                    }
+                    else
+                    { // the user is founder or file owner
+                        $redirect = false;
+                    }
                 }
+            }
+
+            if ($redirect)
+            {
+                redirect($config['siteurl'] . 'do.php?file=' . $row['id']);
+                $SQL->close();
+
+                exit;
             }
         }
     } ,
@@ -804,16 +1251,28 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     } ,
 
     'Saaheader_links_func' => function ($args) {
-        global $d_groups , $config , $olang;
+        global $d_groups , $config , $olang , $usrcp , $subscription;
         $top_menu = $args['top_menu'];
         $side_menu = $args['side_menu'];
         $user_is = $args['user_is'];
+        // if subscription is active , add user package next to hes name in the header
+        $username = $config['kjp_active_subscriptions'] && $subscription->is_valid($usrcp->id()) 
+        ? $args['username'] . ' | ' . $subscription->user_subscripe($usrcp->id())['name'] : $args['username'];
 
-        $side_menu[] = ['name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false)];
         $side_menu[] = ['name' => 'my_kj_payment', 'title' => $olang['R_KJ_PAYMENT_OPTIONS'], 'url' => $config['siteurl'] . 'ucp.php?go=my_kj_payment', 'show' => ($user_is && user_can('recaive_profits') ? true : false)];
+        $side_menu[] = ['name' => 'my_payments', 'title' => $args['olang']['KJP_MY_PAYS'], 'url' => $config['siteurl'] . 'ucp.php?go=my_payments', 'show' => ($user_is ? true : false)];
+        $side_menu[] = ['name' => 'bought_files', 'title' => $args['olang']['KJP_BOUGHT_FILES'], 'url' => $config['siteurl'] . 'ucp.php?go=bought_files', 'show' => ($user_is && user_can('access_bought_files') ? true : false)];
         $top_menu[] = ['name' => 'paid_group', 'title' => $args['olang']['KJP_PID_GRP'], 'url' => 'go.php?go=paid_group', 'show' => getGroupInfo($d_groups)];
+        $top_menu[] = ['name' => 'subscription', 'title' => $args['olang']['KJP_SUBSCRIPTIONS'], 'url' => 'go.php?go=subscription', 'show' => ($config['kjp_active_subscriptions'] && $subscription->get())];
 
-        return compact('top_menu', 'side_menu');
+        // i want to put logout to the end if menu always
+        if ($user_is)
+        {
+            $side_menu['logout'] = $side_menu[3];
+            unset($side_menu[3]);
+        }
+
+        return compact('top_menu', 'side_menu', 'username');
     } ,
 
 
@@ -861,7 +1320,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $titlee       = $olang['KJP_BOUGHT_FILES'];
             $no_request   = false;
             $stylee       = 'bought_files';
-            $is_style_supported = is_style_supported();
             $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/bought_files.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
             $havePayments = false;
 
@@ -903,7 +1361,56 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
 
 
-            return compact('is_style_supported', 'titlee', 'no_request', 'stylee', 'page_nums', 'styleePath', 'myPayments', 'havePayments');
+            return compact('titlee', 'no_request', 'stylee', 'page_nums', 'styleePath', 'myPayments', 'havePayments');
+        }
+        elseif (g('go') == 'my_payments')
+        {
+            $titlee       = $olang['KJP_MY_PAYS'];
+            $no_request   = false;
+            $stylee       = 'my_payments';
+            $styleePath   = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/my_payments.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+
+
+            $myPaymentQuery = [
+                'SELECT'    => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
+                'FROM'      => "{$dbprefix}payments p",
+                'WHERE'     => 'p.user = ' . $usrcp->id(),
+                'ORDER BY'  => 'p.id DESC',
+            ];
+
+            $myPays = $SQL->build($myPaymentQuery);
+
+            $havePayments = false;
+
+            if ($num_rows = $SQL->num_rows($myPays))
+            {
+                $perpage          = 21;
+                $currentPage    = ig('page') ? g('page', 'int') : 1;
+                $Pager            = new Pagination($perpage, $num_rows, $currentPage);
+                $start            = $Pager->getStartRow();
+                $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_payments';
+                $page_nums        = $Pager->print_nums($linkgoto);
+                $myPaymentQuery['LIMIT'] = "$start, $perpage";
+                $myPays = $SQL->build($myPaymentQuery);
+
+                $UserById = UserById();
+
+
+                $payments = [];
+                $havePayments = true;
+                while ($row = $SQL->fetch_array($myPays))
+                {
+                    $payments[] = [
+                        'ID'         => $row['id'],
+                        'METHOD'     => $olang['KJP_MTHD_NAME_' . strtoupper($row['payment_method'])],
+                        'FILE_NAME'  => $row['item_name'],
+                        'AMOUNT'     => $row['payment_amount'] . ' ' . $config['kjp_iso_currency_code'],
+                        'ACTION'     => sprintf($olang['KJP_ACT_' . strtoupper($row['payment_action'])], $row['item_name']),
+                        'DATE_TIME'  => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
+                    ];
+                }
+                return compact('titlee', 'stylee', 'styleePath', 'page_nums', 'payments', 'havePayments', 'no_request');
+            }
         }
         // Payment UCP
         elseif (g('go') == 'my_kj_payment')
@@ -913,17 +1420,17 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 // this is not Guests page
                 return;
             }
-            $action = $config['siteurl'] . 'ucp.php?go=my_kj_payment'; // for withdraw form
-            $case = ig('case') ? g('case') : 'cp';
-            $userData = $usrcp->get_data('balance , password_salt');
-            $user_balance = $userData['balance'] . ' ' . strtoupper($config['iso_currency_code']); // to have it fresh
-            $username = $usrcp->name();
-            $user_id  = $usrcp->id();
-            $titlee       = 'KJ Payment CP';
-            $no_request   = false;
-            $stylee       = 'my_kj_payment';
-            $is_style_supported = is_style_supported();
-            $styleePath   = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/my_kj_payment.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
+            $action           = $config['siteurl'] . 'ucp.php?go=my_kj_payment'; // for withdraw form
+            $case             = ig('case') ? g('case') : 'cp';
+            $userData         = $usrcp->get_data('subs_point ,balance , password_salt');
+            $user_balance     = $userData['balance'] . ' ' . strtoupper($config['kjp_iso_currency_code']); // to have it fresh
+            $user_subs_points = $userData['subs_point'];
+            $username         = $usrcp->name();
+            $user_id          = $usrcp->id();
+            $titlee           = 'KJ Payment CP';
+            $no_request       = false;
+            $stylee           = 'my_kj_payment';
+            $styleePath       = $styleePath = file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/my_kj_payment.html') ? $THIS_STYLE_PATH_ABS : dirname(__FILE__) . '/html/';
 
             // request your money
             if (ip('requestAmount'))
@@ -964,9 +1471,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                     exit;
                 }
-                elseif (($lmt = getGroupInfo($d_groups, $usrcp->group_id())['min_payout_limit']) !== '0' && $lmt > p('AmountNumber'))
+                elseif (($lmt = getGroupInfo($d_groups, $usrcp->group_id())['kjp_min_payout_limit']) !== '0' && $lmt > p('AmountNumber'))
                 {
-                    kleeja_err(sprintf($olang['KJP_MIN_POUT_LMT'], $lmt, $config['iso_currency_code']));
+                    kleeja_err(sprintf($olang['KJP_MIN_POUT_LMT'], $lmt, $config['kjp_iso_currency_code']));
 
                     exit;
                 }
@@ -1052,51 +1559,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         $payouts[] = [
                             'ID'        => $row['id'],
                             'METHOD'    => $row['method'],
-                            'AMOUNT'    => $row['amount'] . ' ' . $config['iso_currency_code'],
+                            'AMOUNT'    => $row['amount'] . ' ' . $config['kjp_iso_currency_code'],
                             'DATE_TIME' => "{$row['payout_year']}-{$row['payout_month']}-{$row['payout_day']} / {$row['payout_time']}",
                             'STATE'     => $row['state']
-                        ];
-                    }
-                }
-            }
-            elseif ($case == 'my_payments')
-            {
-                $myPaymentQuery = [
-                    'SELECT'    => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
-                    'FROM'      => "{$dbprefix}payments p",
-                    'WHERE'     => 'p.user = ' . $usrcp->id(),
-                    'ORDER BY'  => 'p.id DESC',
-                ];
-
-                $myPays = $SQL->build($myPaymentQuery);
-
-                $havePayments = false;
-
-                if ($num_rows = $SQL->num_rows($myPays))
-                {
-                    $perpage          = 21;
-                    $currentPage    = ig('page') ? g('page', 'int') : 1;
-                    $Pager            = new Pagination($perpage, $num_rows, $currentPage);
-                    $start            = $Pager->getStartRow();
-                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=my_payments';
-                    $page_nums        = $Pager->print_nums($linkgoto);
-                    $myPaymentQuery['LIMIT'] = "$start, $perpage";
-                    $myPays = $SQL->build($myPaymentQuery);
-
-                    $UserById = UserById();
-
-
-                    $payments = [];
-                    $havePayments = true;
-                    while ($row = $SQL->fetch_array($myPays))
-                    {
-                        $payments[] = [
-                            'ID'         => $row['id'],
-                            'METHOD'     => $olang['KJP_MTHD_NAME_' . strtoupper($row['payment_method'])],
-                            'FILE_NAME'  => $row['item_name'],
-                            'AMOUNT'     => $row['payment_amount'] . ' ' . $config['iso_currency_code'],
-                            'ACTION'     => sprintf($olang['KJP_ACT_' . strtoupper($row['payment_action'])], $row['item_name']),
-                            'DATE_TIME'  => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
                         ];
                     }
                 }
@@ -1188,9 +1653,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     $FileName = p('file_name');
                     $FilePrice = p('price_file');
 
-                    if ($FilePrice < $config['min_price_limit'] || $FilePrice > $config['max_price_limit'])
+                    if ($FilePrice < $config['kjp_min_price_limit'] || $FilePrice > $config['kjp_max_price_limit'])
                     {
-                        kleeja_err(sprintf($olang['KJP_PRC_LMT'], $config['min_price_limit'], $config['max_price_limit'], $config['iso_currency_code']));
+                        kleeja_err(sprintf($olang['KJP_PRC_LMT'], $config['kjp_min_price_limit'], $config['kjp_max_price_limit'], $config['kjp_iso_currency_code']));
 
                         exit;
                     }
@@ -1208,7 +1673,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         if ($SQL->affected())
                         {
                             $OpenAlert = true;
-                            $AlertMsg = sprintf($olang['KJP_NO_FILE_NEW_PRICE'], $FileName, $FilePrice, strtoupper($config['iso_currency_code']));
+                            $AlertMsg = sprintf($olang['KJP_NO_FILE_NEW_PRICE'], $FileName, $FilePrice, strtoupper($config['kjp_iso_currency_code']));
                             $AlertRole = 'success';
                         }
                     }
@@ -1256,13 +1721,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         $all_paid_file[] = [
                             'id'    => $paid_file['id'] ,
                             'name'  => $paid_file['real_filename'] ,
-                            'price' => $paid_file['price'] . ' ' . $config['iso_currency_code'],
+                            'price' => $paid_file['price'] . ' ' . $config['kjp_iso_currency_code'],
                             'link'  => $config['siteurl'] . 'do.php?id=' . $paid_file['id']
                         ];
                     }
                 }
             }
-            return compact('have_paid_file','all_paid_file',
+            return compact('have_paid_file','all_paid_file', 'user_subs_points',
                 'AlertRole','AlertMsg','OpenAlert',
                 'show_price_panel','FileID', 'FileName','FileUser','FilePrice','FileSize',
                 'havePayments','payments','page_nums','havePayout','payouts',
@@ -1342,38 +1807,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $langFiles = require_once $langFiles;
             $olang = array_merge($olang, $langFiles);
         }
+        $subscription = new Subscription;
+        $is_style_supported = is_style_supported();
 
-        if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
-        {
-            // extract paypal sdk
-            if (file_exists(dirname(__FILE__) . '/paypal_sdk.zip'))
-            {
-                $paypalZip = new ZipArchive;
-
-                if ($paypalZip->open(dirname(__FILE__) . '/paypal_sdk.zip'))
-                {
-                    $paypalZip->extractTo(dirname(__FILE__));
-                    $paypalZip->close();
-                }
-            }
-        }
-
-        if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
-        {
-            // extract stripe sdk
-            if (file_exists(dirname(__FILE__) . '/stripe-sdk.zip'))
-            {
-                $stripeZip = new ZipArchive;
-
-                if ($stripeZip->open(dirname(__FILE__) . '/stripe-sdk.zip'))
-                {
-                    $stripeZip->extractTo(dirname(__FILE__));
-                    $stripeZip->close();
-                }
-            }
-        }
-
-        return compact('olang');
+        return compact('olang', 'subscription', 'is_style_supported');
     }
 
     /*
@@ -1392,3 +1829,5 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
 // Plugin Functions;
 require_once dirname(__FILE__) . '/php/function.php';
+require_once dirname(__FILE__) . '/php/kjp_api.php';
+require_once dirname(__FILE__) . '/php/subscription.php';

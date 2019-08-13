@@ -3,6 +3,12 @@
 	<h2>{title}</h2>
 </div>
 
+<IF NAME="config.kjp_active_subscriptions">
+	<div class="alert alert-info" role="alert">
+		{olang.KJP_THERW_IS_SUBSCRIPE}
+	  </div>
+</IF>
+
 
 
 <div class="row">
@@ -34,7 +40,7 @@
 				</li>
 				<li class="list-group-item justify-content-between">
 					<span class="list-group-item-heading">{olang.KJP_PRC}</span>
-					<div class="list-group-item-text">{price} {config.iso_currency_code}</div>
+					<div class="list-group-item-text">{price} {config.kjp_iso_currency_code}</div>
 				</li>
 				<IF NAME="fusername">
 				<li class="list-group-item justify-content-between">
@@ -77,7 +83,7 @@
 
 
 
-				<h2>	<span class="badge badge-default">{price} {config.iso_currency_code}</span>
+				<h2>	<span class="badge badge-default">{price} {config.kjp_iso_currency_code}</span>
 				</h2>
 
 			</div>
