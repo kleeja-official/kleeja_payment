@@ -53,4 +53,39 @@ class KJP
         }
         add_olang($new_langs, $language, $KJP_ID);
     }
+
+    public static function firstRun()
+    {
+        // becouse kleeja delete all content in the plugin when it update ,
+        // we need to extract the SDK again with every update
+        if (! file_exists(dirname(__FILE__) . '/../vendor/autoload.php'))
+        {
+            // extract paypal sdk
+            if (file_exists(dirname(__FILE__) . '/../paypal_sdk.zip'))
+            {
+                $paypalZip = new ZipArchive;
+
+                if ($paypalZip->open(dirname(__FILE__) . '/../paypal_sdk.zip'))
+                {
+                    $paypalZip->extractTo(dirname(__FILE__));
+                    $paypalZip->close();
+                }
+            }
+        }
+
+        if (! file_exists(dirname(__FILE__) . '/../stripe-sdk/vendor/autoload.php'))
+        {
+            // extract stripe sdk
+            if (file_exists(dirname(__FILE__) . '/../stripe-sdk.zip'))
+            {
+                $stripeZip = new ZipArchive;
+
+                if ($stripeZip->open(dirname(__FILE__) . '/../stripe-sdk.zip'))
+                {
+                    $stripeZip->extractTo(dirname(__FILE__));
+                    $stripeZip->close();
+                }
+            }
+        }
+    }
 }
