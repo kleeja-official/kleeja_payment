@@ -191,5 +191,7 @@ return [
     'KJP_WE_USE_SUBSCRIPE_SYS'                  => 'يستخدم موقع الويب هذا نظام الاشتراك ، مما يعني أنه لا يمكنك تنزيل هذا الملف بدون اشتراك' ,
     'KJP_SUCCESS_SUBSCRIPE'                     => 'لقد اشتركت بنجاح في <strong> %s </strong> , الاشترك الخاص بك سوف تنتهي في %s' ,
     'KJP_THERW_IS_SUBSCRIPE'                    => 'يمكنك أيضًا امتلاك هذا الملف إذا قمت بالاشتراك في أحد <a href="go.php?go=subscription">الاشتراكات</a>',
-    'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'تم إنشاء اشتراك جديد بنجاح'
+    'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'تم إنشاء اشتراك جديد بنجاح',
+    'KJP_SUBSCRIBE_EXPIRE'                      => 'تنتهي في',
+    'KJP_EXPIRED'                               => 'منتهي',
 ];

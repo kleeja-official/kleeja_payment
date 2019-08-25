@@ -33,7 +33,7 @@ class Subscription
         }
     }
 
-    public function expire_at($subscripe_id)
+    public function expire_at($subscripe_id, $time = false)
     {
         $subscripe = $this->subscriptions[$subscripe_id];
 
@@ -42,7 +42,7 @@ class Subscription
             return false;
         }
 
-        return time() + ($subscripe['days'] * 86400);
+        return ($time ?? time()) + ($subscripe['days'] * 86400);
     }
 
     public function get($subscripe_id = 0)

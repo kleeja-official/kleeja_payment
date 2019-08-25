@@ -830,7 +830,7 @@ elseif ($current_smt == 'subscriptions')
     endif;
     $stylee   = 'subscriptions';
     $action   = $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=subscriptions';
-    $case     = g('case', 'str', 'create');
+    $case     = g('case', 'str', 'subscriber');
 
     switch ($case) {
         case 'create':
@@ -976,6 +976,57 @@ elseif ($current_smt == 'subscriptions')
             $packContent                 = $SQL->fetch($packageContent);
             $packContent['MembersCount'] = $subscription->getMembersCount($package);
 
+
+            break;
+
+            case 'subscriber':
+
+            $query = [
+                'SELECT'   => '*' ,
+                'FROM'     => "{$dbprefix}payments",
+                'WHERE'    => "payment_state = 'approved' AND payment_action = 'subscripe'",
+                'ORDER BY' => 'id DESC'
+            ];
+
+            $result = $SQL->build($query);
+
+            if ($num_rows = $SQL->num_rows($result))
+            {
+                // Pagination //
+
+                $perpage           = 21;
+                $currentPage       = ig('page') ? g('page', 'int') : 1;
+                $Pager             = new Pagination($perpage, $num_rows, $currentPage);
+                $start             = $Pager->getStartRow();
+                $linkgoto          = $action . '&case=subscriber';
+                $page_nums         = $Pager->print_nums($linkgoto);
+                $query['LIMIT']    = "$start, $perpage";
+                $result            = $SQL->build($query);
+
+                $subscriber = [];
+
+                $have_subscriber  = true;
+                while ($subs = $SQL->fetch($result))
+                {
+                    $month        = $subs['payment_month'];
+                    $day          = $subs['payment_day'];
+                    $year         = $subs['payment_year'];
+                    $payment_time = explode(':', $subs['payment_time']);
+                    $hour         = $payment_time[0];
+                    $minute       = $payment_time[1];
+                    $seconde      = $payment_time[2];
+                    $expire       = $subscription->expire_at($subs['item_id'], mktime($hour, $minute, $seconde, $month, $day, $year));
+                    $subscriber[] = [
+                        'PAY_ID'       => '<a href="' . $config['siteurl'] . 'admin/?cp=kj_payment_options&smt=view&payment=' . $subs['id'] . '" target="_blank">' . $subs['id'] . '</a>',
+                        'PAY_METHOD'   => $olang['KJP_MTHD_NAME_' . strtoupper($subs['payment_method'])],
+                        'SUBSCRIPER'   => '<a href="' . $config['siteurl'] . 'ucp.php?go=fileuser&id=' . $subs['user'] . '" target="_blank">' . $UserById[$subs['user']] . '</a>',
+                        'PACKAGE'      => '<a href="' . $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=subscriptions&case=view&pack=' . $subs['item_id'] . '" target="_blank">' . $subs['item_name'],
+                        'PRICE'        => $subs['payment_amount'],
+                        'SUBSCRIBE_AT' => date('Y.m.d | H:i', mktime($hour, $minute, $seconde, $month, $day, $year)),
+                        'EXPIRE_AT'    => $expire ? date('Y.m.d | H:i', $expire) : $olang['KJP_EXPIRED']
+                    ];
+                }
+            }
 
             break;
 

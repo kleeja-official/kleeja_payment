@@ -193,5 +193,7 @@ return [
     'KJP_WE_USE_SUBSCRIPE_SYS'                  => 'This website use subscribe system , that mean you can not download this file without subscripe' ,
     'KJP_SUCCESS_SUBSCRIPE'                     => 'you have successfuly subscribe to <strong> %s </strong> , your subscripe will expire at %s' ,
     'KJP_THERW_IS_SUBSCRIPE'                    => 'You can also have this file if you subscribe in one of our <a href="go.php?go=subscription">Subscriptions</a>',
-    'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'New Subscription Created Successfuly'
+    'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'New Subscription Created Successfuly',
+    'KJP_SUBSCRIBE_EXPIRE'                      => 'Expire At',
+    'KJP_EXPIRED'                               => 'Expired',
 ];

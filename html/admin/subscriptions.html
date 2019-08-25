@@ -10,6 +10,10 @@
     </div>
     <div class="card-body">
         <ul class="nav nav-pills mb-3">
+                <li class="nav-item">
+                        <a class="nav-link (case == subscriber?active:)"
+                            href="{action}&amp;case=subscriber">{olang.KJP_SUBSCRIPER}</a>
+                    </li>
             <li class="nav-item">
                 <a class="nav-link (case == create?active:)" href="{action}&amp;case=create">{olang.KJP_CREATE_SUBSCRIPTIONS}</a>
             </li>
@@ -78,7 +82,49 @@
                                 </table>
                                 {page_nums}
 
+                                <ELSEIF NAME="case == subscriber">
 
+                                        <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">{olang.KJP_PAY_ID}</th>
+                                                        <th scope="col">{olang.KJP_SUBSCRIPER}</th>
+                                                        <th scope="col">{olang.KJP_ENTR_SUBSCRIP_NAME}</th>
+                                                        <th scope="col">{olang.KJP_PAY_MTHD}</th>
+                                                        <th scope="col">{olang.KJP_ENTR_SUBSCRIP_PRICE}</th>
+                                                        <th scope="col">{olang.KJP_DATE_TIME}</th>
+                                                        <th scope="col">{olang.KJP_SUBSCRIBE_EXPIRE}</th>
+                                    
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    
+                                                    <IF NAME="have_subscriber == true">
+                                    
+                                                        <LOOP NAME="subscriber">
+                                                            <tr>
+                                                                <th scope="row">{{PAY_ID}}</th>
+                                                                <td>{{SUBSCRIPER}}</td>
+                                                                <td>{{PACKAGE}}</td>
+                                                                <td>{{PAY_METHOD}}</td>
+                                                                <td>{{PRICE}} {config.kjp_iso_currency_code}</td>
+                                                                <td>{{SUBSCRIBE_AT}}</td>
+                                                                <td>{{EXPIRE_AT}}</td>
+                                    
+                                                            </tr>
+                                    
+                                                        </LOOP>
+                                    
+                                                        <ELSE>
+                                    
+                                                        <div class="alert alert-info" role="alert">
+                                                                {olang.KJP_NO_SUBSCRIP_FOUND}
+                                                        </div>
+                                    
+                                                    </IF>
+                                                </tbody>
+                                            </table>
+                                            {page_nums}
                                 <ELSEIF NAME="case == view">
 
                                         <table class="table">
