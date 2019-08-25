@@ -42,7 +42,7 @@ class Subscription
             return false;
         }
 
-        return ($time ?? time()) + ($subscripe['days'] * 86400);
+        return ($time ? $time : time()) + ($subscripe['days'] * 86400);
     }
 
     public function get($subscripe_id = 0)
