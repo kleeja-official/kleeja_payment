@@ -126,6 +126,8 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             // this is free item
             kleeja_err($olang['KJP_FRE_ITM']);
+
+            exit;
         }
         //get freash user balance
         $userBalance = (float) $usrcp->get_data('balance')['balance'];

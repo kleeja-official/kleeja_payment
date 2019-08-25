@@ -107,7 +107,17 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
         "ALTER TABLE `{$dbprefix}users` ADD `subs_point` INT NOT NULL DEFAULT '0';" ,
 
-        "ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';"
+        "ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';" ,
+
+        "CREATE TABLE `{$dbprefix}subscription_point` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `user` int(11) NOT NULL,
+            `file_id` int(11) NOT NULL,
+            `subscription_id` int(11) NOT NULL,
+            `subscripe_hash` text COLLATE utf8_bin NOT NULL,
+            `time` int(11) NOT NULL,
+            PRIMARY KEY (`id`)
+           ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin"
     ];
 
     foreach ($InstallQuerys as  $query)
@@ -305,10 +315,22 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
                 PRIMARY KEY (`id`)
               ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;"
         );
+        $SQL->query(
+            "CREATE TABLE `{$dbprefix}subscription_point` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `user` int(11) NOT NULL,
+                `file_id` int(11) NOT NULL,
+                `subscription_id` int(11) NOT NULL,
+                `subscripe_hash` text COLLATE utf8_bin NOT NULL,
+                `time` int(11) NOT NULL,
+                PRIMARY KEY (`id`)
+               ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin"
+        );
         // add package colum to users table
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package` INT NOT NULL DEFAULT '0';");
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';");
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `subs_point` INT NOT NULL DEFAULT '0';");
+
 
         //we need the id of kleeja_payment plugin
 
@@ -480,6 +502,7 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
 $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
     global $SQL , $dbprefix;
 
+    $SQL->query("DROP TABLE `{$dbprefix}subscription_point`");
     $SQL->query("ALTER TABLE `{$dbprefix}files` DROP `price`;");
     $SQL->query("ALTER TABLE `{$dbprefix}users` DROP `balance` , DROP `package` , DROP `package_expire` , DROP `subs_point`;");
 
@@ -1090,6 +1113,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         if ($subscription->is_valid($usrcp->id()))
                         { // & have valid subscripe
                             $redirect = false;
+                            // add a uniq point to file owner
+                            $subscription->addPoint($row['id']);
                         }
                         else
                         { // have not valid subscripe , let's check if he bought the file or not

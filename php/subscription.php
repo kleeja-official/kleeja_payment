@@ -83,8 +83,11 @@ class Subscription
         {
             return true;
         }
-
-        return false;
+        else
+        {
+            $this->clear($user_id);
+            return false;
+        }
     }
 
 
@@ -100,5 +103,40 @@ class Subscription
             }
         }
         return $count;
+    }
+
+    public function addPoint($file_id)
+    {
+        /**
+         * before you checking this functiion , remember -> GUEST DONT HAVE SUBSCRIPTION
+         * done -> now check the function
+         */
+        global $SQL , $dbprefix , $usrcp;
+
+        $user             = $usrcp->id();
+        $time             = time();
+        $subscription_id  = $this->user_subscripe($user)['id'];
+        // ssubscription_hash -> maybe this user renew the subscription and download this file again , so we need to add a point also again
+        $subscripe_hash   = sha1($user . $subscription_id . $this->users[$user]['package_expire']);
+
+        $check_point = $SQL->query("SELECT * FROM `{$dbprefix}subscription_point` WHERE `user` = {$user} AND `file_id` = {$file_id} AND `subscripe_hash` = '{$subscripe_hash}'");
+
+        if (! $SQL->num_rows($check_point))
+        { // this is first time !!
+            $query       = [
+                'INSERT' => 'user , file_id , subscription_id  , subscripe_hash , time',
+                'INTO'   => "{$dbprefix}subscription_point",
+                'VALUES' => "$user , $file_id , $subscription_id  , '{$subscripe_hash}' , $time",
+            ];
+            $SQL->build($query);
+            $file_owner = getFileInfo($file_id)['user'];
+            $SQL->query("UPDATE `{$dbprefix}users` SET `subs_point` = subs_point+1 WHERE `id` = {$file_owner}");
+        }
+    }
+
+    private function clear($user_id)
+    {
+        global $SQL , $dbprefix;
+        $SQL->query("UPDATE `{$dbprefix}users` SET `package` = 0 , `package_expire` = 0 WHERE `id` = {$user_id}");
     }
 }
