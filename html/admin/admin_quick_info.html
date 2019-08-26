@@ -127,6 +127,26 @@
 
                 </div>
             </div>
+            <div class="col-sm-12 mt-2">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between p-1">
+                            <div>
+                                {olang.KJP_PAY_OPN}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <form method="POST" action="{FormActions}">
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <input type="number" name="payment_number" class="form-control mx-1" placeholder="{olang.KJP_PAY_ID}">
+                                <button type="submit" name="open_payment" class="btn btn-primary btn-sm mx-1">{olang.KJP_PAY_OPN}</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
 
         </div>
 
