@@ -20,13 +20,13 @@ class kjPayMethod_balance implements KJPaymentMethod
              * anyway , the Guest don't have this permission
              * if the user have this permission , that mean it's able for hem to use the balance
              */
-            kleeja_err($lang['USER_PLACE']);
+            kleeja_err($lang['USER_PLACE'], '', true, $config['siteurl']);
 
             exit;
         }
         elseif (! in_array('balance', getPaymentMethods()))
         {
-            kleeja_err('it\'s not active method');
+            kleeja_err('it\'s not active method', '', true, $config['siteurl']);
 
             exit;
         }
@@ -93,26 +93,26 @@ class kjPayMethod_balance implements KJPaymentMethod
         elseif (! kleeja_check_form_key('payFor_' . $_SESSION['kj_payment']['payment_action'] . $_SESSION['kj_payment']['item_name'] . $_SESSION['kj_payment']['item_id'])
         || ! kleeja_check_form_key_get('payFor_' . $_SESSION['kj_payment']['payment_action'] . $_SESSION['kj_payment']['item_name'] . $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err($lang['INVALID_FORM_KEY']);
+            kleeja_err($lang['INVALID_FORM_KEY'], '', true, $config['siteurl']);
 
             exit;
         }
         // really really , check if the item is exists
         elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err($olang['KJP_FL_NT_FUND']);
+            kleeja_err($olang['KJP_FL_NT_FUND'], '', true, $config['siteurl']);
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err($olang['KJP_GP_NT_FUND']);
+            kleeja_err($olang['KJP_GP_NT_FUND'], '', true, $config['siteurl'] . 'go.php?go=paid_group');
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'subscripe') && ! $itemInfo = $subscription->get($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl'] . 'go.php?go=subscription');
 
             exit;
         }
@@ -125,7 +125,7 @@ class kjPayMethod_balance implements KJPaymentMethod
         if ($itemPrice <= 0)
         {
             // this is free item
-            kleeja_err($olang['KJP_FRE_ITM']);
+            kleeja_err($olang['KJP_FRE_ITM'], '', true, $config['siteurl']);
 
             exit;
         }

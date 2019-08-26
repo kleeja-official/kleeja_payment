@@ -1108,59 +1108,15 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 // wibsite founders and file Owner can download without pay
                 if ($usrcp->get_data('founder')['founder'] == 0 && ! ($row['user'] === $usrcp->id()))
                 {
-                    if ($config['kjp_active_subscriptions'])
-                    {// subscriptions is active 
-                        if ($subscription->is_valid($usrcp->id()))
-                        { // & have valid subscripe
-                            $redirect = false;
-                            // add a uniq point to file owner
-                            $subscription->addPoint($row['id']);
-                        }
-                        else
-                        { // have not valid subscripe , let's check if he bought the file or not
-                            if (ig('downToken') && ig('db'))
-                            {
-                                $paymentInfo = getPaymentInfo(g('db'), 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "' . g('downToken') . '"');
+                    if ($config['kjp_active_subscriptions'] && $subscription->is_valid($usrcp->id()))
+                    {// subscriptions is active and the user have a valid subscription
 
-
-                                if ($paymentInfo)
-                                {
-                                    if ($config['kjp_down_link_expire'] > 0)
-                                    { // if 0 -> download link will never expire
-                                        $downCookie = $usrcp->kleeja_get_cookie('downloadFile_' . g('down'));
-
-                                        if ($downCookie)
-                                        {
-                                            $downCookie = explode('_', $downCookie);
-
-                                            if (g('down') == $downCookie[0] && g('db') == $downCookie[1] && g('downToken') == $downCookie[2])
-                                            {
-                                                $month = $paymentInfo['payment_month'];
-                                                $day = $paymentInfo['payment_day'];
-                                                $year = $paymentInfo['payment_year'];
-                                                $payment_time = explode(':', $paymentInfo['payment_time']);
-                                                $hour = $payment_time[0];
-                                                $minute = $payment_time[1];
-                                                $seconde = $payment_time[2];
-                                                $paymentTime = mktime($hour, $minute, $seconde, $month, $day, $year);
-
-                                                if ((($config['kjp_down_link_expire'] * 86400) + $paymentTime) >= time())
-                                                {
-                                                    $redirect = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else
-                                    { // $config['down_link_expire'] == 0 -> download link will never expire
-                                        $redirect = false;
-                                    }
-                                }
-                            }
-                        }
+                        $redirect = false;
+                        // add a uniq point to file owner
+                        $subscription->addPoint($row['id']);
                     }
                     else
-                    { // subscriptions is not active , 
+                    { // subscriptions is not active , , let's check if he bought the file or not
                         if (ig('downToken') && ig('db'))
                         {
                             $paymentInfo = getPaymentInfo(g('db'), 'item_id = "' . $row['id'] . '" AND payment_action = "buy_file" AND payment_state = "approved" AND payment_token = "' . g('downToken') . '"');

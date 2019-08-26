@@ -73,25 +73,25 @@ class kjPayMethod_cards implements KJPaymentMethod
 
         if (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
-            kleeja_err('What Are U Doing Here ??');
+            kleeja_err('What Are U Doing Here ??', '', true, $config['siteurl']);
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl']);
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl'] . 'go.php?go=paid_group');
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'subscripe') && ! $itemInfo = $subscription->get($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl'] . 'go.php?go=subscription');
 
             exit;
         }
