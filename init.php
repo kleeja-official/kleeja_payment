@@ -1180,6 +1180,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         $redirect = false;
                     }
                 }
+                else
+                {
+                    $redirect = false;
+                }// the subscription is not active and free file
             }
 
             if ($redirect)
