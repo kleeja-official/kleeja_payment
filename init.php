@@ -1368,8 +1368,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         'DATE_TIME'  => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
                     ];
                 }
-                return compact('titlee', 'stylee', 'styleePath', 'page_nums', 'payments', 'havePayments', 'no_request');
             }
+            return compact('titlee', 'stylee', 'styleePath', 'page_nums', 'payments', 'havePayments', 'no_request');
+
         }
         // Payment UCP
         elseif (g('go') == 'my_kj_payment')
@@ -1764,7 +1765,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         if (file_exists($langFiles))
         {
             $langFiles = require_once $langFiles;
-            $olang = array_merge($olang, $langFiles);
+            foreach ($langFiles as $key => $value) {
+                $olang[$key] = $value;
+            }
         }
         $subscription = new Subscription;
         $is_style_supported = is_style_supported();
