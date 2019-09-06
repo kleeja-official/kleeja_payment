@@ -20,7 +20,7 @@ class Subscription
             return;
         }
 
-        $result = $SQL->query("SELECT u.id , u.name , u.package , u.package_expire FROM {$dbprefix}users u");
+        $result = $SQL->query("SELECT u.id , u.name , u.package , u.package_expire , u.group_id FROM {$dbprefix}users u");
         while ($user = $SQL->fetch($result))
         {
             $this->users[$user['id']] = $user;
@@ -83,11 +83,8 @@ class Subscription
         {
             return true;
         }
-        else
-        {
-            $this->clear($user_id);
-            return false;
-        }
+
+        return false;
     }
 
 
@@ -113,6 +110,16 @@ class Subscription
          */
         global $SQL , $dbprefix , $usrcp;
 
+        // first , let's check if the file owner have receive profits permissions
+        $file_owner = getFileInfo($file_id)['user'];
+
+        $file_owner_group = $this->users[$file_owner]['group_id'];
+
+        if (! user_can('recaive_profits', $file_owner_group))
+        {
+            return;
+        }
+
         $user             = $usrcp->id();
         $time             = time();
         $subscription_id  = $this->user_subscripe($user)['id'];
@@ -129,14 +136,82 @@ class Subscription
                 'VALUES' => "$user , $file_id , $subscription_id  , '{$subscripe_hash}' , $time",
             ];
             $SQL->build($query);
-            $file_owner = getFileInfo($file_id)['user'];
             $SQL->query("UPDATE `{$dbprefix}users` SET `subs_point` = subs_point+1 WHERE `id` = {$file_owner}");
         }
     }
 
-    private function clear($user_id)
+    /**
+     * to convert the subscription points to amount
+     * we need to know which user have not valid subscription and the subscriptiion id id not zero in the db
+     * then we need to get the subscription information & and the file owner profits persentage
+     * point price = ($subscription_info['price'] * $config['kjp_file_owner_profits'] / 100) / $pointsCount;
+     * @return void
+     */
+    public function convertPoints()
     {
-        global $SQL , $dbprefix;
-        $SQL->query("UPDATE `{$dbprefix}users` SET `package` = 0 , `package_expire` = 0 WHERE `id` = {$user_id}");
+        global $SQL , $dbprefix , $config;
+
+        $paidFiles = [];
+
+        // get all paid files one time by one call
+        $files = $SQL->query("SELECT id , user FROM {$dbprefix}files WHERE price > 0");
+
+        while ($file = $SQL->fetch($files))
+        {
+            $paidFiles[$file['id']]            = $file;
+            $paidFiles[$file['id']]['points']  = 0;
+            $paidFiles[$file['id']]['profits'] = 0;
+        }
+
+        // first match
+        foreach ($this->users as $user)
+        {
+            if ($user['package'] && ! $this->is_valid($user['id']))
+            {
+                $subscription_info = $this->subscriptions[$user['package']];
+
+                if (! $subscription_info)
+                {
+                    continue;
+                }
+                $pointsQuery       = $SQL->query("SELECT * FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
+
+                $pointsCount = $SQL->num_rows($pointsQuery);
+
+                $pointPrice = ($subscription_info['price'] * $config['kjp_file_owner_profits'] / 100) / $pointsCount;
+
+                while ($points = $SQL->fetch($pointsQuery))
+                {
+                    if ($paidFiles[$points['file_id']]['user'])
+                    { // the file owner is not guest
+                        $paidFiles[$points['file_id']]['points']++;
+
+                        if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['profit']))
+                        { // please focuse
+                            $this->users[$paidFiles[$points['file_id']]['user']]['profit'] = 0;
+                        }
+                        $this->users[$paidFiles[$points['file_id']]['user']]['profit'] += $pointPrice;
+
+                        if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['taked_points']))
+                        { // please focuse
+                            $this->users[$paidFiles[$points['file_id']]['user']]['taked_points'] = 0;
+                        }
+                        $this->users[$paidFiles[$points['file_id']]['user']]['taked_points']++;
+                    }
+                }
+                $SQL->query("DELETE FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
+
+                $SQL->query("UPDATE {$dbprefix}users SET `package` = 0 , `package_expire` = 0 WHERE id = {$user['id']}");
+            }
+        }
+
+        // second match
+        foreach ($this->users as $u)
+        {
+            if (isset($u['profit']) && $u['profit'] > 0)
+            {
+                $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$u['profit']} , `subs_point` = subs_point-{$u['taked_points']} WHERE `id` = '{$u['id']}'");
+            }
+        }
     }
 }

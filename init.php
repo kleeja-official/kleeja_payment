@@ -607,10 +607,16 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     } ,
 
     'err_navig_download_page' => function($args) {
-        global $config, $SQL, $dbprefix, $olang, $lang , $tpl , $THIS_STYLE_PATH_ABS;
+        global $config, $SQL, $dbprefix, $olang, $lang , $tpl , $THIS_STYLE_PATH_ABS , $usrcp, $subscription;
 
         if (ig('file') && (int) g('file'))
         {
+            if ($config['kjp_active_subscriptions'] && $subscription->is_valid($usrcp->id()))
+            {
+                redirect($config['siteurl'] . 'do.php?id=' . g('file'));
+
+                exit;
+            }
 
             // avilable Payment methods
 
@@ -1370,7 +1376,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 }
             }
             return compact('titlee', 'stylee', 'styleePath', 'page_nums', 'payments', 'havePayments', 'no_request');
-
         }
         // Payment UCP
         elseif (g('go') == 'my_kj_payment')
@@ -1765,7 +1770,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         if (file_exists($langFiles))
         {
             $langFiles = require_once $langFiles;
-            foreach ($langFiles as $key => $value) {
+
+            foreach ($langFiles as $key => $value)
+            {
                 $olang[$key] = $value;
             }
         }
@@ -1773,6 +1780,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         $is_style_supported = is_style_supported();
 
         return compact('olang', 'subscription', 'is_style_supported');
+    },
+    'go_queue' => function ($args) {
+        global $subscription;
+        $subscription->convertPoints();
     }
 
     /*
