@@ -1522,11 +1522,12 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     while ($row = $SQL->fetch_array($result))
                     {
                         $payouts[] = [
-                            'ID'        => $row['id'],
-                            'METHOD'    => $row['method'],
-                            'AMOUNT'    => $row['amount'] . ' ' . $config['kjp_iso_currency_code'],
-                            'DATE_TIME' => "{$row['payout_year']}-{$row['payout_month']}-{$row['payout_day']} / {$row['payout_time']}",
-                            'STATE'     => $row['state']
+                            'ID'           => $row['id'],
+                            'METHOD'       => $row['method'],
+                            'AMOUNT'       => $row['amount'] . ' ' . $config['kjp_iso_currency_code'],
+                            'DATE_TIME'    => "{$row['payout_year']}-{$row['payout_month']}-{$row['payout_day']} / {$row['payout_time']}",
+                            'STATE_LANG'   => $olang['KJP_POUT_ST_' . strtoupper($row['state'])] ?? $row['state'],
+                            'STATE'        => $row['state']
                         ];
                     }
                 }

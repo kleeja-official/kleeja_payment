@@ -194,4 +194,8 @@ return [
     'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'تم إنشاء اشتراك جديد بنجاح',
     'KJP_SUBSCRIBE_EXPIRE'                      => 'تنتهي في',
     'KJP_EXPIRED'                               => 'منتهي',
+    'KJP_POUT_ST_CANCEL'                        => 'ألغيت',
+    'KJP_POUT_ST_RECIVED'                       => 'تم الاستلام',
+    'KJP_POUT_ST_SENT'                          => 'أرسلت',
+    'KJP_POUT_ST_VERIFY'                        => 'تدقيق',
 ];

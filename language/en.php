@@ -196,4 +196,8 @@ return [
     'KJP_SUBSCRIBE_CREAT_SUCCESS'               => 'New Subscription Created Successfuly',
     'KJP_SUBSCRIBE_EXPIRE'                      => 'Expire At',
     'KJP_EXPIRED'                               => 'Expired',
+    'KJP_POUT_ST_CANCEL'                        => 'Canceled',
+    'KJP_POUT_ST_RECIVED'                       => 'Received',
+    'KJP_POUT_ST_SENT'                          => 'Sent',
+    'KJP_POUT_ST_VERIFY'                        => 'Verify',
 ];
