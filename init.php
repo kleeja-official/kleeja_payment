@@ -233,7 +233,7 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
 
         'kjp_file_owner_profits' =>
         [
-            'value'  => '0',
+            'value'  => '50',
             'html'   => configField('kjp_file_owner_profits'),
             'plg_id' => $plg_id,
             'type'   => 'kleeja_payment',
