@@ -26,8 +26,8 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
         $apiContext  = new \PayPal\Rest\ApiContext(
             new \PayPal\Auth\OAuthTokenCredential(
-                trim($config['pp_client_id']),
-                trim($config['paypal_client_secret'])
+                trim($config['kjp_paypal_client_id']),
+                trim($config['kjp_paypal_client_secret'])
                 )
         );
 
@@ -167,7 +167,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
     public function checkPayment()
     {
-        global $SQL , $dbprefix , $THIS_STYLE_PATH_ABS , $config , $usrcp;
+        global $SQL , $dbprefix , $THIS_STYLE_PATH_ABS , $config , $usrcp , $subscription;
 
         $success_payment = ig('state') ? (g('state') === 'success' ? true : false) : false;
 
@@ -244,9 +244,23 @@ class kjPayMethod_paypal implements KJPaymentMethod
                                 if (user_can('recaive_profits', $user_group))
                                 {
                                     // becuse the payment is successfuly , let's give some profits to the file owner
-                                    $user_profits = $db_Payment_Info['payment_amount'] * $config['file_owner_profits'] / 100;
+                                    $user_profits = $db_Payment_Info['payment_amount'] * $config['kjp_file_owner_profits'] / 100;
                                     $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = '{$user_id}'");
                                 }
+                            }
+                            elseif ($PaymentInfo['payment_action'] == 'subscripe' && $usrcp->name())
+                            {
+                                $foundedAction               = true;
+                                $package_expire              = $subscription->expire_at($_SESSION['kj_payment']['item_id']);
+                                $olang['KJP_JUIN_SUCCESS']   = sprintf($olang['KJP_SUCCESS_SUBSCRIPE'], $_SESSION['kj_payment']['item_name'], date('Y / m / d', $package_expire));
+                                $this->toGlobal['olang']     = $olang;
+                                $update_user                 = [
+                                    'UPDATE'       => "{$dbprefix}users",
+                                    'SET'          => 'package = ' . $_SESSION['kj_payment']['item_id'] . " , package_expire = {$package_expire}",
+                                    'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
+                                ];
+
+                                $SQL->build($update_user);
                             }
 
                             if (! $foundedAction)
@@ -376,7 +390,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
             $update_query = [
                 'UPDATE' => "{$dbprefix}payments_out",
                 'SET'    => "state = '{$state}' , payment_more_info = '{$payment_more_info}'",
-                'WHERE'  => "id = '{$itemInfo['id']}'"
+                'WHERE'  => "id = {$itemInfo['id']}"
             ];
 
             $SQL->build($update_query);
@@ -409,7 +423,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
                 $update_query = [
                     'UPDATE' => "{$dbprefix}payments_out",
                     'SET'    => "state = 'recived'",
-                    'WHERE'  => "id = '{$payoutInfo['id']}'"
+                    'WHERE'  => "id = {$payoutInfo['id']}"
                 ];
                 $SQL->build($update_query);
                 $this->successPayment = true;

@@ -115,22 +115,22 @@ function getGroupInfo($groupData, $getGroup = 'all')
     foreach ($groupData as $data)
     {
         if ($data['data']['group_id'] > 3 // not the default groups
-        && $data['configs']['join_price'] > 0
+        && $data['configs']['kjp_join_price'] > 0
         && $data['data']['group_is_default'] == 0)
         { // maybe the webmaster using another group as default registration group ..
             if ($getGroup == 'all')
             {
                 $group_id         = $data['data']['group_id'];
                 $group_name       = $data['data']['group_name'];
-                $join_price       = $data['configs']['join_price'];
-                $min_payout_limit = $data['configs']['min_payout_limit'];
+                $join_price       = $data['configs']['kjp_join_price'];
+                $min_payout_limit = $data['configs']['kjp_min_payout_limit'];
 
 
                 $return[] = [
-                    'id'               => $group_id ,
-                    'name'             => $group_name ,
-                    'price'            => $join_price ,
-                    'min_payout_limit' => $min_payout_limit ,
+                    'id'                   => $group_id ,
+                    'name'                 => $group_name ,
+                    'price'                => $join_price ,
+                    'kjp_min_payout_limit' => $min_payout_limit ,
                 ];
             }
             elseif ((int) $getGroup
@@ -140,15 +140,15 @@ function getGroupInfo($groupData, $getGroup = 'all')
             {
                 $group_id         = $data['data']['group_id'];
                 $group_name       = $data['data']['group_name'];
-                $join_price       = $data['configs']['join_price'];
-                $min_payout_limit = $data['configs']['min_payout_limit'];
+                $join_price       = $data['configs']['kjp_join_price'];
+                $min_payout_limit = $data['configs']['kjp_min_payout_limit'];
 
 
                 $return = [
-                    'id'               => $group_id ,
-                    'name'             => $group_name ,
-                    'price'            => $join_price ,
-                    'min_payout_limit' => $min_payout_limit ,
+                    'id'                   => $group_id ,
+                    'name'                 => $group_name ,
+                    'price'                => $join_price ,
+                    'kjp_min_payout_limit' => $min_payout_limit ,
                 ];
             }
         }
@@ -463,7 +463,7 @@ function create_Archive_Panel($action, $actionInfo, $isForAll = false)
             <span class="badge badge-secondary">' . $methodCounts['num'] . '</span></li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
             ' . ($olang['KJP_MTHD_NAME_' . strtoupper($methodName)] ? $olang['KJP_MTHD_NAME_' . strtoupper($methodName)] : $methodName) . '
-            <span class="badge badge-secondary">' . $methodCounts['amount'] . ' ' . $config['iso_currency_code'] . '</span></li>';
+            <span class="badge badge-secondary">' . $methodCounts['amount'] . ' ' . $config['kjp_iso_currency_code'] . '</span></li>';
     }
 
 
@@ -484,11 +484,11 @@ function getPaymentMethods()
     {
         while ($methods = $SQL->fetch($get_methods))
         {
-            if (! user_can('recaive_profits') && $methods['name'] == 'active_balance')
+            if (! user_can('recaive_profits') && $methods['name'] == 'kjp_active_balance')
             {
                 continue;
             }
-            $return[] = str_replace('active_', '', $methods['name']);
+            $return[] = str_replace('kjp_active_', '', $methods['name']);
         }
     }
 

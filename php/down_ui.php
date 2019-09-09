@@ -8,7 +8,7 @@
  *
  */
 
-is_array($plugin_run_result = Plugins::getInstance()->run('kj_PayPal:begin_download_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+is_array($plugin_run_result = Plugins::getInstance()->run('KJP:begin_download_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 $query = [
     'SELECT'       => 'f.id, f.real_filename, f.name, f.folder, f.size, f.time, f.uploads, f.type , f.price', // edited -> f.price
@@ -31,7 +31,7 @@ if ((int) $config['user_system'] == 1)
     $query['WHERE']    = 'f.id=' . g('file', 'int'); // edited
 
 
-is_array($plugin_run_result = Plugins::getInstance()->run('kj_PayPal:qr_download_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+is_array($plugin_run_result = Plugins::getInstance()->run('KJP:qr_download_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 $result    = $SQL->build($query);
 
 if ($SQL->num_rows($result) !== 0)
@@ -93,19 +93,19 @@ if ($SQL->num_rows($result) !== 0)
     $sty        = 'pay_download'; // edited
 
     // to allow the developer to make 'pay_download.html' with their styles .
-    $styPath       =  file_exists($THIS_STYLE_PATH_ABS . 'kj_paypal/pay_download.html') ? $THIS_STYLE_PATH_ABS :  dirname(__FILE__) . '/../html/'; // edited
+    $styPath       =  file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_download.html') ? $THIS_STYLE_PATH_ABS :  dirname(__FILE__) . '/../html/'; // edited
     $title         =  $name . ' - ' . 'شراء'; // edited
 }
 else
 {
     //file not exists
-    is_array($plugin_run_result = Plugins::getInstance()->run('kj_PayPal:not_exists_qr_downlaod_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+    is_array($plugin_run_result = Plugins::getInstance()->run('KJP:not_exists_qr_downlaod_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
     kleeja_err($lang['FILE_NO_FOUNDED']);
 }
 
 // $show_style = true;   edited
 
-is_array($plugin_run_result = Plugins::getInstance()->run('kj_PayPal:b4_showsty_downlaod_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
+is_array($plugin_run_result = Plugins::getInstance()->run('KJP:b4_showsty_downlaod_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
 //add http reffer to session to prevent errors with some browsers !
 $_SESSION['HTTP_REFERER'] =  $file_info['id'];

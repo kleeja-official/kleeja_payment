@@ -15,8 +15,8 @@ class kjPayMethod_cards implements KJPaymentMethod
         require_once dirname(__FILE__) . '/../stripe-sdk/vendor/autoload.php';
 
         $stripe = [
-            'secret_key'      => trim($config['stripe_secret_key']),
-            'publishable_key' => trim($config['stripe_publishable_key']),
+            'secret_key'      => trim($config['kjp_stripe_secret_key']),
+            'publishable_key' => trim($config['kjp_stripe_publishable_key']),
         ];
 
         \Stripe\Stripe::setApiKey($stripe['secret_key']);
@@ -57,7 +57,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         $this->varsForCreate['storeIcon']              = $config['siteurl'] . 'images/apple-touch-icon.png';
         $this->varsForCreate['paymentCurrency']        = $this->currency;
         $this->varsForCreate['paymentAmount']          = $this->convertPrice($info['price']);
-        $this->varsForCreate['stripe_publishable_key'] = $config['stripe_publishable_key'];
+        $this->varsForCreate['stripe_publishable_key'] = $config['kjp_stripe_publishable_key'];
     }
 
 
@@ -69,23 +69,29 @@ class kjPayMethod_cards implements KJPaymentMethod
 
     public function checkPayment()
     {
-        global $config , $usrcp , $SQL , $dbprefix , $d_groups;
+        global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$olang, $subscription;
 
         if (! isset($_SESSION['kj_payment']) || empty($_SESSION['kj_payment']))
         {
-            kleeja_err('What Are U Doing Here ??');
+            kleeja_err('What Are U Doing Here ??', '', true, $config['siteurl']);
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'buy_file') && ! $itemInfo = getFileInfo($_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl']);
 
             exit;
         }
         elseif (($_SESSION['kj_payment']['payment_action'] == 'join_group') && ! $itemInfo = getGroupInfo($d_groups, $_SESSION['kj_payment']['item_id']))
         {
-            kleeja_err('ERROR REQUEST');
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl'] . 'go.php?go=paid_group');
+
+            exit;
+        }
+        elseif (($_SESSION['kj_payment']['payment_action'] == 'subscripe') && ! $itemInfo = $subscription->get($_SESSION['kj_payment']['item_id']))
+        {
+            kleeja_err('ERROR REQUEST', '', true, $config['siteurl'] . 'go.php?go=subscription');
 
             exit;
         }
@@ -96,8 +102,8 @@ class kjPayMethod_cards implements KJPaymentMethod
 
         try
         {
-            $token  = $_POST['stripeToken'];
-            $email  = $_POST['stripeEmail'];
+            $token  = p('stripeToken');
+            $email  = p('stripeEmail');
 
             $customer = \Stripe\Customer::create([
                 'email'   => $email,
@@ -179,6 +185,20 @@ class kjPayMethod_cards implements KJPaymentMethod
 
                     $SQL->build($update_user);
                 }
+                elseif ($_SESSION['kj_payment']['payment_action'] == 'subscripe' && $usrcp->name())
+                {
+                    $foundedAction               = true;
+                    $package_expire              = $subscription->expire_at($_SESSION['kj_payment']['item_id']);
+                    $olang['KJP_JUIN_SUCCESS']   = sprintf($olang['KJP_SUCCESS_SUBSCRIPE'], $_SESSION['kj_payment']['item_name'], date('Y/m/d', $package_expire));
+                    $this->toGlobal['olang']     = $olang;
+                    $update_user                 = [
+                        'UPDATE'       => "{$dbprefix}users",
+                        'SET'          => 'package = ' . $_SESSION['kj_payment']['item_id'] . " , package_expire = {$package_expire}",
+                        'WHERE'        => "id = '" . $usrcp->id() . "'"  ,
+                    ];
+
+                    $SQL->build($update_user);
+                }
                 elseif ($_SESSION['kj_payment']['payment_action'] == 'buy_file')
                 {
                     $foundedAction               = true;
@@ -190,7 +210,7 @@ class kjPayMethod_cards implements KJPaymentMethod
                     if (user_can('recaive_profits', $user_group))
                     {
                         // becuse the payment is successfuly , let's give some profits to the file owner
-                        $user_profits = $payment_amount * $config['file_owner_profits'] / 100;
+                        $user_profits = $payment_amount * $config['kjp_file_owner_profits'] / 100;
                         $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$user_profits} WHERE id = {$user_id}");
                     }
                 }
