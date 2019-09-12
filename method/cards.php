@@ -275,7 +275,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         {
             $price = str_replace('.', '', $price);
             // maybe 12.5
-            if (strlen($p[1] == 1))
+            if (strlen($p[1]) == 1)
             {
                 $price .= '0';
             }
