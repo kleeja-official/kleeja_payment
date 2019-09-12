@@ -178,25 +178,28 @@ class Subscription
 
                 $pointsCount = $SQL->num_rows($pointsQuery);
 
-                $pointPrice = ($subscription_info['price'] * $config['kjp_file_owner_profits'] / 100) / $pointsCount;
+                if ($pointsCount)
+                { // check the points counts , Divide by zero -> is danger , bvvvvvvvvvv
+                    $pointPrice = ($subscription_info['price'] * $config['kjp_file_owner_profits'] / 100) / $pointsCount;
 
-                while ($points = $SQL->fetch($pointsQuery))
-                {
-                    if ($paidFiles[$points['file_id']]['user'])
-                    { // the file owner is not guest
-                        $paidFiles[$points['file_id']]['points']++;
-
-                        if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['profit']))
-                        { // please focuse
-                            $this->users[$paidFiles[$points['file_id']]['user']]['profit'] = 0;
+                    while ($points = $SQL->fetch($pointsQuery))
+                    {
+                        if ($paidFiles[$points['file_id']]['user'])
+                        { // the file owner is not guest
+                            $paidFiles[$points['file_id']]['points']++;
+    
+                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['profit']))
+                            { // please focuse
+                                $this->users[$paidFiles[$points['file_id']]['user']]['profit'] = 0;
+                            }
+                            $this->users[$paidFiles[$points['file_id']]['user']]['profit'] += $pointPrice;
+    
+                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['taked_points']))
+                            { // please focuse
+                                $this->users[$paidFiles[$points['file_id']]['user']]['taked_points'] = 0;
+                            }
+                            $this->users[$paidFiles[$points['file_id']]['user']]['taked_points']++;
                         }
-                        $this->users[$paidFiles[$points['file_id']]['user']]['profit'] += $pointPrice;
-
-                        if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['taked_points']))
-                        { // please focuse
-                            $this->users[$paidFiles[$points['file_id']]['user']]['taked_points'] = 0;
-                        }
-                        $this->users[$paidFiles[$points['file_id']]['user']]['taked_points']++;
                     }
                 }
                 $SQL->query("DELETE FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
