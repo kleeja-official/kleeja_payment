@@ -172,7 +172,7 @@ class Subscription
 
                 if (! $subscription_info)
                 {
-                    continue;
+                    goto reset_user_package;
                 }
                 $pointsQuery       = $SQL->query("SELECT * FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
 
@@ -202,6 +202,7 @@ class Subscription
                         }
                     }
                 }
+                reset_user_package:
                 $SQL->query("DELETE FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
 
                 $SQL->query("UPDATE {$dbprefix}users SET `package` = 0 , `package_expire` = 0 WHERE id = {$user['id']}");
