@@ -7,6 +7,7 @@
  * i changed all hook names and other changes that i made , i added "edited" like a comment -> search about 'edited' word
  *
  */
+define('IN_PAID_DOWNLOAD' , true);
 
 is_array($plugin_run_result = Plugins::getInstance()->run('KJP:begin_download_file', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
