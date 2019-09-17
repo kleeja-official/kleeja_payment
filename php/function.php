@@ -34,7 +34,7 @@ function getFileInfo($fileID = 0, $getInfo = '*')
 
 
 
-function getPaymentInfo($db_id = 0, $where = '', $mixall = false)
+function getPaymentInfo($db_id = 0, $where = '', $mixAll = false)
 {
     global $SQL , $dbprefix;
 
@@ -56,7 +56,7 @@ function getPaymentInfo($db_id = 0, $where = '', $mixall = false)
     {
         $result = $SQL->fetch_array($result);
 
-        if ($mixall)
+        if ($mixAll)
         {
             $result = payment_more_info('from_db', $result);
         }
@@ -70,7 +70,7 @@ function getPaymentInfo($db_id = 0, $where = '', $mixall = false)
 }
 
 
-function getPayoutInfo($db_id = 0, $where = '', $mixall = false)
+function getPayoutInfo($db_id = 0, $where = '', $mixAll = false)
 {
     global $SQL , $dbprefix;
 
@@ -92,7 +92,7 @@ function getPayoutInfo($db_id = 0, $where = '', $mixall = false)
     {
         $result = $SQL->fetch_array($result);
 
-        if ($mixall)
+        if ($mixAll)
         {
             $result = payment_more_info('from_db', $result);
         }
@@ -289,9 +289,9 @@ function KJPayFinalData()
         // count of monthly transactions
 
         if (
-                    $row['payment_year'] == date('Y') &&
-                    $row['payment_month'] == date('m')
-                ) {
+            $row['payment_year'] == date('Y') &&
+            $row['payment_month'] == date('m')
+            ) {
             $ThisMonth_trnc_num++;
             // paypal method informations
             if ($row['payment_method'] == 'paypal')
@@ -319,9 +319,9 @@ function KJPayFinalData()
 
         // payment informations that made by paypal
         'paypal'      => $paypalTransactions ,
-        // payment informations that made by cards
+        // payment informations that made by Balance
         'balance'     => $balanceTransactions ,
-        // payment informations that made by cards
+        // payment informations that made by Stripe
         'cards'      => $cardsTransactions
     ];
 }
@@ -362,7 +362,7 @@ function get_archive ($date = '30-2-yyyy')
 
     if (count($date) == 2)
     {
-        // Monthly Archive EX: mm-yyyy | note : i did not had problem if the day or month was ( 01 ) or ( 1 ) , mysql accespted it
+        // Monthly Archive EX: mm-yyyy | note : i did not had problem if the day or month was ( 01 ) or ( 1 ) , mysql accepted it
         $date = [
             'year'  => $date[1] ,
             'month' => $date[0] ,

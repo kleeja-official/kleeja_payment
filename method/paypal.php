@@ -31,6 +31,13 @@ class kjPayMethod_paypal implements KJPaymentMethod
                 )
         );
 
+        if ($config['kjp_active_live_mode'])
+        {
+            $apiContext->addConfig([
+                'mode' => 'live'
+            ]);
+        }
+
         $this->apiContext = $apiContext;
     }
 

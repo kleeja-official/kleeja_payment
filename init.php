@@ -177,6 +177,15 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
             'order'  => '0',
         ],
 
+        'kjp_active_live_mode' =>
+        [
+            'value'  => '0',
+            'html'   => configField('kjp_active_live_mode', 'yesno'),
+            'plg_id' => $plg_id,
+            'type'   => 'kleeja_payment',
+            'order'  => '0',
+        ],
+
         'kjp_paypal_client_id' =>
         [
             'value'  => '0',
@@ -357,6 +366,15 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
                 'order'  => '1',
             ],
 
+            'kjp_active_live_mode' =>
+            [
+                'value'  => '0',
+                'html'   => configField('kjp_active_live_mode', 'yesno'),
+                'plg_id' => $plg_id,
+                'type'   => 'kleeja_payment',
+                'order'  => '0',
+            ],
+
             'kjp_paypal_client_id' =>
             [
                 'value'  => get_config('pp_client_id'),
@@ -525,6 +543,7 @@ $kleeja_plugin['kleeja_payment']['uninstall'] = function ($plg_id) {
         'kjp_min_price_limit',
         'kjp_max_price_limit' ,
         'kjp_active_subscriptions',
+        'kjp_active_live_mode',
         'kjp_file_owner_profits'
     ]);
 
@@ -1573,7 +1592,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                         $payments[] = [
                             'ID'        => $row['id'],
                             'METHOD'    => $olang['KJP_MTHD_NAME_' . strtoupper($row['payment_method'])],
-                            'FILE_NAME' => $row['item_name'],
+                            'FILE_NAME' => '<a href="' . $config['siteurl'] . 'do.php?id=' . $row['item_id'] . '" target="_blank">' . $row['item_name'] . '</a>',
                             'BUYER'     => ! empty($UserById[$row['user']]) ? $UserById[$row['user']] : 'Guest',
                             'DATE_TIME' => "{$row['payment_year']}-{$row['payment_month']}-{$row['payment_day']} / {$row['payment_time']}",
                         ];

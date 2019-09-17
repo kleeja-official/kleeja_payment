@@ -170,7 +170,7 @@ return [
     'KJP_MTHD_NAME_BALANCE'                     => 'Balance' ,
     'KJP_ALL_PAY_OF'                            => 'All payments of <strong> %s </strong>' ,
     // new Configs
-    'KJP_ACTIVE_SUBSCRIPTIONS'                  => 'Active Subscriptions (note: if you active subscriptions , no one can download the free files with out joining a package)',
+    'KJP_ACTIVE_SUBSCRIPTIONS'                  => 'Activate Subscriptions (note: if you activate subscriptions , no one can download the free files with out joining a package)',
     // Subscriptions
     'KJP_SUBSCRIPTIONS'                         => 'Subscriptions',
     'KJP_POINTS'                                => 'Subscriptions Points',
@@ -200,4 +200,5 @@ return [
     'KJP_POUT_ST_RECIVED'                       => 'Received',
     'KJP_POUT_ST_SENT'                          => 'Sent',
     'KJP_POUT_ST_VERIFY'                        => 'Verify',
+    'KJP_ACTIVE_LIVE_MODE'                      => 'Activate Live Mode ( are you testing the plugin or you are real user )',
 ];

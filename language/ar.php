@@ -198,4 +198,5 @@ return [
     'KJP_POUT_ST_RECIVED'                       => 'تم الاستلام',
     'KJP_POUT_ST_SENT'                          => 'أرسلت',
     'KJP_POUT_ST_VERIFY'                        => 'تدقيق',
+    'KJP_ACTIVE_LIVE_MODE'                      => 'تنشيط الوضع الحي (هل الاضافة في وضع الانتاج أم التجربة)',
 ];
