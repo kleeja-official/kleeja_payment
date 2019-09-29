@@ -725,9 +725,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 exit;
             }
 
-            $PagePermission = 'createPayment';
-
-            if (! $PaymentMethod::permission($PagePermission))
+            if (! $PaymentMethod::permission('createPayment'))
             {
                 kleeja_err('This Method Dont support Creating Payments');
 
