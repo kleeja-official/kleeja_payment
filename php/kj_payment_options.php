@@ -35,6 +35,8 @@ if (empty($current_smt))
         if (ip('payment_number') && p('payment_number', 'int') > 0)
         {
             redirect(basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=view&amp;payment=' . p('payment_number'));
+            
+            exit;
         }
     }
     elseif (ip('open_archive'))
