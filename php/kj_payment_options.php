@@ -121,7 +121,7 @@ if (empty($current_smt))
         {
             $PayID       = $rows['id'];
             $PayUser     = $rows['user'] > 0 ? $UserById[$rows['user']] : $olang['KJP_GUEST'];
-            $PayAction   = $rows['payment_action'] . ' : ' . $rows['item_name'];
+            $PayAction   = sprintf($olang['KJP_ACT_' . strtoupper($rows['payment_action'])], $rows['item_name']);
             $PayIP       = $rows['payment_payer_ip'];
             $PayDateTime = $rows['payment_year'] . '-' . $rows['payment_month'] . '-' . $rows['payment_day'] . '/' . $rows['payment_time'];
 
