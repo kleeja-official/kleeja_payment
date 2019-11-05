@@ -304,17 +304,7 @@ class kjPayMethod_cards implements KJPaymentMethod
 
                 break;
 
-          case 'createPayout': // sending money to users
-              return false;
-
-              break;
-
-          case 'checkPayouts':
-              return false;
-
-              break;
-
-            default:
+          default:
                 return false;
 
                 break;

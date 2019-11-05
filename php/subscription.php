@@ -76,10 +76,7 @@ class Subscription
             return false;
         }
 
-        $time_now  = time();
-        $expire_at = $user['package_expire'];
-
-        if ($time_now < $expire_at)
+        if (time() < $user['package_expire'])
         {
             return true;
         }
@@ -123,7 +120,7 @@ class Subscription
         $user             = $usrcp->id();
         $time             = time();
         $subscription_id  = $this->user_subscripe($user)['id'];
-        // ssubscription_hash -> maybe this user renew the subscription and download this file again , so we need to add a point also again
+        // subscription_hash -> maybe this user renew the subscription and download this file again , so we need to add a point also again
         $subscripe_hash   = sha1($user . $subscription_id . $this->users[$user]['package_expire']);
 
         $check_point = $SQL->query("SELECT * FROM `{$dbprefix}subscription_point` WHERE `user` = {$user} AND `file_id` = {$file_id} AND `subscripe_hash` = '{$subscripe_hash}'");

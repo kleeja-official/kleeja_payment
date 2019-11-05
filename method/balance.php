@@ -272,15 +272,9 @@ class kjPayMethod_balance implements KJPaymentMethod
               return false;
 
               break;
-
-          case 'checkPayouts':
-              return false;
-
-              break;
-
+              
             default:
                 return false;
-
                 break;
         }
     }
