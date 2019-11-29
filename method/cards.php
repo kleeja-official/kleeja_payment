@@ -301,7 +301,6 @@ class kjPayMethod_cards implements KJPaymentMethod
         {
             case 'createPayment':
                 return true;
-
                 break;
 
           default:

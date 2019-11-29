@@ -265,14 +265,8 @@ class kjPayMethod_balance implements KJPaymentMethod
         {
             case 'createPayment':
                 return true;
-
                 break;
-
-          case 'createPayout': // sending money to users
-              return false;
-
-              break;
-              
+                
             default:
                 return false;
                 break;
