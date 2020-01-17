@@ -1370,7 +1370,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 $currentPage    = ig('page') ? g('page', 'int') : 1;
                 $Pager            = new Pagination($perpage, $num_rows, $currentPage);
                 $start            = $Pager->getStartRow();
-                $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_payments';
+                $linkgoto       = $config['siteurl'] . 'ucp.php?go=my_payments';
                 $page_nums        = $Pager->print_nums($linkgoto);
                 $myPaymentQuery['LIMIT'] = "$start, $perpage";
                 $myPays = $SQL->build($myPaymentQuery);
