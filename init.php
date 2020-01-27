@@ -1290,7 +1290,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         }
     },
     'default_usrcp_page' => function ($args) {
-        global $SQL , $dbprefix , $usrcp , $config ,$olang , $userinfo ,$d_groups;
+        global $SQL , $dbprefix , $usrcp , $config ,$olang , $userinfo ,$d_groups, $THIS_STYLE_PATH_ABS;
         // all user bought file
         if (g('go') == 'bought_files')
         {
