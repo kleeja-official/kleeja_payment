@@ -472,7 +472,7 @@ function create_Archive_Panel($action, $actionInfo, $isForAll = false)
     return sprintf($return, $tableTrncCount);
 }
 
-function getPaymentMethods()
+function getPaymentMethods($withoutFilter = false)
 {
     global $SQL , $dbprefix;
 
@@ -484,13 +484,16 @@ function getPaymentMethods()
     {
         while ($methods = $SQL->fetch($get_methods))
         {
-            if (! user_can('recaive_profits') && $methods['name'] == 'kjp_active_balance')
-            {
-                continue;
-            }
             $return[] = str_replace('kjp_active_', '', $methods['name']);
         }
     }
+
+    if ($withoutFilter)
+    {
+        return $return;
+    }
+
+    is_array($plugin_run_result = Plugins::getInstance()->run('KJP:get_payment_methods', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
     return $return;
 }

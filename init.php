@@ -18,7 +18,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.2.4',
+    'plugin_version' => '1.2.5',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
@@ -630,6 +630,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
         if (ig('file') && (int) g('file'))
         {
+            // if we are using subscription system, and the user trying to buy a file, redirect hem to normal download page
             if ($config['kjp_active_subscriptions'] && $subscription->is_valid($usrcp->id()))
             {
                 redirect($config['siteurl'] . 'do.php?id=' . g('file'));
@@ -649,7 +650,14 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
             if (ip('buy_file'))
             {
-                redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('method') . '&action=buy_file&id=' . g('file'));
+                if (empty(p('method')) || empty(p('action')) || empty(p('file')))
+                {
+                    kleeja_err($lang['ERROR_NAVIGATATION']);
+                }
+                else
+                {
+                    redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('method') . '&action=buy_file&id=' . g('file'));
+                }
 
                 exit();
             }
@@ -1528,7 +1536,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                     $currentPage    = ig('page') ? g('page', 'int') : 1;
                     $Pager            = new Pagination($perpage, $num_rows, $currentPage);
                     $start            = $Pager->getStartRow();
-                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=withdrawals';
+                    $linkgoto       = $config['siteurl'] . 'ucp.php?go=my_kj_payment&case=withdrawals';
                     $page_nums        = $Pager->print_nums($linkgoto);
                     $query['LIMIT'] = "$start, $perpage";
                     $result = $SQL->build($query);
@@ -1572,10 +1580,10 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 if ($num_rows = $SQL->num_rows($filePay))
                 {
                     $perpage          = 21;
-                    $currentPage    = ig('page') ? g('page', 'int') : 1;
+                    $currentPage      = ig('page') ? g('page', 'int') : 1;
                     $Pager            = new Pagination($perpage, $num_rows, $currentPage);
                     $start            = $Pager->getStartRow();
-                    $linkgoto       = $cinfig['siteurl'] . 'ucp.php?go=my_kj_payment&case=files_payments';
+                    $linkgoto         = $config['siteurl'] . 'ucp.php?go=my_kj_payment&case=files_payments';
                     $page_nums        = $Pager->print_nums($linkgoto);
                     $fileQuery['LIMIT'] = "$start, $perpage";
                     $filePay = $SQL->build($fileQuery);
@@ -1802,6 +1810,99 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
     'go_queue' => function ($args) {
         global $subscription;
         $subscription->convertPoints();
+    },
+    'KJP:get_payment_methods' => function ($args) {
+        global $config;
+        $return = $args['return']; // all methods in DB
+
+        /**
+         * in the next lines, we will check all methods in db
+         * for each method, there is some conditions that have to be applied to use the method
+         * and any method that don't apply the condition we will add it to this array, to remove it later in one time
+         */
+        $filter = [];
+
+        // check if the user can use the Balance method or not
+        if (! user_can('recaive_profits') && in_array('balance', $return))
+        {
+            $filter[] = 'balance';
+        }
+
+        // check if PayPal method is ready to use or not
+        if (in_array('paypal', $return) &&
+         ((empty($config['kjp_paypal_client_id']) || empty($config['kjp_paypal_client_secret'])) ||
+         ! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
+         ) {
+            $filter[] = 'paypal';
+        }
+
+        // check if Stripe method is ready to use or not
+        if (in_array('cards', $return) &&
+         (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key']) ||
+         ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+         ) {
+            $filter[] = 'cards';
+        }
+
+        $return = array_filter($return, function ($mthd) use ($filter) {
+            if (! in_array($mthd, $filter))
+            {
+                return $mthd;
+            }
+        });
+
+        return compact('return');
+    },
+    'default_admin_page' => function ($args) {
+        global $lang, $olang, $config;
+        $ADM_NOTIFICATIONS = $args['ADM_NOTIFICATIONS'];
+
+        $payment_methods = getPaymentMethods(true);
+
+        // check if PayPal method is ready to use or not
+        // let's check the configs of paypal in DB
+        if (in_array('paypal', $payment_methods) && ((empty($config['kjp_paypal_client_id']) || empty($config['kjp_paypal_client_secret'])))
+         ) {
+            $ADM_NOTIFICATIONS[]  = [
+                'id'      => 'EmptyPaypalParms',
+                'msg_type'=> 'error',
+                'title'   => $olang['KJP_PAYPAL_PRMS_EMPTY_TITLE'],
+                'msg'     => $olang['KJP_PAYPAL_PRMS_EMPTY']
+            ];
+
+            if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
+            {
+                $ADM_NOTIFICATIONS[]  = [
+                    'id'      => 'NoPaypalLib',
+                    'msg_type'=> 'error',
+                    'title'   => $olang['KJP_PAYPAL_NO_LIB_TITLE'],
+                    'msg'     => $olang['KJP_PAYPAL_NO_LIB']
+                ];
+            }
+        }
+
+        // check if Stripe method is ready to use or not
+        if (in_array('cards', $payment_methods) && (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key'])))
+        {
+            $ADM_NOTIFICATIONS[]  = [
+                'id'      => 'EmptyStripeParms',
+                'msg_type'=> 'error',
+                'title'   => $olang['KJP_STRIPE_PRMS_EMPTY_TITLE'],
+                'msg'     => $olang['KJP_STRIPE_PRMS_EMPTY']
+            ];
+
+            if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+            {
+                $ADM_NOTIFICATIONS[]  = [
+                    'id'      => 'NoStripeLib',
+                    'msg_type'=> 'error',
+                    'title'   => $olang['KJP_STRIPE_NO_LIB_TITLE'],
+                    'msg'     => $olang['KJP_STRIPE_NO_LIB']
+                ];
+            }
+        }
+
+        return compact('ADM_NOTIFICATIONS');
     }
 
     /*

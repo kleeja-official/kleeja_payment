@@ -201,4 +201,12 @@ return [
     'KJP_POUT_ST_SENT'                          => 'Sent',
     'KJP_POUT_ST_VERIFY'                        => 'Verify',
     'KJP_ACTIVE_LIVE_MODE'                      => 'Activate Live Mode ( are you testing the plugin or you are real user )',
+    'KJP_PAYPAL_PRMS_EMPTY'                     => 'Your visitor can not use paypal as payment method, because paypal Client ID or Client Secret is empty',
+    'KJP_PAYPAL_PRMS_EMPTY_TITLE'               => 'Paypal Client ID or Client Secret is empty',
+    'KJP_PAYPAL_NO_LIB'                         => 'Your visitor can not use paypal as payment method, because paypal API library is not exists, extract "paypal_sdk.zip" file in kleeja_payment folder',
+    'KJP_PAYPAL_NO_LIB_TITLE'                   => 'Paypal API library is not exists',
+    'KJP_STRIPE_PRMS_EMPTY'                     => 'Your visitor can not use Stripe as payment method, because Stripe Client ID or Client Secret is empty',
+    'KJP_STRIPE_PRMS_EMPTY_TITLE'               => 'Stripe Client ID or Client Secret is empty',
+    'KJP_STRIPE_NO_LIB'                         => 'Your visitor can not use Stripe as payment method, because Stripe API library is not exists, extract "stripe-sdk.zip" file in kleeja_payment folder',
+    'KJP_STRIPE_NO_LIB_TITLE'                   => 'Stripe API library is not exists',
 ];

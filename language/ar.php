@@ -199,4 +199,12 @@ return [
     'KJP_POUT_ST_SENT'                          => 'أرسلت',
     'KJP_POUT_ST_VERIFY'                        => 'تدقيق',
     'KJP_ACTIVE_LIVE_MODE'                      => 'تنشيط الوضع الحي (هل الاضافة في وضع الانتاج أم التجربة)',
+    'KJP_PAYPAL_PRMS_EMPTY'                     => 'لا يمكن للزائر استخدام paypal كوسيلة للدفع ، لأن معرف عميل paypal أو عميل Secret فارغ',
+    'KJP_PAYPAL_PRMS_EMPTY_TITLE'               => 'معرف عميل Paypal أو عميل Secret فارغ',
+    'KJP_PAYPAL_NO_LIB'                         => 'لا يمكن للزائر استخدام paypal كوسيلة للدفع ، نظرًا لعدم وجود مكتبة API paypal ، قم باستخراج ملف "paypal_sdk.zip" في مجلد kleeja_payment',
+    'KJP_PAYPAL_NO_LIB_TITLE'                   => 'مكتبة API Paypal غير موجودة',
+    'KJP_STRIPE_PRMS_EMPTY'                     => 'لا يمكن للزائر استخدام Stripe كطريقة دفع ، لأن معرف عميل Stripe أو Client Secret فارغ',
+    'KJP_STRIPE_PRMS_EMPTY_TITLE'               => 'معرف عميل سترايب أو عميل السري فارغ',
+    'KJP_STRIPE_NO_LIB'                         => 'لا يمكن للزائر استخدام Stripe كطريقة دفع ، لأن مكتبة Stripe API غير موجودة ، قم باستخراج ملف "stripe-sdk.zip" في مجلد kleeja_payment',
+    'KJP_STRIPE_NO_LIB_TITLE'                   => 'Stripe API library is not exists',
 ];
