@@ -650,7 +650,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
             if (ip('buy_file'))
             {
-                if (empty(p('method')) || empty(p('action')) || empty(p('file')))
+                if (empty(p('method')) || empty(g('file')))
                 {
                     kleeja_err($lang['ERROR_NAVIGATATION']);
                 }
@@ -702,7 +702,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         // blablabla = it's optional for you to using sessions or anythink you want , anyway it will be global varibles
 
 
-        if (ig('go') && g('go') === 'kj_payment' && ig('method') && ig('action'))
+        if (ig('go') && g('go') === 'kj_payment' && ig('method') && !empty(g('method')) && ig('action') && ! empty(g('action')))
         {
             require_once dirname(__FILE__) . '/php/kjPayment.php'; // require the payment interface
             $PaymentMethodClass = dirname(__FILE__) . '/method/' . g('method') . '.php'; // default payment method
