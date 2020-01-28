@@ -1869,16 +1869,16 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 'title'   => $olang['KJP_PAYPAL_PRMS_EMPTY_TITLE'],
                 'msg'     => $olang['KJP_PAYPAL_PRMS_EMPTY']
             ];
+        }
 
-            if (! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
-            {
-                $ADM_NOTIFICATIONS[]  = [
-                    'id'      => 'NoPaypalLib',
-                    'msg_type'=> 'error',
-                    'title'   => $olang['KJP_PAYPAL_NO_LIB_TITLE'],
-                    'msg'     => $olang['KJP_PAYPAL_NO_LIB']
-                ];
-            }
+        if (in_array('paypal', $payment_methods) && ! file_exists(dirname(__FILE__) . '/vendor/autoload.php'))
+        {
+            $ADM_NOTIFICATIONS[]  = [
+                'id'      => 'NoPaypalLib',
+                'msg_type'=> 'error',
+                'title'   => $olang['KJP_PAYPAL_NO_LIB_TITLE'],
+                'msg'     => $olang['KJP_PAYPAL_NO_LIB']
+            ];
         }
 
         // check if Stripe method is ready to use or not
@@ -1890,16 +1890,16 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 'title'   => $olang['KJP_STRIPE_PRMS_EMPTY_TITLE'],
                 'msg'     => $olang['KJP_STRIPE_PRMS_EMPTY']
             ];
+        }
 
-            if (! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
-            {
-                $ADM_NOTIFICATIONS[]  = [
-                    'id'      => 'NoStripeLib',
-                    'msg_type'=> 'error',
-                    'title'   => $olang['KJP_STRIPE_NO_LIB_TITLE'],
-                    'msg'     => $olang['KJP_STRIPE_NO_LIB']
-                ];
-            }
+        if (in_array('cards', $payment_methods) && ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+        {
+            $ADM_NOTIFICATIONS[]  = [
+                'id'      => 'NoStripeLib',
+                'msg_type'=> 'error',
+                'title'   => $olang['KJP_STRIPE_NO_LIB_TITLE'],
+                'msg'     => $olang['KJP_STRIPE_NO_LIB']
+            ];
         }
 
         return compact('ADM_NOTIFICATIONS');
