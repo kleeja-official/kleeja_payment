@@ -88,4 +88,12 @@ class KJP
             }
         }
     }
+
+
+    public static function getPayURL(string $action, string $method, int $id = 0)
+    {
+        global $config;
+
+        return $config['siteurl'] . 'go.php?go=kj_payment&method=' . $method . '&action=' . $action . ($id > 0 ? '&id=' . $id : '');
+    }
 }

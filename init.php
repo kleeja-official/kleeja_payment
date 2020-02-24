@@ -656,9 +656,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 }
                 else
                 {
-                    redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('method') . '&action=buy_file&id=' . g('file'));
+                    redirect(KJP::getPayURL('buy_file', (string) p('method'), (int) g('file')));
                 }
-
+                
                 exit();
             }
 
@@ -987,8 +987,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 // to be sure that no one playing with html file
                 if (in_array(p('method'), getPaymentMethods()))
                 {
-                    redirect($config['siteurl'] . 'go.php?go=kj_payment&method=' . p('method') . '&action=join_group&id=' . p('group_id'));
-
+                    redirect(KJP::getPayURL('join_group', (string) p('method'), (int) g('group_id')));
                     exit();
                 }
             }
@@ -1302,7 +1301,8 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
         // all user bought file
         if (g('go') == 'bought_files')
         {
-            if (! $usrcp->name() || ! user_can('access_bought_files')): return;
+            if (! $usrcp->name() || ! user_can('access_bought_files')):
+                return;
             endif; // the page is for members only
 
             $user_is = $usrcp->id();
@@ -1430,10 +1430,9 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
 
                 if (! file_exists($PaymentMethodClass))
                 {
-                    $is_err = true;
                     is_array($plugin_run_result = Plugins::getInstance()->run('KjPay:createPayout', get_defined_vars())) ? extract($plugin_run_result) : null; //run hook
 
-                    if ($is_err)
+                    if (! file_exists($PaymentMethodClass))
                     {
                         kleeja_admin_err('The class file of ' . p('PayoutMethod') . ' payment is not found');
 
@@ -1447,10 +1446,6 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 if (! $methodClassName::permission('createPayout'))
                 {
                     kleeja_err('The method dont support Creating Payouts');
-
-                    exit;
-
-                    exit();
 
                     exit;
                 }

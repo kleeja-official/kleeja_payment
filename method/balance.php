@@ -10,7 +10,7 @@ class kjPayMethod_balance implements KJPaymentMethod
 
     public function paymentStart()
     {
-        global $lang , $config;
+        global $lang, $config;
 
         if (! user_can('recaive_profits'))
         {
