@@ -61,7 +61,7 @@ $kleeja_plugin['kleeja_payment']['install'] = function ($plg_id) {
             `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
             `payment_state` text COLLATE utf8_bin NOT NULL,
             `payment_method` VARCHAR(100) NULL DEFAULT NULL,
-            `payment_more_info` LONGTEXT NOT NULL,
+            `payment_more_info` LONGTEXT DEFAULT NULL,
             `payment_amount` float NOT NULL,
             `payment_currency` VARCHAR(10) NOT NULL,
             `payment_token` text COLLATE utf8_bin NOT NULL,
@@ -339,6 +339,7 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package` INT NOT NULL DEFAULT '0';");
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `package_expire` INT NOT NULL DEFAULT '0';");
         $SQL->query("ALTER TABLE `{$dbprefix}users` ADD `subs_point` INT NOT NULL DEFAULT '0';");
+        $SQL->query("ALTER TABLE `{$dbprefix}payments` ALTER `payment_more_info` SET DEFAULT NULL;");
 
 
         //we need the id of kleeja_payment plugin
@@ -510,6 +511,11 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
             'max_price_limit' ,
             'file_owner_profits' ,
         ]);
+    }
+    
+    if (version_compare($old_version, '1.2.7', '<'))
+    {
+        $SQL->query("ALTER TABLE `{$dbprefix}payments` ALTER `payment_more_info` SET DEFAULT NULL;");
     }
 
     //you could use update_config

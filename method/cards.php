@@ -6,10 +6,10 @@ class kjPayMethod_cards implements KJPaymentMethod
     private $successPayment     = false; // its return the payment state after checking it
     private $varsForCreate      = []; // some methods will work in kleeja without leaving the website
     private $toGlobal           = []; // the list of vars that we want to export it to kleeja
-    private $downloadLinkMailer = false; // the mail that we want to send download link to it
+    private $downloadLinkMailer = null; // the mail that we want to send download link to it
 
 
-    public function paymentStart()
+    public function paymentStart(): void
     {
         global $config;
         require_once dirname(__FILE__) . '/../stripe-sdk/vendor/autoload.php';
@@ -22,7 +22,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         \Stripe\Stripe::setApiKey($stripe['secret_key']);
     }
 
-    public function setCurrency($currency)
+    public function setCurrency(string $currency): void
     {
         $this->currency = $currency;
     }
@@ -32,7 +32,7 @@ class kjPayMethod_cards implements KJPaymentMethod
      * @param mixed $do
      * @param mixed $info
      */
-    public function CreatePayment($do, $info)
+    public function CreatePayment(string $do, array $info): void
     {
         global $config , $olang ,$THIS_STYLE_PATH_ABS;
         // we will only say to kleeja where is the template file , and send some text to the user interface ,
@@ -61,13 +61,13 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function varsForCreatePayment()
+    public function varsForCreatePayment(): array
     {
         return $this->varsForCreate;
     }
 
 
-    public function checkPayment()
+    public function checkPayment(): void
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$olang, $subscription;
 
@@ -242,26 +242,26 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function isSuccess()
+    public function isSuccess(): bool
     {
         return $this->successPayment;
     }
 
 
-    public function getGlobalVars()
+    public function getGlobalVars(): array
     {
         return $this->toGlobal;
     }
 
 
-    public function linkMailer()
+    public function linkMailer(): ? string
     {
         return $this->downloadLinkMailer;
     }
 
 
 
-    private function convertPrice($price)
+    private function convertPrice($price): string
     {
         $p = explode('.', $price);
 
@@ -285,17 +285,11 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function createPayout($itemInfo)
-    {
-        return false;
-    }
+    public function createPayout($itemInfo): void {}
 
-    public function checkPayout($payoutInfo)
-    {
-        return false;
-    }
+    public function checkPayout($payoutInfo): void {}
 
-    public static function permission($permission)
+    public static function permission($permission): bool
     {
         switch ($permission)
         {

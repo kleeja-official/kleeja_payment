@@ -6,9 +6,9 @@ class kjPayMethod_balance implements KJPaymentMethod
     private $successPayment     = false; // its return the payment state after checking it
     private $varsForCreate      = []; // some methods will work in kleeja without leaving the website
     private $toGlobal           = []; // the list of vars that we want to export it to kleeja
-    private $downloadLinkMailer = false; // the mail that we want to send download link to it 
+    private $downloadLinkMailer = null; // the mail that we want to send download link to it 
 
-    public function paymentStart()
+    public function paymentStart(): void
     {
         global $lang, $config;
 
@@ -32,13 +32,13 @@ class kjPayMethod_balance implements KJPaymentMethod
         }
     }
 
-    public function setCurrency($currency)
+    public function setCurrency(string $currency): void
     {
         // it's not important , but ... it's the InterFace
         $this->currency = $currency;
     }
 
-    public function CreatePayment($do, $info)
+    public function CreatePayment(string $do, array $info): void
     {
         global $config , $olang ,$THIS_STYLE_PATH_ABS;
 
@@ -65,13 +65,13 @@ class kjPayMethod_balance implements KJPaymentMethod
         $this->varsForCreate['kjFormKeyPost']   = $kjFormKeyPost;
     }
 
-    public function varsForCreatePayment()
+    public function varsForCreatePayment(): array
     {
         return $this->varsForCreate;
     }
 
 
-    public function checkPayment()
+    public function checkPayment(): void
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang , $olang , $subscription;
 
@@ -232,34 +232,34 @@ class kjPayMethod_balance implements KJPaymentMethod
         $this->successPayment = true;
     }
 
-    public function isSuccess()
+    public function isSuccess(): bool
     {
         return $this->successPayment;
     }
 
 
-    public function getGlobalVars()
+    public function getGlobalVars(): array
     {
         return $this->toGlobal;
     }
 
-    public function linkMailer()
+    public function linkMailer(): ? string
     {
         return $this->downloadLinkMailer;
     }
 
 
-    public function createPayout($itemInfo)
+    public function createPayout(array $itemInfo): void
     {
-        return false;
+        //
     }
 
-    public function checkPayout($payoutInfo)
+    public function checkPayout(array $payoutInfo): void
     {
-        return false;
+        //
     }
 
-    public static function permission($permission)
+    public static function permission(string $permission): bool
     {
         switch ($permission) 
         {

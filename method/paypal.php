@@ -16,10 +16,10 @@ class kjPayMethod_paypal implements KJPaymentMethod
     private $successPayment     = false; // its return the payment state after checking it
     private $varsForCreate      = []; // some methods will work in kleeja without leaving the website
     private $toGlobal           = []; // the list of vars that we want to export it to kleeja
-    private $downloadLinkMailer = false; // the mail that we want to send download link to it
+    private $downloadLinkMailer = null; // the mail that we want to send download link to it
 
 
-    public function paymentStart()
+    public function paymentStart(): void
     {
         global $config;
         require_once dirname(__FILE__) . '/../vendor/autoload.php';
@@ -41,7 +41,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
         $this->apiContext = $apiContext;
     }
 
-    public function setCurrency($currency)
+    public function setCurrency(string $currency): void
     {
         $this->currency = strtoupper($currency);
     }
@@ -53,7 +53,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
     // check getFileInfo function and getGroupInfo function
 
 
-    public function CreatePayment($do, $info = [])
+    public function CreatePayment(string $do, array $info = []): void
     {
         global $config , $usrcp , $SQL , $dbprefix , $olang;
         // start ..
@@ -154,25 +154,25 @@ class kjPayMethod_paypal implements KJPaymentMethod
     }
 
 
-    public function varsForCreatePayment()
+    public function varsForCreatePayment(): ? array
     {
         return $this->varsForCreate;
     }
 
 
-    public function isSuccess()
+    public function isSuccess(): bool
     {
         return $this->successPayment;
     }
 
 
-    public function getGlobalVars()
+    public function getGlobalVars(): ? array
     {
         return $this->toGlobal;
     }
 
 
-    public function checkPayment()
+    public function checkPayment():  void
     {
         global $SQL , $dbprefix , $THIS_STYLE_PATH_ABS , $config , $usrcp , $subscription;
 
@@ -337,10 +337,10 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
 
     // return the e-mail adress that kleeja have to send download link to it
-    // if you are working with a method that dont have an e-mail adress , return 'false';
+    // if you are working with a method that dont have an e-mail adress , return NULL;
     // then kleeja will display a form for user to enter the e-mail adress to recive the download link
     // called if checking payment is successful only
-    public function linkMailer()
+    public function linkMailer(): ? string
     {
         return $this->downloadLinkMailer;
     }
@@ -348,7 +348,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
 
 
-    public function createPayout($itemInfo = [])
+    public function createPayout(array $itemInfo = []): void
     {
         global $olang , $SQL , $dbprefix;
         $payouts           = new \PayPal\Api\Payout();
@@ -414,7 +414,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
     }
 
 
-    public function checkPayout($payoutInfo = [])
+    public function checkPayout(array $payoutInfo = []): void
     {
         global $SQL , $dbprefix;
         //$payouts = new \PayPal\Api\Payout();
@@ -449,7 +449,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
      * what is this method support
      * @param mixed $permission
      */
-    public static function permission($permission)
+    public static function permission(string $permission): bool
     {
         switch ($permission)
         {
