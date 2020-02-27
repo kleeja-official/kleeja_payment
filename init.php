@@ -733,14 +733,21 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                 exit;
             }
 
-            if (! $PaymentMethod::permission('createPayment'))
+            // check if the current payment class is implemented our interface or not
+            elseif (! (($PAY = new $PaymentMethod) instanceof KJPaymentMethod))
+            {
+                kleeja_err('<strong>' . $PaymentMethod . '</strong> class is not implementing (KJPaymentMethod) interface');
+
+                exit;
+            }
+
+            elseif (! $PAY::permission('createPayment'))
             {
                 kleeja_err('This Method Dont support Creating Payments');
 
                 exit;
             }
 
-            $PAY = new $PaymentMethod;
 
             $PAY->paymentStart(); // Play some song to enjoy ;
 
