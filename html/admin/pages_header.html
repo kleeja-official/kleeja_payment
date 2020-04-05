@@ -5,6 +5,9 @@
     <li class="nav-item">
         <a class="nav-link (current_smt == all_transactions?active:)" href="./?cp=kj_payment_options&amp;smt=all_transactions">{olang.KJP_ALL_TRNC}</a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link (current_smt == canceled_payment?active:)" href="./?cp=kj_payment_options&amp;smt=canceled_payment">{olang.KJP_CNCLD_PAY}</a>
+    </li>
     <!-- Checking Subscriptions is it active or not-->
     <IF NAME="config.kjp_active_subscriptions">
             <li class="nav-item">

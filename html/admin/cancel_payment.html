@@ -1,0 +1,50 @@
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="./">{lang.R_CPINDEX}</a></li>
+        <li class="breadcrumb-item"><a href="./?cp=kj_payment_options">{olang.R_KJ_PAYMENT_OPTIONS}</a></li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header">
+        <INCLUDE NAME="pages_header" PATH="../plugins/kleeja_payment/html/admin/">
+    <div class="card-body">
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">{olang.KJP_MEMBER}</th>
+            <th scope="col">{olang.KJP_ACTION}</th>
+            <th scope="col">{olang.KJP_DATE_TIME}</th>
+            <th scope="col">{olang.KJP_VIEW}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <IF NAME="have_cancel_payment == true">
+
+            <LOOP NAME="cancelPayments">
+                <tr>
+                    <th scope="row">{{PAY_ID}}</th>
+                    <td>{{USER}}</td>
+                    <td>{{Action}}</td>
+                    <td title="{{Time}}">{{PayDateTime}}</td>
+                    <td><a href="{{VIEW_LINK}}" class="btn btn-primary">{olang.KJP_VIEW}</a></td>
+                </tr>
+
+            </LOOP>
+
+
+
+            <ELSE>
+
+                <div class="alert alert-info" role="alert">
+                    {olang.KJP_NO_CANCEL_PAYMNT}
+                </div>
+
+        </IF>
+    </tbody>
+</table>
+{page_nums}
+</div>
+</div>

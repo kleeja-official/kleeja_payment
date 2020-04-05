@@ -33,7 +33,7 @@ class kjPayMethod_paypal implements KJPaymentMethod
 
         if ($config['kjp_active_live_mode'])
         {
-            $apiContext->addConfig([
+            $apiContext->setConfig([
                 'mode' => 'live'
             ]);
         }
@@ -309,7 +309,8 @@ class kjPayMethod_paypal implements KJPaymentMethod
             if ($payment_info && g('token') == $payment_info['paypal_payment_token'])
             {
                 $delete_query    = [
-                    'DELETE'   => "{$dbprefix}payments",
+                    'UPDATE'   => "{$dbprefix}payments",
+                    'SET'      => "payment_state = 'canceled'",
                     'WHERE'    => 'id = ' . $_SESSION['kj_payment']['db_id']
                 ];
 

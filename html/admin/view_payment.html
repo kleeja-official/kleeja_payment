@@ -9,6 +9,16 @@
   <div class="card-body">
 <IF NAME="have_payment">
 
+  <IF NAME="isCanceledPayment">
+    <div class="alert alert-danger" role="alert">
+      {olang.KJP_ITS_CANCEL_PAYMENT}
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      alert('{olang.KJP_ITS_CANCEL_PAYMENT}');
+    });
+  </script>
+  </IF>
 
 <table class="table">
 

@@ -207,4 +207,8 @@ return [
     'KJP_STRIPE_PRMS_EMPTY_TITLE'               => 'معرف عميل سترايب أو عميل السري فارغ',
     'KJP_STRIPE_NO_LIB'                         => 'لا يمكن للزائر استخدام Stripe كطريقة دفع ، لأن مكتبة Stripe API غير موجودة ، قم باستخراج ملف "stripe-sdk.zip" في مجلد kleeja_payment',
     'KJP_STRIPE_NO_LIB_TITLE'                   => 'Stripe API library is not exists',
+    'KJP_CNCLD_PAY'                             => 'الدفعة الملغاة',
+    'KJP_NO_CANCEL_PAYMNT'                      => 'لا توجد مدفوعات ملغاة في قاعدة البيانات',
+    'KJP_ITS_CANCEL_PAYMENT'                    => 'يُرجى التنبيه إلى أنه هذه الدفعة ملغاة',
+    'KJP_VIW_TPL_PAYPAL_PAYMENT_TOKEN'          => 'رمز الدفع',
 ];

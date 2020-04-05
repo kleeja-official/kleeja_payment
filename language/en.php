@@ -209,4 +209,8 @@ return [
     'KJP_STRIPE_PRMS_EMPTY_TITLE'               => 'Stripe Client ID or Client Secret is empty',
     'KJP_STRIPE_NO_LIB'                         => 'Your visitor can not use Stripe as payment method, because Stripe API library is not exists, extract "stripe-sdk.zip" file in kleeja_payment folder',
     'KJP_STRIPE_NO_LIB_TITLE'                   => 'Stripe API library is not exists',
+    'KJP_CNCLD_PAY'                             => 'Canceled Payment',
+    'KJP_NO_CANCEL_PAYMNT'                      => 'there is no canceled payment in the database',
+    'KJP_ITS_CANCEL_PAYMENT'                    => 'Please alert, that the status of this payment is canceled',
+    'KJP_VIW_TPL_PAYPAL_PAYMENT_TOKEN'          => 'Kleeja Payment Token',
 ];

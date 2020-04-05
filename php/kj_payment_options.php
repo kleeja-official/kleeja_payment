@@ -282,7 +282,7 @@ elseif ($current_smt == 'all_transactions')
 elseif ($current_smt == 'view' && (int) g('payment'))
 {
     $stylee  = 'view_payment';
-    $PayInfo = getPaymentInfo(g('payment'), "payment_state = 'approved'");
+    $PayInfo = getPaymentInfo(g('payment'), "payment_state IN ('approved', 'canceled')");
 
     if (! $PayInfo)
     {
@@ -318,6 +318,8 @@ elseif ($current_smt == 'view' && (int) g('payment'))
         $methodPaymentInfo = [];
 
         $methodPaymentInfo['payment_more_info'] = $PayInfo['payment_more_info']; // we don't want to get all information again :: omly the method informations
+
+        $isCanceledPayment = $PayInfo['payment_state'] == 'canceled';
 
         foreach (payment_more_info('from_db', $methodPaymentInfo) as $key => $value)
         {
@@ -1035,6 +1037,56 @@ elseif ($current_smt == 'subscriptions')
         default:
             // code...
             break;
+    }
+}
+elseif ($current_smt == 'canceled_payment') {
+    $stylee   = 'cancel_payment';
+
+    $query = [
+        'SELECT'   => '*' ,
+        'FROM'     => "{$dbprefix}payments",
+        'WHERE'    => "payment_state = 'canceled'",
+        'ORDER BY' => 'id DESC'
+    ];
+
+    $result = $SQL->build($query);
+
+    if ($num_rows = $SQL->num_rows($result))
+    {
+        // Pagination //
+
+        $perpage           = 21;
+        $currentPage       = ig('page') ? g('page', 'int') : 1;
+        $Pager             = new Pagination($perpage, $num_rows, $currentPage);
+        $start             = $Pager->getStartRow();
+        $linkgoto          = $config['siteurl'] . 'admin/index.php?cp=kj_payment_options&smt=canceled_payment';
+        $page_nums         = $Pager->print_nums($linkgoto);
+        $query['LIMIT']    = "$start, $perpage";
+        $result            = $SQL->build($query);
+
+        $cancelPayments = [];
+
+        $have_cancel_payment  = true;
+        while ($cancelPayment = $SQL->fetch($result))
+        {
+            $month        = $cancelPayment['payment_month'];
+            $day          = $cancelPayment['payment_day'];
+            $year         = $cancelPayment['payment_year'];
+            $payment_time = explode(':', $cancelPayment['payment_time']);
+            $hour         = $payment_time[0];
+            $minute       = $payment_time[1];
+            $seconde      = $payment_time[2];
+            $cancelPayments[] = [
+                'PAY_ID'       => $cancelPayment['id'],
+                'VIEW_LINK'    => $config['siteurl'] . 'admin/?cp=kj_payment_options&smt=view&payment=' . $cancelPayment['id'] ,
+                'Action'       => sprintf($olang['KJP_ACT_' . strtoupper($cancelPayment['payment_action'])], $cancelPayment['item_name']),
+                'PAY_METHOD'   => $olang['KJP_MTHD_NAME_' . strtoupper($cancelPayment['payment_method'])],
+                'USER'         => $cancelPayment['user'] > 0 ? '<a href="' . $config['siteurl'] . 'ucp.php?go=fileuser&id=' . $cancelPayment['user'] . '" target="_blank">' . $UserById[$cancelPayment['user']] . '</a>' : $olang['KJP_GUEST'],
+                'PRICE'        => $cancelPayment['payment_amount'],
+                'PayDateTime'  => kleeja_date(mktime($hour, $minute, $seconde, $month, $day, $year)),
+                'Time'         => date('Y.m.d | H:i', mktime($hour, $minute, $seconde, $month, $day, $year)),
+            ];
+        }
     }
 }
 
