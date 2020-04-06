@@ -9,7 +9,7 @@ class kjPayMethod_cards implements KJPaymentMethod
     private $downloadLinkMailer = null; // the mail that we want to send download link to it
 
 
-    public function paymentStart(): void
+    public function paymentStart()
     {
         global $config;
         require_once dirname(__FILE__) . '/../stripe-sdk/vendor/autoload.php';
@@ -22,7 +22,7 @@ class kjPayMethod_cards implements KJPaymentMethod
         \Stripe\Stripe::setApiKey($stripe['secret_key']);
     }
 
-    public function setCurrency(string $currency): void
+    public function setCurrency(string $currency)
     {
         $this->currency = $currency;
     }
@@ -32,7 +32,7 @@ class kjPayMethod_cards implements KJPaymentMethod
      * @param mixed $do
      * @param mixed $info
      */
-    public function CreatePayment(string $do, array $info): void
+    public function CreatePayment(string $do, array $info)
     {
         global $config , $olang ,$THIS_STYLE_PATH_ABS;
         // we will only say to kleeja where is the template file , and send some text to the user interface ,
@@ -67,7 +67,7 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function checkPayment(): void
+    public function checkPayment()
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$olang, $subscription;
 
@@ -254,7 +254,7 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function linkMailer(): ? string
+    public function linkMailer(): string
     {
         return $this->downloadLinkMailer;
     }
@@ -285,11 +285,11 @@ class kjPayMethod_cards implements KJPaymentMethod
     }
 
 
-    public function createPayout($itemInfo): void {}
+    public function createPayout(array $itemInfo) {}
 
-    public function checkPayout($payoutInfo): void {}
+    public function checkPayout(array $payoutInfo) {}
 
-    public static function permission($permission): bool
+    public static function permission(string $permission): bool
     {
         switch ($permission)
         {

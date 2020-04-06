@@ -8,7 +8,7 @@ class kjPayMethod_balance implements KJPaymentMethod
     private $toGlobal           = []; // the list of vars that we want to export it to kleeja
     private $downloadLinkMailer = null; // the mail that we want to send download link to it 
 
-    public function paymentStart(): void
+    public function paymentStart()
     {
         global $lang, $config;
 
@@ -32,13 +32,13 @@ class kjPayMethod_balance implements KJPaymentMethod
         }
     }
 
-    public function setCurrency(string $currency): void
+    public function setCurrency(string $currency)
     {
         // it's not important , but ... it's the InterFace
         $this->currency = $currency;
     }
 
-    public function CreatePayment(string $do, array $info): void
+    public function CreatePayment(string $do, array $info)
     {
         global $config , $olang ,$THIS_STYLE_PATH_ABS;
 
@@ -71,7 +71,7 @@ class kjPayMethod_balance implements KJPaymentMethod
     }
 
 
-    public function checkPayment(): void
+    public function checkPayment()
     {
         global $config , $usrcp , $SQL , $dbprefix , $d_groups ,$userinfo , $lang , $olang , $subscription;
 
@@ -243,18 +243,18 @@ class kjPayMethod_balance implements KJPaymentMethod
         return $this->toGlobal;
     }
 
-    public function linkMailer(): ? string
+    public function linkMailer(): string
     {
         return $this->downloadLinkMailer;
     }
 
 
-    public function createPayout(array $itemInfo): void
+    public function createPayout(array $itemInfo)
     {
         //
     }
 
-    public function checkPayout(array $payoutInfo): void
+    public function checkPayout(array $payoutInfo)
     {
         //
     }

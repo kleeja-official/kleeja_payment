@@ -12,7 +12,7 @@ interface KJPaymentMethod
      * include your files and connect with your api server
      * and do any steps becuse we have to be active next min
      */
-    public function paymentStart(): void;
+    public function paymentStart();
 
 
     /**
@@ -20,7 +20,7 @@ interface KJPaymentMethod
      * @param string $currency
      * @return void
      */
-    public function setCurrency(string $currency): void;
+    public function setCurrency(string $currency);
 
 
     /**
@@ -30,7 +30,7 @@ interface KJPaymentMethod
      * @example: there is three function that return the content of $info variable, getFileInfo(), getGroupinfo(), subscription::get()
      * @return void
      */
-    public function CreatePayment(string $do, array $info): void;
+    public function CreatePayment(string $do, array $info);
 
 
     /**
@@ -39,7 +39,7 @@ interface KJPaymentMethod
      * like some information that you want to give it to the template, because some method are connecting to its payment server via JS, like Stripe
      * @return array
      */
-    public function varsForCreatePayment(): ? array;
+    public function varsForCreatePayment(): array;
 
 
     /**
@@ -49,7 +49,7 @@ interface KJPaymentMethod
      * @example: make a subscription for the user after subscriping to in a package
      * @return void
      */
-    public function checkPayment(): void;
+    public function checkPayment();
 
 
     /**
@@ -65,7 +65,7 @@ interface KJPaymentMethod
      * it's another method to compacting ans extracting array,
      * because the variable that the payment method have to give it to kleeja is unknow
      */
-    public function getGlobalVars(): ? array;
+    public function getGlobalVars(): array;
 
 
     /**
@@ -73,7 +73,7 @@ interface KJPaymentMethod
      * email is not included in all payment method, and it's not required in all payments action, NOW we need it only for buy_file action
      * @return string
      */
-    public function linkMailer(): ? string;
+    public function linkMailer(): string;
 
 
     /**
@@ -85,7 +85,7 @@ interface KJPaymentMethod
      * note: some payment method need time for to make a payout, if your method need a time, then update the payout status to sent,
      * and include checking steps in checkPayout() function, and if you are sure, then update the payout status to 'recived'
      */
-    public function createPayout(array $itemInfo): void;
+    public function createPayout(array $itemInfo);
 
 
     /**
@@ -94,7 +94,7 @@ interface KJPaymentMethod
      * @param array $payoutInfo
      * @return void
      */
-    public function checkPayout(array $payoutInfo): void;
+    public function checkPayout(array $payoutInfo);
 
 
     /**
