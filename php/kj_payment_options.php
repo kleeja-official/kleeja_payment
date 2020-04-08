@@ -175,7 +175,7 @@ elseif ($current_smt == 'all_transactions')
     $all_trnc_page_title = $olang['KJP_ALL_TRNC'];
 
     $query = [
-        'SELECT'   => 'id ,payment_action , item_id , item_name, user , payment_year , payment_month , payment_day , payment_time' ,
+        'SELECT'   => 'id ,payment_action , payment_method, payment_amount, item_id , item_name, user , payment_year , payment_month , payment_day , payment_time' ,
         'FROM'     => $dbprefix . 'payments' ,
         'WHERE'    => "payment_state = 'approved'" ,
         'ORDER BY' => 'id DESC'
@@ -271,6 +271,8 @@ elseif ($current_smt == 'all_transactions')
                 'PayUser'     => $PayUser ,
                 'PayAction'   => $PayAction ,
                 'PayDateTime' => $PayDateTime ,
+                'PayAmount'   => $trnc['payment_amount'] . ' ' . $config['kjp_iso_currency_code'],
+                'PayMethod'   => $olang['KJP_MTHD_NAME_' . strtoupper($trnc['payment_method'])],
                 'view_link'   => basename(ADMIN_PATH) . '?cp=kj_payment_options&amp;smt=view&amp;payment=' . $PayID
             ];
         }
