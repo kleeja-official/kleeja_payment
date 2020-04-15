@@ -513,11 +513,6 @@ $kleeja_plugin['kleeja_payment']['update'] = function ($old_version, $new_versio
         ]);
     }
 
-    if (version_compare($old_version, '1.2.7', '<'))
-    {
-        $SQL->query("ALTER TABLE `{$dbprefix}payments` ALTER `payment_more_info` SET DEFAULT NULL;");
-    }
-
     //you could use update_config
 };
 
