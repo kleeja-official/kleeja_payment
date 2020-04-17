@@ -806,7 +806,7 @@ elseif ($current_smt == 'viewPayout' && ig('id'))
         $payout_amount    = $payoutInfo['amount'] . ' ' . $config['kjp_iso_currency_code'];
         $payout_date_time = $payoutInfo['payout_year'] . '-' . $payoutInfo['payout_month'] . '-' . $payoutInfo['payout_day']
                             . ' / ' . $payoutInfo['payout_time'];
-        $payout_state      = $payoutInfo['state'];
+        $payout_state      = $olang['KJP_POUT_ST_' . strtoupper($payoutInfo['state'])] ?? $payoutInfo['state'];
         $payment_more_info = payment_more_info('from_db', ['payment_more_info' => $payoutInfo['payment_more_info']]);
 
         $viewMoreTable = [];
