@@ -1572,7 +1572,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
                             'ON'         => 'p.item_id = f.id'
                         ]
                     ],
-                    'WHERE'     => 'f.user = ' . $usrcp->id() . " AND p.payment_action = 'buy_file'",
+                    'WHERE'     => 'f.user = ' . $usrcp->id() . " AND p.payment_action = 'buy_file' and payment_state = 'approved'",
                     'ORDER BY'  => 'p.id DESC',
                 ];
 
