@@ -1372,7 +1372,7 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $myPaymentQuery = [
                 'SELECT'    => 'p.id , p.payment_method , p.payment_amount , p.payment_action , p.item_name , p.payment_year , p.payment_month , p.payment_day , p.payment_time',
                 'FROM'      => "{$dbprefix}payments p",
-                'WHERE'     => 'p.user = ' . $usrcp->id(),
+                'WHERE'     => 'p.payment_state = \'approvid\' AND p.user = ' . $usrcp->id(),
                 'ORDER BY'  => 'p.id DESC',
             ];
 
