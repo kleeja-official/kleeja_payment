@@ -1,8 +1,7 @@
 <?php
 
 // prevent illegal run
-if (! defined('IN_PLUGINS_SYSTEM'))
-{
+if (! defined('IN_PLUGINS_SYSTEM')) {
     exit;
 }
 
@@ -15,20 +14,17 @@ class Subscription
     {
         global $SQL , $dbprefix , $config;
 
-        if (! $config['kjp_active_subscriptions'])
-        {
+        if (! $config['kjp_active_subscriptions']) {
             return;
         }
 
         $result = $SQL->query("SELECT u.id , u.name , u.package , u.package_expire , u.group_id FROM {$dbprefix}users u");
-        while ($user = $SQL->fetch($result))
-        {
+        while ($user = $SQL->fetch($result)) {
             $this->users[$user['id']] = $user;
         }
 
         $subs = $SQL->query("SELECT * FROM {$dbprefix}subscriptions");
-        while ($sub = $SQL->fetch($subs))
-        {
+        while ($sub = $SQL->fetch($subs)) {
             $this->subscriptions[$sub['id']] = $sub;
         }
     }
@@ -37,8 +33,7 @@ class Subscription
     {
         $subscripe = $this->subscriptions[$subscripe_id];
 
-        if (! $subscripe)
-        {
+        if (! $subscripe) {
             return false;
         }
 
@@ -47,14 +42,10 @@ class Subscription
 
     public function get($subscripe_id = 0)
     {
-        if ($subscripe_id)
-        {
+        if ($subscripe_id) {
             return $this->subscriptions[$subscripe_id] ?? false;
         }
-        else
-        {
-            return $this->subscriptions;
-        }
+        return $this->subscriptions;
     }
 
     public function user_subscripe($user_id)
@@ -71,13 +62,11 @@ class Subscription
     {
         $user = $this->users[$user_id];
 
-        if (! $user || ! $user['package'])
-        {
+        if (! $user || ! $user['package']) {
             return false;
         }
 
-        if (time() < $user['package_expire'])
-        {
+        if (time() < $user['package_expire']) {
             return true;
         }
 
@@ -89,10 +78,8 @@ class Subscription
     {
         $count = 0;
 
-        foreach ($this->users as $user)
-        {
-            if ($user['package'] == $subscripe_id && $this->is_valid($user['id']))
-            {
+        foreach ($this->users as $user) {
+            if ($user['package'] == $subscripe_id && $this->is_valid($user['id'])) {
                 $count++;
             }
         }
@@ -112,8 +99,7 @@ class Subscription
 
         $file_owner_group = $this->users[$file_owner]['group_id'];
 
-        if (! user_can('recaive_profits', $file_owner_group))
-        {
+        if (! user_can('recaive_profits', $file_owner_group)) {
             return;
         }
 
@@ -125,8 +111,7 @@ class Subscription
 
         $check_point = $SQL->query("SELECT * FROM `{$dbprefix}subscription_point` WHERE `user` = {$user} AND `file_id` = {$file_id} AND `subscripe_hash` = '{$subscripe_hash}'");
 
-        if (! $SQL->num_rows($check_point))
-        { // this is first time !!
+        if (! $SQL->num_rows($check_point)) { // this is first time !!
             $query       = [
                 'INSERT' => 'user , file_id , subscription_id  , subscripe_hash , time',
                 'INTO'   => "{$dbprefix}subscription_point",
@@ -153,46 +138,37 @@ class Subscription
         // get all paid files one time by one call
         $files = $SQL->query("SELECT id , user FROM {$dbprefix}files WHERE price > 0");
 
-        while ($file = $SQL->fetch($files))
-        {
+        while ($file = $SQL->fetch($files)) {
             $paidFiles[$file['id']]            = $file;
             $paidFiles[$file['id']]['points']  = 0;
             $paidFiles[$file['id']]['profits'] = 0;
         }
 
         // first match
-        foreach ($this->users as $user)
-        {
-            if ($user['package'] && ! $this->is_valid($user['id']))
-            {
+        foreach ($this->users as $user) {
+            if ($user['package'] && ! $this->is_valid($user['id'])) {
                 $subscription_info = $this->subscriptions[$user['package']];
 
-                if (! $subscription_info)
-                {
+                if (! $subscription_info) {
                     goto reset_user_package;
                 }
                 $pointsQuery       = $SQL->query("SELECT * FROM {$dbprefix}subscription_point WHERE user = {$user['id']}");
 
                 $pointsCount = $SQL->num_rows($pointsQuery);
 
-                if ($pointsCount)
-                { // check the points counts , Divide by zero -> is danger , bvvvvvvvvvv
+                if ($pointsCount) { // check the points counts , Divide by zero -> is danger , bvvvvvvvvvv
                     $pointPrice = ($subscription_info['price'] * $config['kjp_file_owner_profits'] / 100) / $pointsCount;
 
-                    while ($points = $SQL->fetch($pointsQuery))
-                    {
-                        if ($paidFiles[$points['file_id']]['user'])
-                        { // the file owner is not guest
+                    while ($points = $SQL->fetch($pointsQuery)) {
+                        if ($paidFiles[$points['file_id']]['user']) { // the file owner is not guest
                             $paidFiles[$points['file_id']]['points']++;
     
-                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['profit']))
-                            { // please focuse
+                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['profit'])) { // please focuse
                                 $this->users[$paidFiles[$points['file_id']]['user']]['profit'] = 0;
                             }
                             $this->users[$paidFiles[$points['file_id']]['user']]['profit'] += $pointPrice;
     
-                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['taked_points']))
-                            { // please focuse
+                            if (! isset($this->users[$paidFiles[$points['file_id']]['user']]['taked_points'])) { // please focuse
                                 $this->users[$paidFiles[$points['file_id']]['user']]['taked_points'] = 0;
                             }
                             $this->users[$paidFiles[$points['file_id']]['user']]['taked_points']++;
@@ -207,10 +183,8 @@ class Subscription
         }
 
         // second match
-        foreach ($this->users as $u)
-        {
-            if (isset($u['profit']) && $u['profit'] > 0)
-            {
+        foreach ($this->users as $u) {
+            if (isset($u['profit']) && $u['profit'] > 0) {
                 $SQL->query("UPDATE {$dbprefix}users SET `balance` = balance+{$u['profit']} , `subs_point` = subs_point-{$u['taked_points']} WHERE `id` = '{$u['id']}'");
             }
         }
