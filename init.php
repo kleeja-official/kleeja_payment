@@ -1688,13 +1688,13 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             $filter[] = 'paypal';
         }
 
-        // check if Stripe method is ready to use or not
-        if (in_array('cards', $return) &&
-         (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key']) ||
-         ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
-         ) {
-            $filter[] = 'cards';
-        }
+        // // check if Stripe method is ready to use or not
+        // if (in_array('cards', $return) &&
+        //  (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key']) ||
+        //  ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php'))
+        //  ) {
+        //     $filter[] = 'cards';
+        // }
 
         $return = array_filter($return, function ($mthd) use ($filter) {
             if (! in_array($mthd, $filter)) {
@@ -1731,32 +1731,31 @@ $kleeja_plugin['kleeja_payment']['functions'] = [
             ];
         }
 
-        // check if Stripe method is ready to use or not
-        if (in_array('cards', $payment_methods) && (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key']))) {
-            $ADM_NOTIFICATIONS[]  = [
-                'id'      => 'EmptyStripeParms',
-                'msg_type'=> 'error',
-                'title'   => $olang['KJP_STRIPE_PRMS_EMPTY_TITLE'],
-                'msg'     => $olang['KJP_STRIPE_PRMS_EMPTY']
-            ];
-        }
+        // // check if Stripe method is ready to use or not
+        // if (in_array('cards', $payment_methods) && (empty($config['kjp_stripe_publishable_key']) || empty($config['kjp_stripe_secret_key']))) {
+        //     $ADM_NOTIFICATIONS[]  = [
+        //         'id'      => 'EmptyStripeParms',
+        //         'msg_type'=> 'error',
+        //         'title'   => $olang['KJP_STRIPE_PRMS_EMPTY_TITLE'],
+        //         'msg'     => $olang['KJP_STRIPE_PRMS_EMPTY']
+        //     ];
+        // }
 
-        if (in_array('cards', $payment_methods) && ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php')) {
-            $ADM_NOTIFICATIONS[]  = [
-                'id'      => 'NoStripeLib',
-                'msg_type'=> 'error',
-                'title'   => $olang['KJP_STRIPE_NO_LIB_TITLE'],
-                'msg'     => $olang['KJP_STRIPE_NO_LIB']
-            ];
-        }
+        // if (in_array('cards', $payment_methods) && ! file_exists(dirname(__FILE__) . '/stripe-sdk/vendor/autoload.php')) {
+        //     $ADM_NOTIFICATIONS[]  = [
+        //         'id'      => 'NoStripeLib',
+        //         'msg_type'=> 'error',
+        //         'title'   => $olang['KJP_STRIPE_NO_LIB_TITLE'],
+        //         'msg'     => $olang['KJP_STRIPE_NO_LIB']
+        //     ];
+        // }
 
         return compact('ADM_NOTIFICATIONS');
     }
 
     /*
     //Example
-    'kjPay:add_to_panels' => function ($args)
-    {
+    'kjPay:add_to_panels' => function ($args) {
         $all_trnc_panel = $args['all_trnc_panel'];
         $all_trnc_panel[] = array( 'methodName' => 'PayPal' , 'htmlContent' => 'Hello From PayPal Method' );
         return compact('all_trnc_panel');
