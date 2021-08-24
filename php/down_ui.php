@@ -94,7 +94,7 @@ if ($SQL->num_rows($result) !== 0)
     $sty        = 'pay_download'; // edited
 
     // to allow the developer to make 'pay_download.html' with their styles .
-    $styPath       =  file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_download.html') ? $THIS_STYLE_PATH_ABS :  dirname(__FILE__) . '/../html/'; // edited
+    $styPath       =  file_exists($THIS_STYLE_PATH_ABS . 'kj_payment/pay_download.html') ? $THIS_STYLE_PATH_ABS . 'kj_payment' :  dirname(__FILE__) . '/../html/'; // edited
     $title         =  $name . ' - ' . 'شراء'; // edited
 }
 else
