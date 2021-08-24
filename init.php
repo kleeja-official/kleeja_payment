@@ -17,7 +17,7 @@ $kleeja_plugin['kleeja_payment']['information'] = [
     // who wrote this plugin?
     'plugin_developer' => 'Kleeja Team',
     // this plugin version
-    'plugin_version' => '1.2.9',
+    'plugin_version' => '1.3.0',
     // explain what is this plugin, why should i use it?
     'plugin_description' => [
         'en' => 'Selling Files and Premium Groups',
